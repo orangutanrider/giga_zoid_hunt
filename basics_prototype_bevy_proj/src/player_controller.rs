@@ -12,19 +12,23 @@ impl Plugin for InitializePlugin {
 }
 
 #[derive(Component)]
-struct TestUnit;
+struct TestUnit{
+    pub target_position: Vec2,
+}
 
 #[derive(Bundle)]
 struct TestUnitBundle{
+    pub test_unit: TestUnit,
     pub sprite_bundle: SpriteBundle,
 }
 
 fn spawn_test_unit(mut commands: Commands, asset_server: Res<AssetServer>){
     commands.spawn((
         TestUnitBundle{ 
-            sprite_bundle: SpriteBundle { texture: asset_server.load("sprite\\basics\\64px_square.png"), ..default() }
+            sprite_bundle: SpriteBundle { texture: asset_server.load("sprite\\basics\\64px_square.png"), ..default() },
+            test_unit: TestUnit{ target_position: Vec2 { x: (0.0), y: (0.0) } },
         }, 
-        TestUnit
+
     ));
 }
 
@@ -42,26 +46,49 @@ fn movement_test(
     mouse_world: Res<bevy_mouse_tracking_plugin::MousePosWorld>,
     buttons: Res<Input<MouseButton>>,
 
-    mut unitQuery: Query<&mut Transform, With<TestUnit>>
+    mut unit_query: Query<(&mut Transform, &mut TestUnit), With<TestUnit>>
 ){
+    let (mut transform, mut test_unit) = unit_query.single_mut();
+
+    unit_movement(&mut test_unit, &mut transform);
+
     if !buttons.just_pressed(MouseButton::Left) 
     {
         return;
     }
 
     /* 
-    for transform in unitQuery.iter() {
+    for transform in unit_query.iter() {
         move_test_unit_to(transform, mouse_world.truncate())
     }
     */
 
-    move_test_unit_to(&mut unitQuery.single_mut(), mouse_world.truncate());
+    // move_test_unit_to(&mut unit_query.single_mut(), mouse_world.truncate());
+    unit_move_to(&mut test_unit,mouse_world.truncate());
 
     println!("mouse world position: {}", *mouse_world);
 }
 
-fn move_test_unit_to(unit: &mut Transform, position: Vec2){
-    unit.translation = Vec3::new(position.x, position.y, unit.translation.z);
+fn unit_move_to(unit: &mut TestUnit, position: Vec2){
+    unit.target_position = position;
+}
+
+fn unit_movement(unit: &mut TestUnit, unit_transform: &mut Transform){
+    const MOVE_SPEED: f32 = 1.1;
+
+    let vec2_position = Vec2::new(unit_transform.translation.x, unit_transform.translation.y);
+
+    let new_position = unit.target_position - vec2_position; // difference of vectors
+    let new_position = new_position.normalize_or_zero(); // movement direction
+    let new_position = new_position * MOVE_SPEED; // movement vector
+    let new_position = vec2_position + new_position; // new position
+
+
+    move_transform(unit_transform, new_position);
+}
+
+fn move_transform(transform: &mut Transform, position: Vec2){
+    transform.translation = Vec3::new(position.x, position.y, transform.translation.z);
 }
 
 /* 
