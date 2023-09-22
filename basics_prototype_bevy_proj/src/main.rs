@@ -23,8 +23,7 @@ impl Plugin for InitializePlugin {
         println!("");
         println!("Initializing");
         app
-           .add_systems(Startup, spawn_main_camera)
-           .add_systems(Update, dbg_mouse_pos);
+           .add_systems(Startup, spawn_main_camera);
     }
 }
 
@@ -39,14 +38,4 @@ fn spawn_main_camera(mut commands: Commands) {
        .add(InitMouseTracking)
        .add(InitWorldTracking)
        .insert(bevy_mouse_tracking_plugin::MainCamera);
-}
-
-fn dbg_mouse_pos(
-    mouse: Res<bevy_mouse_tracking_plugin::MousePos>, 
-    mouse_world: Res<bevy_mouse_tracking_plugin::MousePosWorld>,
-    buttons: Res<Input<MouseButton>>
-) {
-    if buttons.just_pressed(MouseButton::Left) {
-        println!("mouse position: {}, mouse world position: {}", *mouse, *mouse_world);
-    }
 }
