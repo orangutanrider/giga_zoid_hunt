@@ -293,6 +293,7 @@ name = "basics_prototype_bevy_proj"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_mouse_tracking_plugin",
 ]
 
 [[package]]
@@ -695,6 +696,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0d98eaa7f40b97bb9b2d681ecf9fd439830a7eb88ad2846680d4f4acd285cf84"
 dependencies = [
  "glam",
+]
+
+[[package]]
+name = "bevy_mouse_tracking_plugin"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57b69978853d62a9d3732c54fd307901ec94480d1ecac197aaacad39c33e9bc1"
+dependencies = [
+ "bevy",
 ]
 
 [[package]]
