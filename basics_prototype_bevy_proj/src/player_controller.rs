@@ -1,3 +1,5 @@
+mod unit_selector;
+
 use bevy::prelude::*;
 
 pub struct InitializePlugin;
@@ -6,6 +8,7 @@ impl Plugin for InitializePlugin {
         println!("");
         println!("Initializing player_controller");
         app
+           .add_plugins(unit_selector::InitializePlugin)
            .add_systems(PostStartup, spawn_test_units)
            .add_systems(Update, movement_test);
     }
@@ -14,6 +17,7 @@ impl Plugin for InitializePlugin {
 #[derive(Component)]
 struct TestUnit{
     pub target_position: Vec2,
+    pub selected: bool,
 }
 
 #[derive(Bundle)]
@@ -26,9 +30,8 @@ fn spawn_test_unit(mut commands: Commands, asset_server: Res<AssetServer>){
     commands.spawn((
         TestUnitBundle{ 
             sprite_bundle: SpriteBundle { texture: asset_server.load("sprite\\basics\\64px_square.png"), ..default() },
-            test_unit: TestUnit{ target_position: Vec2 { x: (0.0), y: (0.0) } },
+            test_unit: TestUnit{ target_position: Vec2 { x: (0.0), y: (0.0) }, selected: false},
         }, 
-
     ));
 }
 
@@ -44,7 +47,7 @@ fn spawn_test_units(mut commands: Commands, asset_server: Res<AssetServer>){
                 texture: asset_server.load("sprite\\basics\\64px_square.png"), 
                 transform: Transform { translation: spawn_point_1, ..default() },
                 ..default() },
-            test_unit: TestUnit{ target_position: spawn_point_1.truncate() },
+            test_unit: TestUnit{ target_position: spawn_point_1.truncate(), selected: false },
         }, 
     ));
     commands.spawn((
@@ -53,7 +56,7 @@ fn spawn_test_units(mut commands: Commands, asset_server: Res<AssetServer>){
                 texture: asset_server.load("sprite\\basics\\64px_square.png"), 
                 transform: Transform { translation: spawn_point_2, ..default() },
                 ..default() },
-            test_unit: TestUnit{ target_position: spawn_point_2.truncate() },
+            test_unit: TestUnit{ target_position: spawn_point_2.truncate(), selected: false },
         }, 
     ));
     commands.spawn((
@@ -62,7 +65,7 @@ fn spawn_test_units(mut commands: Commands, asset_server: Res<AssetServer>){
                 texture: asset_server.load("sprite\\basics\\64px_square.png"), 
                 transform: Transform { translation: spawn_point_3, ..default() },
                 ..default() },
-            test_unit: TestUnit{ target_position: spawn_point_3.truncate() },
+            test_unit: TestUnit{ target_position: spawn_point_3.truncate(), selected: false },
         }, 
     ));
     commands.spawn((
@@ -71,7 +74,7 @@ fn spawn_test_units(mut commands: Commands, asset_server: Res<AssetServer>){
                 texture: asset_server.load("sprite\\basics\\64px_square.png"), 
                 transform: Transform { translation: spawn_point_4, ..default() },
                 ..default() },
-            test_unit: TestUnit{ target_position: spawn_point_4.truncate() },
+            test_unit: TestUnit{ target_position: spawn_point_4.truncate(), selected: false },
         }, 
     ));
 }
@@ -105,10 +108,18 @@ fn movement_test(
         unit_move_to(&mut test_unit,mouse_world.truncate());
     }
 
+    if !buttons.just_pressed(MouseButton::Left) 
+    {
+        return;
+    }
     println!("mouse world position: {}", *mouse_world);
 }
 
 fn unit_move_to(unit: &mut TestUnit, position: Vec2){
+    if unit.selected == false {
+        return;
+    }
+
     unit.target_position = position;
 }
 
