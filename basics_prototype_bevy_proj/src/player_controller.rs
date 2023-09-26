@@ -93,12 +93,13 @@ fn movement_test(
     mouse_world: Res<bevy_mouse_tracking_plugin::MousePosWorld>,
     buttons: Res<Input<MouseButton>>,
 
-    mut unit_query: Query<(&mut Transform, &mut TestUnit), With<TestUnit>>
+    mut unit_query: Query<(&mut Sprite, &mut Transform, &mut TestUnit), With<TestUnit>>
 ){
     //let (mut transform, mut test_unit) = unit_query.single_mut();
 
-    for (mut transform, mut test_unit) in unit_query.iter_mut(){
+    for (mut sprite, mut transform, mut test_unit) in unit_query.iter_mut(){
         unit_movement(&mut test_unit, &mut transform);
+        unit_state_colourizer(&test_unit, &mut sprite);
 
         if !buttons.just_pressed(MouseButton::Left) 
         {
@@ -133,8 +134,16 @@ fn unit_movement(unit: &mut TestUnit, unit_transform: &mut Transform){
     let new_position = new_position * MOVE_SPEED; // movement vector
     let new_position = vec2_position + new_position; // new position
 
-
     move_transform(unit_transform, new_position);
+}
+
+fn unit_state_colourizer(unit: &TestUnit, unit_sprite: &mut Sprite){
+    if(unit.selected == true){
+        unit_sprite.color = Color::BLUE;
+    }
+    else{
+        unit_sprite.color = Color::WHITE;
+    }
 }
 
 fn move_transform(transform: &mut Transform, position: Vec2){
