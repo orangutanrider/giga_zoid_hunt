@@ -6,7 +6,7 @@ impl Plugin for InitializePlugin {
         println!("");
         println!("Initializing player_controller");
         app
-           .add_systems(PostStartup, spawn_test_unit)
+           .add_systems(PostStartup, spawn_test_units)
            .add_systems(Update, movement_test);
     }
 }
@@ -32,6 +32,50 @@ fn spawn_test_unit(mut commands: Commands, asset_server: Res<AssetServer>){
     ));
 }
 
+fn spawn_test_units(mut commands: Commands, asset_server: Res<AssetServer>){
+    let spawn_point_1 = Vec3{x: 100.0, y: 100.0, z: 0.0};
+    let spawn_point_2 = Vec3{x: -100.0, y: -100.0, z: 0.0};
+    let spawn_point_3 = Vec3{x: -100.0, y: 100.0, z: 0.0};
+    let spawn_point_4 = Vec3{x: 100.0, y: -100.0, z: 0.0};
+
+    commands.spawn((
+        TestUnitBundle{ 
+            sprite_bundle: SpriteBundle { 
+                texture: asset_server.load("sprite\\basics\\64px_square.png"), 
+                transform: Transform { translation: spawn_point_1, ..default() },
+                ..default() },
+            test_unit: TestUnit{ target_position: spawn_point_1.truncate() },
+        }, 
+    ));
+    commands.spawn((
+        TestUnitBundle{ 
+            sprite_bundle: SpriteBundle { 
+                texture: asset_server.load("sprite\\basics\\64px_square.png"), 
+                transform: Transform { translation: spawn_point_2, ..default() },
+                ..default() },
+            test_unit: TestUnit{ target_position: spawn_point_2.truncate() },
+        }, 
+    ));
+    commands.spawn((
+        TestUnitBundle{ 
+            sprite_bundle: SpriteBundle { 
+                texture: asset_server.load("sprite\\basics\\64px_square.png"), 
+                transform: Transform { translation: spawn_point_3, ..default() },
+                ..default() },
+            test_unit: TestUnit{ target_position: spawn_point_3.truncate() },
+        }, 
+    ));
+    commands.spawn((
+        TestUnitBundle{ 
+            sprite_bundle: SpriteBundle { 
+                texture: asset_server.load("sprite\\basics\\64px_square.png"), 
+                transform: Transform { translation: spawn_point_4, ..default() },
+                ..default() },
+            test_unit: TestUnit{ target_position: spawn_point_4.truncate() },
+        }, 
+    ));
+}
+
 // hmm
 // this is the main difficulty for me rn
 // all this foreign lingo
@@ -48,23 +92,18 @@ fn movement_test(
 
     mut unit_query: Query<(&mut Transform, &mut TestUnit), With<TestUnit>>
 ){
-    let (mut transform, mut test_unit) = unit_query.single_mut();
+    //let (mut transform, mut test_unit) = unit_query.single_mut();
 
-    unit_movement(&mut test_unit, &mut transform);
+    for (mut transform, mut test_unit) in unit_query.iter_mut(){
+        unit_movement(&mut test_unit, &mut transform);
 
-    if !buttons.just_pressed(MouseButton::Left) 
-    {
-        return;
+        if !buttons.just_pressed(MouseButton::Left) 
+        {
+            continue;
+        }
+
+        unit_move_to(&mut test_unit,mouse_world.truncate());
     }
-
-    /* 
-    for transform in unit_query.iter() {
-        move_test_unit_to(transform, mouse_world.truncate())
-    }
-    */
-
-    // move_test_unit_to(&mut unit_query.single_mut(), mouse_world.truncate());
-    unit_move_to(&mut test_unit,mouse_world.truncate());
 
     println!("mouse world position: {}", *mouse_world);
 }
