@@ -93,9 +93,17 @@ fn movement_test(
     mouse_world: Res<bevy_mouse_tracking_plugin::MousePosWorld>,
     buttons: Res<Input<MouseButton>>,
 
+    keys: Res<Input<KeyCode>>,
+    commands: Commands, 
+    asset_server: Res<AssetServer>,
+
     mut unit_query: Query<(&mut Sprite, &mut Transform, &mut TestUnit), With<TestUnit>>
 ){
     //let (mut transform, mut test_unit) = unit_query.single_mut();
+
+    if keys.just_pressed(KeyCode::Space){
+        spawn_test_unit(commands, asset_server);
+    }
 
     for (mut sprite, mut transform, mut test_unit) in unit_query.iter_mut(){
         unit_movement(&mut test_unit, &mut transform);
