@@ -1,5 +1,6 @@
 mod player_controller;
 mod unit_system;
+mod test_script;
 
 use bevy::prelude::*;
 
@@ -13,6 +14,7 @@ fn main() {
             DefaultPlugins,
             MousePosPlugin,
             InitializePlugin,
+            test_script::InitializePlugin, 
         ))
         .run();
 }

@@ -1,4 +1,4 @@
-mod unit_spawning;
+pub mod unit_spawning;
 
 use bevy::prelude::*;
 

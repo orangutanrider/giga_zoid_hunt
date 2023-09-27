@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use super::*;
 
 #[derive(Component)]
-struct UnitSpawnList{
+pub struct UnitSpawnList{
     pub spawn_points: Vec<Vec3>,
 }
 
@@ -34,6 +34,7 @@ fn update(mut commands: Commands, asset_server: Res<AssetServer>, mut q: Query<&
     spawn_points.clear();
 }
 
+// There is a anchor point (i.e. pivot point) for sprites, I will need to add somekind of implementation for that
 fn spawn_unit_internal(commands: &mut Commands, asset_server: &Res<AssetServer>, spawn_point: Vec3){
     commands.spawn((
         UnitBundle{ 
@@ -47,7 +48,19 @@ fn spawn_unit_internal(commands: &mut Commands, asset_server: &Res<AssetServer>,
     ));
 }
 
-// I wanted this to just use the spawn_point: Vec3 field and it only, but I can't find anyway of avoiding Query
-pub fn spawn_unit(mut q: Query<&mut UnitSpawnList>, spawn_point: Vec3){
+// I wanted this to just use the spawn_point: Vec3 field and it only, but it seems impossible
+
+/* 
+pub fn spawn_unit(spawn_point: Vec3, mut q: Query<&mut UnitSpawnList>){
     q.single_mut().spawn_points.push(spawn_point);
+} */
+
+pub fn spawn_unit(spawn_point: Vec3, spawn_list: &mut UnitSpawnList){
+    spawn_list.spawn_points.push(spawn_point);
 }
+
+// So my question at this point
+// Is this better?
+// I think it is more organised, but it isn't as good as I wanted it to be.
+// I'm thinking again about the System Params, could I use them to do this but more cleanly?
+// The thing is I got the impression that you weren't even supposed to create custom ones.
