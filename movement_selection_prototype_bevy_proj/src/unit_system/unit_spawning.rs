@@ -1,9 +1,21 @@
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 use super::*;
 
 #[derive(Component)]
 pub struct UnitSpawnList{
     pub spawn_points: Vec<Vec3>,
+}
+
+#[derive(Bundle)]
+struct UnitBundle{
+    pub unit: Unit,
+    pub sprite_bundle: SpriteBundle,
+
+    // Physics
+    pub rigid_body: RigidBody,
+    pub locked_axes: LockedAxes,
+    pub collider: Collider,
 }
 
 pub struct InitializePlugin;
@@ -44,8 +56,14 @@ fn spawn_unit_internal(commands: &mut Commands, asset_server: &Res<AssetServer>,
                 ..default() 
             },
             unit: Unit{},
+
+            // Physics
+            rigid_body: RigidBody::KinematicPositionBased,
+            locked_axes: LockedAxes::ROTATION_LOCKED,
+            collider: Collider::ball(32.0),
         }, 
-    ));
+    ))
+        .insert(Sensor); // (This makes it a trigger collider)
 }
 
 // I wanted this to just use the spawn_point: Vec3 field and it only, but it seems impossible

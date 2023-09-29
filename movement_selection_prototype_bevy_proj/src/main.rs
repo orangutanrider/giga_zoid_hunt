@@ -3,20 +3,30 @@ mod unit_system;
 mod test_script;
 
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 
 use bevy::DefaultPlugins;
 use mouse_tracking::prelude::MousePosPlugin;
 fn main() {
     println!("Hello, bevy.");
 
-    App::new()
-        .add_plugins((
+    let mut app = App::new();
+    app.add_plugins((
             DefaultPlugins,
+            RapierPhysicsPlugin::<()>::default(),
             MousePosPlugin,
             InitializePlugin,
             test_script::InitializePlugin, 
-        ))
-        .run();
+        )
+    );
+    #[cfg(debug_assertions)]
+    app.add_plugins(
+        RapierDebugRenderPlugin{
+            mode: DebugRenderMode::all(),
+            ..default()
+        }
+    );
+    app.run();
 }
 
 pub struct InitializePlugin;

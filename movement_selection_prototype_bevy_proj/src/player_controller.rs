@@ -1,3 +1,5 @@
+mod mouse_controls;
+
 use bevy::prelude::*;
 
 pub struct InitializePlugin;
@@ -6,7 +8,8 @@ impl Plugin for InitializePlugin {
         println!("");
         println!("Initializing player_controller.rs");
         app
-           .add_systems(Update, update);
+            .add_plugins(mouse_controls::InitializePlugin)
+            .add_systems(Update, update);
     }
 }
 
