@@ -3,7 +3,8 @@ pub mod unit_spawning;
 use bevy::prelude::*;
 
 #[derive(Component)]
-struct Unit{
+pub struct Unit{
+    pub id: u128,
     // waypoint list
 }
 

@@ -2,6 +2,8 @@ use bevy::{prelude::*, render::primitives::Aabb};
 use bevy_rapier2d::prelude::*;
 use mouse_tracking::MousePosWorld;
 
+use crate::unit_system::Unit;
+
 #[derive(Component)]
 pub struct BoxSelectionEmpty{
     pub origin: Vec2,
@@ -22,6 +24,14 @@ impl Plugin for InitializePlugin {
     }
 }
 
+const UNIT_FILTER: QueryFilter = QueryFilter{
+    flags: QueryFilterFlags::ONLY_KINEMATIC, 
+    groups: None, 
+    exclude_collider: None, 
+    exclude_rigid_body: None, 
+    predicate: None,
+};
+
 fn startup(mut commands: Commands){
     commands.spawn(BoxSelectionEmpty{origin: Vec2::ZERO});
 }
@@ -40,18 +50,10 @@ fn update(
     if buttons.just_released(MouseButton::Left) {
 
         let (min, max) = get_min_max(box_empty_q.single().origin, mouse_world.truncate());
-
-        let mut intersections = false;
-        let mut num_selected = 0;
         aabb_intersections(rapier_context, min, max, |entity|{
-            num_selected += 1;
-            intersections = true;
-            println!("E");
+            // add unit to selection
             true
         });
-        if intersections == true {
-            println!("num_selected: {}", num_selected);
-        }
 
         return;
     }
@@ -109,23 +111,46 @@ fn get_min_max(vec1: Vec2, vec2: Vec2) -> (Vec2, Vec2) {
 // in the prototype I did that by storing the position on mouse down and then comparing it to the position on mouse up
 // if the distance is too low, I'd do a single click selection
 fn selection_single_click(
+    q: Query<&mut Unit>,
     rapier_context: Res<RapierContext>,
     mouse_world: Res<MousePosWorld>,
     buttons: Res<Input<MouseButton>>,
-){
+) {
     if !buttons.just_pressed(MouseButton::Left){
         return;
     }
 
-    if let Some((entity, toi)) = cast_single_click(rapier_context, mouse_world.truncate()) {
-        println!("HIT"); // this doesn't actually do any selection yet
+    if let Some(unit) = cast_single_click(&q, rapier_context, mouse_world.truncate()) {
+        // Select Unit
     }
 }
 
-fn cast_single_click(
+
+fn cast_single_click<'a>(
+    q: &'a Query<&mut Unit>,
     rapier_context: Res<RapierContext>,
     cast_position: Vec2,
-) -> Option<(Entity, Toi)> {
-    rapier_context.cast_shape
-    (cast_position, 0.0, Vec2::ZERO, &Collider::ball(5.0), 0.0, QueryFilter{..default()})
+) -> Option<&'a Unit> {
+    let cast_results = rapier_context.cast_shape
+    (cast_position, 0.0, Vec2::ZERO, &Collider::ball(5.0), 0.0, UNIT_FILTER);
+
+    if cast_results == None{
+        None
+    }
+    else{
+        let (entity, toi) = cast_results.unwrap();
+        get_unit_from_entity(&q, entity)
+    }
+}
+
+fn get_unit_from_entity<'a>(
+    q: &'a Query<&mut Unit>, 
+    entity: Entity
+) -> Option<&'a Unit> {
+    if let Ok(unit) = q.get(entity){
+        Some(unit)
+    }
+    else{
+        None
+    }
 }

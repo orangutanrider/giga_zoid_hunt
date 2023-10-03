@@ -1,4 +1,5 @@
 mod mouse_controls;
+mod selection_controller;
 
 use bevy::prelude::*;
 
@@ -8,7 +9,10 @@ impl Plugin for InitializePlugin {
         println!("");
         println!("Initializing player_controller.rs");
         app
-            .add_plugins(mouse_controls::InitializePlugin)
+            .add_plugins((
+                mouse_controls::InitializePlugin,
+                selection_controller::InitializePlugin,
+            ))
             .add_systems(Update, update);
     }
 }

@@ -11,7 +11,7 @@ impl Plugin for InitializePlugin {
     }
 }
 
-fn spawn_test_units(mut q: Query<&mut UnitSpawnList>){
+fn spawn_test_units(mut q: Query<&mut UnitSpawnManager>){
     let spawn_list =  &mut q.single_mut();
 
     spawn_unit(Vec3{x: 0.0, y: 0.0, z: 0.0}, spawn_list);
