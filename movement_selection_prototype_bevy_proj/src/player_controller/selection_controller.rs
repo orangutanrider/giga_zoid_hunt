@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::unit_system::Unit;
+use crate::unit_system::*;
 
 #[derive(Component)]
 pub struct UnitSelectionManager{
@@ -8,14 +8,20 @@ pub struct UnitSelectionManager{
 
 #[derive(Component)]
 pub struct UnitSelection{
-    unit_ids: Vec<u128>,
+    pub unit_id_data: Vec<u128>,
 }
+impl UnitSelection{
+    fn new() -> UnitSelection {
+        UnitSelection{unit_id_data: Vec::new()}
+    }
+}
+impl Iterator for UnitSelection{
+    type Item = usize;
 
-#[derive(Component)]
-pub struct ControlGroup{
-    // possibly add a keycode value in the future
-    index: u8,
-    unit_ids: Vec<u128>,
+    fn next(&mut self) -> Option<Unit> {
+        self.count += 1;
+        
+    }
 }
 
 pub struct InitializePlugin;
@@ -26,10 +32,9 @@ impl Plugin for InitializePlugin {
         app
             .add_systems(Startup, (
                 spawn_selection_manager,
-                spawn_selected_group,
-                spawn_control_groups,
+                spawn_unit_selection,
             ))
-            .add_systems(PostUpdate, update);
+            .add_systems(PostUpdate, process_new_selections);
     }
 }
 
@@ -40,24 +45,14 @@ fn spawn_selection_manager(mut commands: Commands){
     });
 }
 
-fn spawn_selected_group(mut commands: Commands) {
+fn spawn_unit_selection(mut commands: Commands) {
     commands.spawn(UnitSelection{
-        unit_ids: Vec::new()
+        unit_id_data: Vec::new()
     });
 }
 
-fn spawn_control_groups(mut commands: Commands) {
-    // 1 - 10 (0 - 9)
-    for i in 0..9 {
-        commands.spawn(ControlGroup{
-            index: i,
-            unit_ids: Vec::new()
-        });
-    }
-}
-
 // Callback Processing
-fn update(
+fn process_new_selections(
     input: Res<Input<KeyCode>>,
     mut manager_q: Query<&mut UnitSelectionManager>,
     mut selection_q: Query<&mut UnitSelection>,
@@ -67,39 +62,52 @@ fn update(
 
     let selection = &mut selection_q.single_mut();
 
-    if input.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight]) {
-        selection.unit_ids.clear();
+    // if shift isn't held, clear selection
+    if !input.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight]) {
+        selection.unit_id_data.clear();
     }
 
-    for unit in manager.unit_ids.iter_mut(){
-        selection.unit_ids.push(*unit);
+    // add units to selection
+    for id in manager.unit_ids.iter_mut(){
+        selection.unit_id_data.push(*id);
     }
 
     manager.unit_ids.clear();
 }
 
+// Internal
+fn try_add_unit_to_selection(
+    manager: &mut UnitSelectionManager, 
+    unit: &Unit,
+) -> bool {
+    if unit.selection_data.selected == true {return false;}
+    manager.unit_ids.push(unit.id);
+    return true;
+}
+
 // Callbacks
 pub fn select_unit(
     manager: &mut UnitSelectionManager, 
-    unit: Unit,
+    unit: &Unit,
 ) {
-    manager.unit_ids.push(unit.id);
+    try_add_unit_to_selection(manager, &unit);
+    
 }
 
-pub fn select_control_group(
-    unit_selection: &mut UnitSelection,
-    control_group: &mut ControlGroup,
-) {
-    for unit in control_group.unit_ids.iter_mut(){
-        unit_selection.unit_ids.push(*unit);
+struct Counter{
+    count: usize,
+}
+impl Counter{
+    fn new() -> Counter {
+        Counter{count: 0}
     }
 }
 
-pub fn add_selection_to_control_group(
-    selection: &mut UnitSelection, 
-    control_group: &mut ControlGroup,
-) {
-    for unit in selection.unit_ids.iter_mut(){
-        control_group.unit_ids.push(*unit);
+impl Iterator for Counter{
+    type Item = usize;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.count += 1;
+        
     }
 }

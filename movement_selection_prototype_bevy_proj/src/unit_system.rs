@@ -4,8 +4,8 @@ use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct Unit{
-    pub id: u128,
     // waypoint list
+    pub entity_index: u32,
 }
 
 pub struct InitializePlugin;

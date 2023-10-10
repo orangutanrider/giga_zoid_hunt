@@ -1,5 +1,6 @@
 use bevy::{prelude::*, render::primitives::Aabb};
 use bevy_rapier2d::prelude::*;
+use super::selection_controller::*;
 use mouse_tracking::MousePosWorld;
 
 use crate::unit_system::Unit;
@@ -41,6 +42,8 @@ fn update(
     mouse_world: Res<MousePosWorld>,
     buttons: Res<Input<MouseButton>>,
     mut box_empty_q: Query<&mut BoxSelectionEmpty>,
+    unit_q: Query<&mut Unit>,
+    mut manager_q: Query<&mut UnitSelectionManager>,
 ) {
     if buttons.just_pressed(MouseButton::Left) {
         box_empty_q.single_mut().origin = mouse_world.truncate();
@@ -51,8 +54,12 @@ fn update(
 
         let (min, max) = get_min_max(box_empty_q.single().origin, mouse_world.truncate());
         aabb_intersections(rapier_context, min, max, |entity|{
-            // add unit to selection
-            true
+            let unit = get_unit_from_entity(&unit_q, entity); // try get unit
+            if unit.is_none(){ // unit was not gotten
+                return false;
+            }
+            select_unit(&mut manager_q.single_mut(), &unit.unwrap()); // unit has been gotten, and is being selected
+            return true;
         });
 
         return;
@@ -153,4 +160,17 @@ fn get_unit_from_entity<'a>(
     else{
         None
     }
+}
+
+fn try_select_entity_as_unit(
+    entity: Entity, 
+    unit_q: Query<&mut Unit>,
+    mut manager_q: Query<&mut UnitSelectionManager>,
+) -> bool {
+    let unit = get_unit_from_entity(&unit_q, entity); // try get unit
+    if unit.is_none(){ // unit was not gotten
+        return false;
+    }
+    select_unit(&mut manager_q.single_mut(), &unit.unwrap()); // unit has been gotten, and is being selected
+    return true;
 }

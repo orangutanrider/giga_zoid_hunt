@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use super::*;
+use crate::player_controller::control_group_controller::*;
 
 #[derive(Component)]
 pub struct UnitSpawnManager{
@@ -43,10 +44,10 @@ fn update(mut commands: Commands, asset_server: Res<AssetServer>, mut q: Query<&
         return;
     }
 
-    let id = manager.current_id;
+    let mut id = manager.current_id;
     for spawn_point in manager.spawn_points.iter_mut(){
-        let id = id + 1;
         spawn_unit_internal(&mut commands, &asset_server, *spawn_point, id);
+        id = id + 1;
     }
     manager.current_id = id + manager.spawn_points.len() as u128;
     
@@ -54,15 +55,24 @@ fn update(mut commands: Commands, asset_server: Res<AssetServer>, mut q: Query<&
 }
 
 // There is a anchor point (i.e. pivot point) for sprites, I will need to add somekind of implementation for that
-fn spawn_unit_internal(commands: &mut Commands, asset_server: &Res<AssetServer>, spawn_point: Vec3, id: u128){
-    commands.spawn((
+fn spawn_unit_internal(
+    commands: &mut Commands, 
+    mut unit_q: Query<&mut Unit>,
+    asset_server: &Res<AssetServer>, 
+    spawn_point: Vec3, 
+    ) {
+    // Spawn
+    let entity = commands.spawn((
         UnitBundle{ 
             sprite_bundle: SpriteBundle { 
                 texture: asset_server.load("sprite\\primitive\\64px_square.png"), 
                 transform: Transform{translation: spawn_point, ..default()},
                 ..default() 
             },
-            unit: Unit{id},
+
+            unit: Unit{
+                entity_index: Entity::PLACEHOLDER,
+            },
 
             // Physics
             rigid_body: RigidBody::KinematicPositionBased,
@@ -70,7 +80,11 @@ fn spawn_unit_internal(commands: &mut Commands, asset_server: &Res<AssetServer>,
             collider: Collider::ball(32.0),
         }, 
     ))
-        .insert(Sensor); // (This makes it a trigger collider)
+        .insert(Sensor) // (This makes it a trigger collider)
+        .id().index();
+
+    // Set Index
+    unit_q.get(entity).entity_index = entity;
 }
 
 pub fn spawn_unit(spawn_point: Vec3, spawn_list: &mut UnitSpawnManager){

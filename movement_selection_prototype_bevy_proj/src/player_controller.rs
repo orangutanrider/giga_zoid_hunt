@@ -1,5 +1,6 @@
 mod mouse_controls;
-mod selection_controller;
+pub mod selection_controller;
+pub mod control_group_controller;
 
 use bevy::prelude::*;
 
