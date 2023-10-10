@@ -3,13 +3,14 @@ use crate::unit_system::*;
 
 #[derive(Component)]
 pub struct UnitSelectionManager{
-    unit_ids: Vec<u128>,
+    unit_ids: Vec<u32>,
 }
 
 #[derive(Component)]
 pub struct UnitSelection{
-    pub unit_id_data: Vec<u128>,
+    pub unit_id_data: Vec<u32>,
 }
+/* 
 impl UnitSelection{
     fn new() -> UnitSelection {
         UnitSelection{unit_id_data: Vec::new()}
@@ -23,6 +24,7 @@ impl Iterator for UnitSelection{
         
     }
 }
+*/
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
@@ -80,8 +82,7 @@ fn try_add_unit_to_selection(
     manager: &mut UnitSelectionManager, 
     unit: &Unit,
 ) -> bool {
-    if unit.selection_data.selected == true {return false;}
-    manager.unit_ids.push(unit.id);
+    manager.unit_ids.push(unit.entity_index);
     return true;
 }
 
@@ -94,6 +95,7 @@ pub fn select_unit(
     
 }
 
+/*
 struct Counter{
     count: usize,
 }
@@ -111,3 +113,4 @@ impl Iterator for Counter{
         
     }
 }
+*/

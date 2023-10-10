@@ -4,7 +4,7 @@ use crate::unit_system::*;
 
 #[derive(Component)]
 pub struct ControlGroupManager{
-    group_unit_id_data: Vec<(u8, (u128, SelectionData))>,
+    group_unit_id_data: Vec<(u8, (u128))>,
 }
 
 #[derive(Component)]
@@ -63,10 +63,12 @@ fn try_add_unit_to_control_group(
     control_group: &mut ControlGroup,
     unit: &mut Unit,
 ) -> bool {
+    /*
     let group_id = control_group.index;
-    for in_group in unit.selection_data.in_control_groups.iter(){ // check if already in group
+    for in_group in unit.in_control_groups.iter(){ // check if already in group
         if *in_group == group_id {return false;}
     }
+    */
 
     return true;
 }
@@ -76,9 +78,11 @@ pub fn add_selection_to_control_group(
     selection: &mut UnitSelection, 
     control_group: &mut ControlGroup,
 ) {
+    /* 
     for unit in selection.unit_id_data.iter_mut(){
         control_group.unit_ids.push(*unit);
     }
+    */
 }
 
 pub fn select_control_group(

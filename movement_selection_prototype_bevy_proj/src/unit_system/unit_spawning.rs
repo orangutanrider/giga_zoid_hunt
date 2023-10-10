@@ -6,7 +6,7 @@ use crate::player_controller::control_group_controller::*;
 #[derive(Component)]
 pub struct UnitSpawnManager{
     spawn_points: Vec<Vec3>,
-    current_id: u128,
+    current_id: u32,
 }
 
 #[derive(Bundle)]
@@ -49,7 +49,7 @@ fn update(mut commands: Commands, asset_server: Res<AssetServer>, mut q: Query<&
         spawn_unit_internal(&mut commands, &asset_server, *spawn_point, id);
         id = id + 1;
     }
-    manager.current_id = id + manager.spawn_points.len() as u128;
+    manager.current_id = id + manager.spawn_points.len() as u32;
     
     manager.spawn_points.clear();
 }
@@ -57,9 +57,10 @@ fn update(mut commands: Commands, asset_server: Res<AssetServer>, mut q: Query<&
 // There is a anchor point (i.e. pivot point) for sprites, I will need to add somekind of implementation for that
 fn spawn_unit_internal(
     commands: &mut Commands, 
-    mut unit_q: Query<&mut Unit>,
+    //mut unit_q: Query<&mut Unit>,
     asset_server: &Res<AssetServer>, 
     spawn_point: Vec3, 
+    id: u32,
     ) {
     // Spawn
     let entity = commands.spawn((
@@ -71,7 +72,8 @@ fn spawn_unit_internal(
             },
 
             unit: Unit{
-                entity_index: Entity::PLACEHOLDER,
+                //entity_index: Entity::PLACEHOLDER,
+                entity_index: id,
             },
 
             // Physics
@@ -84,7 +86,7 @@ fn spawn_unit_internal(
         .id().index();
 
     // Set Index
-    unit_q.get(entity).entity_index = entity;
+    //unit_q.get(entity).entity_index = entity;
 }
 
 pub fn spawn_unit(spawn_point: Vec3, spawn_list: &mut UnitSpawnManager){

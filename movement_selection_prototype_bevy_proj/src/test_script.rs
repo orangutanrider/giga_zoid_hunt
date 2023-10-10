@@ -37,7 +37,7 @@ fn print_all_unit_ids_on_input(
     println!("");
     println!("TEST: print_all_unit_ids_on_input");
     for unit in unit_q.iter(){
-        println!("unit with ID: {} exists", unit.id);
+        println!("unit with ID: {} exists", unit.entity_index);
     }
 }
 
