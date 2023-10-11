@@ -7,6 +7,9 @@ pub struct Unit{
 
 }
 
+#[derive(Component)]
+pub struct UnitEntity(pub Entity);
+
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
