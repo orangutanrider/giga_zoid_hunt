@@ -3,7 +3,8 @@ use bevy::render::primitives::Aabb;
 use bevy_rapier2d::prelude::*;
 use mouse_tracking::MousePosWorld;
 
-use crate::unit::Unit;
+use crate::unit::*;
+use super::selection::*;
 
 #[derive(Component)]
 pub struct SelectionBox{
@@ -14,7 +15,7 @@ pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
         println!("");
-        println!("Initializing mouse_controls.rs");
+        println!("Initializing mouse.rs");
         app
             .add_systems(Startup, spawn_selection_box)
             .add_systems(Update, (
@@ -42,8 +43,12 @@ fn update(
     rapier: Res<RapierContext>,
     mouse_world: Res<MousePosWorld>,
     buttons: Res<Input<MouseButton>>,
+
     mut box_q: Query<&mut SelectionBox>,
-    unit_q: Query<&mut Unit>,
+    unit_q: Query<&mut UnitEntity, With<Selectable>>,
+
+    mut manager_q: Query<&mut NewSelectionManager>,
+    mut selectable_q: Query<&mut Selectable>,
 ) {
     if buttons.just_pressed(MouseButton::Left) {
         box_q.single_mut().origin = mouse_world.truncate();
@@ -54,13 +59,19 @@ fn update(
         let (min, max) = get_min_max(box_q.single().origin, mouse_world.truncate());
 
         aabb_intersections(rapier, min, max, |entity|{
-            let unit = get_unit_from_entity(&unit_q, entity); // try get unit
+            let unit = get_unit_from_entity(&unit_q, entity); // Try get unit
 
-            if unit.is_none(){ // unit was not gotten
+            if unit.is_none(){ // Unit was not gotten
                 return false;
             }
+            
+            // Select Unit
+            let mut manager = manager_q.single_mut();
+            let unit = unit.unwrap();
+            let selectable = selectable_q.get_mut(unit.0);
+            let mut selectable = selectable.unwrap();
+            select(&mut manager, &mut selectable, unit);
 
-            // Select unit
             return true;
         });
 
@@ -118,7 +129,7 @@ fn get_min_max(vec1: Vec2, vec2: Vec2) -> (Vec2, Vec2) {
 }
 
 fn selection_single_click(
-    q: Query<&mut Unit>,
+    q: Query<&mut UnitEntity, With<Selectable>>,
     rapier: Res<RapierContext>,
     mouse_world: Res<MousePosWorld>,
     buttons: Res<Input<MouseButton>>,
@@ -128,38 +139,37 @@ fn selection_single_click(
     }
 
     if let Some(unit) = cast_single_click(&q, rapier, mouse_world.truncate()) {
-        // Select Unit
+        // Select unit
     }
 }
 
 
 fn cast_single_click<'a>(
-    q: &'a Query<&mut Unit>,
+    q: &'a Query<&mut UnitEntity, With<Selectable>>,
     rapier: Res<RapierContext>,
 
     cast_position: Vec2,
-) -> Option<&'a Unit> {
+) -> Option<&'a UnitEntity> {
     let cast_results = rapier.cast_shape
     (cast_position, 0.0, Vec2::ZERO, &Collider::ball(5.0), 0.0, UNIT_FILTER);
 
     if cast_results == None{
-        None
+        return None;
     }
     else{
         let (entity, toi) = cast_results.unwrap();
-        get_unit_from_entity(&q, entity)
+        return get_unit_from_entity(&q, entity);
     }
 }
 
 fn get_unit_from_entity<'a>(
-    q: &'a Query<&mut Unit>, 
-
+    q: &'a Query<&mut UnitEntity, With<Selectable>>, 
     entity: Entity
-) -> Option<&'a Unit> {
+) -> Option<&'a UnitEntity> {
     if let Ok(unit) = q.get(entity){
-        Some(unit)
+        return Some(unit);
     }
     else{
-        None
+        return None;
     }
 }

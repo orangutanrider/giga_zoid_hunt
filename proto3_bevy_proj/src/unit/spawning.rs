@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
+use bevy_rapier2d::{prelude::*, rapier::crossbeam::channel::Select};
 use super::*;
 
 #[derive(Component)]
@@ -84,6 +84,10 @@ fn spawn_unit_internal(
             locked_axes: LockedAxes::ROTATION_LOCKED,
             collider: Collider::ball(32.0),
         }, 
+
+        Selectable {
+            is_selected: false,   
+        }
     ));
     
     let spawn = spawn.insert(Sensor); // (This makes it a trigger collider)
