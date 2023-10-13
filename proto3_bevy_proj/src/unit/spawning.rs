@@ -1,6 +1,7 @@
 use bevy::prelude::*;
-use bevy_rapier2d::{prelude::*, rapier::crossbeam::channel::Select};
+use bevy_rapier2d::prelude::*;
 use super::*;
+use super::movement::*;
 
 #[derive(Component)]
 pub struct UnitSpawnManager{
@@ -15,6 +16,8 @@ pub struct UnitSpawnRequest{
 #[derive(Bundle)]
 struct UnitBundle{
     unit: Unit,
+    unit_movement: UnitMovement,
+
     sprite_bundle: SpriteBundle,
 
     // Physics
@@ -69,14 +72,18 @@ fn spawn_unit_internal(
     ) {
     let mut spawn = commands.spawn((
         UnitBundle { 
+            unit: Unit{
+
+            },
+
+            unit_movement: UnitMovement { 
+                waypoints:  Vec::new(),
+            },
+
             sprite_bundle: SpriteBundle { 
                 texture: asset_server.load("sprite\\primitive\\64px_square.png"), 
                 transform: Transform{translation: spawn_request.spawn_location, ..default()},
                 ..default() 
-            },
-
-            unit: Unit{
-
             },
 
             // Physics

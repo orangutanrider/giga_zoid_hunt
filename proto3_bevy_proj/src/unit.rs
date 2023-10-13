@@ -1,4 +1,5 @@
 pub mod spawning;
+pub mod movement;
 
 use bevy::prelude::*;
 
@@ -23,6 +24,7 @@ impl Plugin for InitializePlugin {
         app
             .add_plugins((
                 spawning::InitializePlugin,
+                movement::InitializePlugin,
             ));
     }
 }

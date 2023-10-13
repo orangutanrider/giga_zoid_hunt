@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::unit::movement::*;
 use crate::unit::spawning::*;
 use crate::unit::UnitEntity;
 use crate::gameplay_controller::selection::*;
@@ -13,8 +14,9 @@ impl Plugin for InitializePlugin {
            .add_systems(Update, (
             print_unit_entity_values_on_input_p,
             print_selection_on_input_o,
+            move_all_unit_on_input_i,
         ))
-           ;
+        ;
     }
 }
 
@@ -59,5 +61,23 @@ fn print_selection_on_input_o(
     
     for selected in selection.selection.iter(){
         println!("{}", selected.index());
+    }
+}
+
+fn move_all_unit_on_input_i(
+    input: Res<Input<KeyCode>>,
+    mut q: Query<&mut UnitMovement>,
+) {
+    if !input.just_pressed(KeyCode::I){
+        return;
+    }
+
+    println!("");
+    println!("move_all_unit_on_input_i");
+
+    for mut movement in q.iter_mut() {
+        movement.waypoints.push(
+            Waypoint { point: Vec2 { x: 0.0, y: 0.0 } }
+        )
     }
 }
