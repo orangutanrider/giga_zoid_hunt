@@ -20,12 +20,15 @@ impl Plugin for InitializePlugin {
         app
             .add_systems(Startup, spawn_selection_box)
             .add_systems(Update, (
-                left_click_update,
+                drag_selection,
+                click_selection,
                 right_click_update,
             )
         );
     }
 }
+
+const DRAG_SELECTION_MIN_DISTANCE: f32 = 2.0;
 
 const UNIT_FILTER: QueryFilter = QueryFilter{
     flags: QueryFilterFlags::ONLY_KINEMATIC, 
@@ -41,7 +44,7 @@ fn spawn_selection_box(mut commands: Commands){
 }
 
 // Update
-fn left_click_update(
+fn drag_selection(
     rapier: Res<RapierContext>,
     mouse_world: Res<MousePosWorld>,
     buttons: Res<Input<MouseButton>>,
@@ -59,6 +62,14 @@ fn left_click_update(
     if buttons.just_released(MouseButton::Left) {
         let (min, max) = get_min_max(box_q.single().origin, mouse_world.truncate());
 
+        if min.distance(max) < DRAG_SELECTION_MIN_DISTANCE {
+            return;
+        }
+
+        let mut manager = manager_q.single_mut();
+
+        selection_input(&mut manager);
+
         aabb_intersections(rapier, min, max, |entity|{
             let unit = get_unit_from_entity(&unit_q, entity); // Try get unit
 
@@ -67,7 +78,6 @@ fn left_click_update(
             }
             
             // Select Unit
-            let mut manager = manager_q.single_mut();
             let unit = unit.unwrap();
             select(&mut manager, unit);
 
@@ -77,6 +87,27 @@ fn left_click_update(
         return;
     }
 }
+
+fn click_selection(
+    unit_q: Query<&mut UnitEntity, With<Selectable>>,
+    mut manager_q: Query<&mut NewSelectionManager>,
+    rapier: Res<RapierContext>,
+    mouse_world: Res<MousePosWorld>,
+    buttons: Res<Input<MouseButton>>,
+) {
+    if !buttons.just_pressed(MouseButton::Left){
+        return;
+    }
+
+    let mut manager = manager_q.single_mut();
+    
+    selection_input(&mut manager);
+
+    if let Some(unit_entity) = cast_single_click(&unit_q, rapier, mouse_world.truncate()) {
+        select(&mut manager, unit_entity);
+    }
+}
+
 
 fn right_click_update(
     mouse_world: Res<MousePosWorld>,
@@ -144,22 +175,6 @@ fn get_min_max(vec1: Vec2, vec2: Vec2) -> (Vec2, Vec2) {
     
     (min, max)
 }
-
-fn selection_single_click(
-    q: Query<&mut UnitEntity, With<Selectable>>,
-    rapier: Res<RapierContext>,
-    mouse_world: Res<MousePosWorld>,
-    buttons: Res<Input<MouseButton>>,
-) {
-    if !buttons.just_pressed(MouseButton::Left){
-        return;
-    }
-
-    if let Some(unit) = cast_single_click(&q, rapier, mouse_world.truncate()) {
-        // Select unit
-    }
-}
-
 
 fn cast_single_click<'a>(
     q: &'a Query<&mut UnitEntity, With<Selectable>>,
