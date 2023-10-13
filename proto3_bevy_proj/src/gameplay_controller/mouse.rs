@@ -5,6 +5,7 @@ use mouse_tracking::MousePosWorld;
 
 use crate::unit::*;
 use super::selection::*;
+use super::unit_orders::*;
 
 #[derive(Component)]
 pub struct SelectionBox{
@@ -19,7 +20,8 @@ impl Plugin for InitializePlugin {
         app
             .add_systems(Startup, spawn_selection_box)
             .add_systems(Update, (
-                update,
+                left_click_update,
+                right_click_update,
             )
         );
     }
@@ -39,7 +41,7 @@ fn spawn_selection_box(mut commands: Commands){
 }
 
 // Update
-fn update(
+fn left_click_update(
     rapier: Res<RapierContext>,
     mouse_world: Res<MousePosWorld>,
     buttons: Res<Input<MouseButton>>,
@@ -74,6 +76,24 @@ fn update(
 
         return;
     }
+}
+
+fn right_click_update(
+    mouse_world: Res<MousePosWorld>,
+    buttons: Res<Input<MouseButton>>,
+
+    mut manager_q: Query<&mut NewOrderManager>
+) {
+    if !buttons.just_pressed(MouseButton::Right){
+        return;
+    }
+
+    let mut manager = manager_q.single_mut();
+    let order = Order{
+        move_to_point: mouse_world.truncate(),
+    };
+
+    give_movement_order(manager.as_mut(), order)
 }
 
 // Internal

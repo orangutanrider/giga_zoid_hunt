@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use super::*;
@@ -77,7 +79,7 @@ fn spawn_unit_internal(
             },
 
             unit_movement: UnitMovement { 
-                waypoints:  Vec::new(),
+                waypoints:  VecDeque::new(),
             },
 
             sprite_bundle: SpriteBundle { 

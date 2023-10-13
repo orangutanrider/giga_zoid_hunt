@@ -1,10 +1,12 @@
+use std::collections::VecDeque;
+
 use bevy::prelude::*;
 
 use super::*;
 
 #[derive(Component)]
 pub struct UnitMovement{
-    pub waypoints: Vec<Waypoint>,
+    pub waypoints: VecDeque<Waypoint>,
 }
 impl UnitMovement{
     pub const DEFAULT_MOVEMENT_SPEED: f32 = 1.0;
@@ -50,13 +52,13 @@ fn move_towards_current_waypoint(
     movement: &mut UnitMovement,
     transform: &mut Transform,
 ) {
-    let waypoint_pos = movement.waypoints[movement.waypoints.len() - 1].point;
+    let waypoint_pos = movement.waypoints[0].point;
     let unit_pos = transform.translation.truncate();
 
     if waypoint_pos.distance(unit_pos) < UnitMovement::DEFAULT_MOVEMENT_SPEED {
         // Teleport exactly onto waypoint and remove current waypoint
         transform.translation = Vec3{x: waypoint_pos.x, y: waypoint_pos.y, z: transform.translation.z}; 
-        movement.waypoints.remove(movement.waypoints.len() - 1);
+        movement.waypoints.pop_front();
         return;
     }
 

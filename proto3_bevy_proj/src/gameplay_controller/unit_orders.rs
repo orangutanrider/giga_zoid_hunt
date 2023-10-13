@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::unit::movement::*;
-use super::selection::{*, self};
+use super::selection::*;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
@@ -9,9 +9,8 @@ impl Plugin for InitializePlugin {
         println!("");
         println!("Initializing gameplay_controller::unit_orders");
         app
-            .add_systems( Update, (
-                process_new_orders,
-            ))
+            .add_systems(Startup, spawn_new_order_manager)
+            .add_systems(Update, process_new_orders)
         ;
     }
 }
@@ -24,6 +23,13 @@ pub struct NewOrderManager{
 #[derive(Clone, Copy)]
 pub struct Order{
     pub move_to_point: Vec2,
+}
+
+// Startup
+fn spawn_new_order_manager(mut commands: Commands){
+    commands.spawn(NewOrderManager{
+        order_pushes: Vec::new(),
+    });
 }
 
 // Callback processing
@@ -74,7 +80,7 @@ fn give_order(
         let movement = movement_q.get_mut(*unit_entity);
         let movement = &mut movement.unwrap();
 
-        movement.waypoints.push(
+        movement.waypoints.push_back(
             // this sucks, make waypoint and order equal the same thing in the refactor
             Waypoint { point:order.move_to_point }
         );

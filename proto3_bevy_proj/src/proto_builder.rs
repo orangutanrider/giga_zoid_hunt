@@ -76,7 +76,7 @@ fn move_all_unit_on_input_i(
     println!("move_all_unit_on_input_i");
 
     for mut movement in q.iter_mut() {
-        movement.waypoints.push(
+        movement.waypoints.push_back(
             Waypoint { point: Vec2 { x: 0.0, y: 0.0 } }
         )
     }
