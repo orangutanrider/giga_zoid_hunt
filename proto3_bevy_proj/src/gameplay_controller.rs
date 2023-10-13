@@ -1,5 +1,6 @@
 mod mouse;
 pub mod selection;
+pub mod unit_orders;
 
 use bevy::prelude::*;
 
@@ -12,6 +13,7 @@ impl Plugin for InitializePlugin {
             .add_plugins((
                 mouse::InitializePlugin,
                 selection::InitializePlugin,
+                unit_orders::InitializePlugin,
             ));
     }
 }

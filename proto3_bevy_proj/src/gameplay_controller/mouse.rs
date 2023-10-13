@@ -48,7 +48,6 @@ fn update(
     unit_q: Query<&mut UnitEntity, With<Selectable>>,
 
     mut manager_q: Query<&mut NewSelectionManager>,
-    mut selectable_q: Query<&mut Selectable>,
 ) {
     if buttons.just_pressed(MouseButton::Left) {
         box_q.single_mut().origin = mouse_world.truncate();
@@ -68,9 +67,7 @@ fn update(
             // Select Unit
             let mut manager = manager_q.single_mut();
             let unit = unit.unwrap();
-            let selectable = selectable_q.get_mut(unit.0);
-            let mut selectable = selectable.unwrap();
-            select(&mut manager, &mut selectable, unit);
+            select(&mut manager, unit);
 
             return true;
         });

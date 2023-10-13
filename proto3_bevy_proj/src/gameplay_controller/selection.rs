@@ -104,12 +104,9 @@ fn clear_selection(
 // Callbacks
 pub fn select(
     manager: &mut NewSelectionManager, 
-    selectable: &Selectable, 
     unit_entity: &UnitEntity
 ) {
     manager.selection_requests.push(SelectionRequest { 
         entity: unit_entity.0, 
     });
-
-    println!("Tried to select");
 }
