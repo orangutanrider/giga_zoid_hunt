@@ -48,7 +48,8 @@ fn spawn_selection(mut commands: Commands){
 
 // Callback processing
 fn process_selection_requests(
-    input: Res<Input<KeyCode>>,
+    shift_input: Res<Input<KeyCode>>,
+
     mut manager_q: Query<&mut NewSelectionManager>,
     mut selection_q: Query<&mut UnitSelection>,
     mut selectable_q: Query<&mut Selectable>,
@@ -62,7 +63,7 @@ fn process_selection_requests(
     let mut selection = selection_q.single_mut();
 
     // Replace with input package in future
-    if !input.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight]){
+    if !shift_input.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight]){
         let selection = selection.as_mut();
         clear_selection(&mut selectable_q, selection);
     }

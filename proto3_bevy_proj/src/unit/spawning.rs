@@ -96,6 +96,7 @@ fn spawn_unit_internal(
 
         Selectable {
             is_selected: false,   
+            in_control_groups: [false; 10],
         }
     ));
     

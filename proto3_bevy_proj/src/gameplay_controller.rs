@@ -1,4 +1,5 @@
 mod mouse;
+mod control_groups;
 pub mod selection;
 pub mod unit_orders;
 
@@ -14,6 +15,7 @@ impl Plugin for InitializePlugin {
                 mouse::InitializePlugin,
                 selection::InitializePlugin,
                 unit_orders::InitializePlugin,
+                control_groups::InitializePlugin,
             ));
     }
 }
