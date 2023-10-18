@@ -1,6 +1,10 @@
 use bevy::prelude::*;
 
 use crate::unit::*;
+use super::selection::*;
+use input::*;
+
+mod input;
 
 #[derive(Component)] 
 pub struct ControlGroup{
@@ -26,10 +30,14 @@ impl Plugin for InitializePlugin {
         println!("");
         println!("Initializing gameplay_controller::control_groups");
         app
+            .add_plugins(input::InitializePlugin)
             .add_systems(Startup, (
                 spawn_startup_control_groups,
+                spawn_control_group_manager,
             ))
-            .add_systems(PostUpdate, process_add_unit_requests);
+            .add_systems(PostUpdate, (
+                process_add_unit_requests,
+            ));
     }
 }
 
@@ -37,10 +45,18 @@ impl Plugin for InitializePlugin {
 fn spawn_startup_control_groups(mut commands: Commands){
     let mut i = 0;
 
-    while i < 9 {
+    while i <= 9 {
         spawn_new_control_group(&mut commands, i);
         i = i + 1;
     }
+}
+
+fn spawn_control_group_manager(mut commands: Commands){
+    commands.spawn(
+        AddUnitToGroupManager{
+            requests: Vec::new(),
+        }
+    );
 }
 
 // Callback processing
@@ -48,9 +64,8 @@ fn process_add_unit_requests(
     shift_input: Res<Input<KeyCode>>,
 
     mut manager_q: Query<&mut AddUnitToGroupManager>,
-    mut group_q_mut: Query<&mut ControlGroup>,
+    mut group_q: Query<&mut ControlGroup>,
     mut selectable_q: Query<&mut Selectable>,
-    group_q: Query<&ControlGroup>,
 ) {
     let mut manager = manager_q.single_mut();
 
@@ -69,7 +84,7 @@ fn process_add_unit_requests(
     }
 
     let mut curr_entity = curr_entity.unwrap();
-    let mut curr_group = group_q_mut.get_mut(curr_entity).unwrap();
+    let mut curr_group = group_q.get_mut(curr_entity).unwrap();
 
     let shift_pressed = shift_input.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight]);
     if !shift_pressed { 
@@ -89,7 +104,7 @@ fn process_add_unit_requests(
             }
 
             curr_entity = curr_entity_unchecked.unwrap();
-            curr_group = group_q_mut.get_mut(curr_entity).unwrap();
+            curr_group = group_q.get_mut(curr_entity).unwrap();
 
             if !shift_pressed {
                 // If the requests are given in a [1,2,1] order, this will break
@@ -114,12 +129,7 @@ fn process_add_unit_requests(
     manager.requests.clear();
 }
 
-// Update
-fn select_control_group_input(
 
-){
-
-}
 
 // Internal
 fn clear_control_group(
@@ -149,26 +159,6 @@ fn spawn_new_control_group( // This function does not handle the error case wher
             entity,
         }
     );
-}
-
-fn get_control_group_by_index(
-    q: &Query<&ControlGroup>,
-    index: u8,
-) -> Option<Entity> {
-    if index > 9 {
-        println!("Control groups are limited to 0-9");
-        return  None;
-    }
-
-    for group in q.iter() {
-        if group.index != index {
-            continue;
-        }
-
-        return Some(group.entity.clone());
-    }
-
-    return None;
 }
 
 // Callbacks

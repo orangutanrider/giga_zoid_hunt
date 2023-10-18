@@ -9,7 +9,7 @@ pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
         println!("");
-        println!("Initializing player_controller.rs");
+        println!("Initializing player_controller");
         app
             .add_plugins((
                 mouse::InitializePlugin,
