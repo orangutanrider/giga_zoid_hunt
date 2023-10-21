@@ -1,0 +1,16 @@
+[package]
+name = "proto4_scenes_bevy_proj"
+version = "0.1.0"
+edition = "2021"
+authors = ["Dominic_Rooney"]
+
+[dependencies]
+bevy = { version = "0.11.2", features = ["dynamic_linking"] }
+mouse_tracking = { package = "bevy_mouse_tracking_plugin", version = "0.6" }
+bevy_rapier2d = { version = "0.22.0", features = ["debug-render-2d"]}
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
