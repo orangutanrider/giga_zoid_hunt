@@ -4,6 +4,8 @@ use mouse_tracking::prelude::*;
 use bevy::DefaultPlugins;
 use mouse_tracking::prelude::MousePosPlugin;
 
+mod scene_test;
+
 fn main() {
     println!("Hello, bevy.");
 
@@ -24,7 +26,7 @@ fn main() {
         }
     );
 
-    app.run();
+    app.run();  
 }
 
 pub struct InitializePlugin;
@@ -33,6 +35,7 @@ impl Plugin for InitializePlugin {
         println!("Initializing main");
         app
            .add_plugins((
+                scene_test::InitializePlugin,
             ))
            .add_systems(Startup, spawn_main_camera);
     }
