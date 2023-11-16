@@ -5,6 +5,7 @@ use bevy::DefaultPlugins;
 use mouse_tracking::prelude::MousePosPlugin;
 
 mod scene_test;
+mod dynamic_scene_test;
 
 fn main() {
     println!("Hello, bevy.");
@@ -36,6 +37,7 @@ impl Plugin for InitializePlugin {
         app
            .add_plugins((
                 scene_test::InitializePlugin,
+                dynamic_scene_test::InitializePlugin,
             ))
            .add_systems(Startup, spawn_main_camera);
     }
