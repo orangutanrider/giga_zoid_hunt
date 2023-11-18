@@ -1,0 +1,41 @@
+(
+  resources: {
+    "proto4_scenes_bevy_proj::dynamic_scene_test::ResourceA": (
+      e: 300,
+    ),
+  },
+  entities: {
+    0: (
+      components: {
+        "proto4_scenes_bevy_proj::dynamic_scene_test::ComponentB": (
+          value: "el gringo",
+        ),
+        "proto4_scenes_bevy_proj::dynamic_scene_test::ComponentA": (
+          x: 4.0,
+          y: 2.0,
+        ),
+        "bevy_transform::components::transform::Transform": (
+          translation: (
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+          ),
+          rotation: (0.0, 0.0, 0.0, 1.0),
+          scale: (
+            x: 1.0,
+            y: 1.0,
+            z: 1.0,
+          ),
+        ),
+      },
+    ),
+    1: (
+      components: {
+        "proto4_scenes_bevy_proj::dynamic_scene_test::ComponentA": (
+          x: 2.2,
+          y: 2.0,
+        ),
+      },
+    ),
+  },
+)
