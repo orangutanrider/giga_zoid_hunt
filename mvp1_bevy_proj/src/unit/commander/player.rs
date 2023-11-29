@@ -83,8 +83,49 @@ fn process_command_pushes(
         let mut commandable = commandable.unwrap();
 
         // spawn order
+        let mut new_order: Entity = Entity::PLACEHOLDER;
+        match command.command_type {
+            CommandType::ClearOrderList => {
+                clear_orders(&mut commandable);
+                continue;
+            }
+            CommandType::PureMovement => {
+                new_order = spawn_pure_movement();
+            }
+            CommandType::AttackMove => {
+                new_order = spawn_attack_move();
+            }
+            CommandType::AttackTarget => {
+                new_order = spawn_attack_target();
+            }
+        }
+
+        // append commandable data with new order
     }
 
     // Clear commands, they have now been processed
     context.pushed_commands.clear();
+}
+
+// Internal
+fn clear_orders(commandable: &mut Commandable) {
+    todo!()
+}
+
+fn spawn_pure_movement(
+
+) -> Entity {
+    todo!()
+}
+
+fn spawn_attack_move(
+
+) -> Entity {
+    todo!()
+}
+
+fn spawn_attack_target(
+
+) -> Entity {
+    todo!()
 }

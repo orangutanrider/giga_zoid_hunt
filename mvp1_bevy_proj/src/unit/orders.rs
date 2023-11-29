@@ -10,6 +10,26 @@ impl Plugin for InitializePlugin {
     }
 }
 
+#[derive(Resource)]
+pub struct TerminusOrder {
+    order: Entity,
+}
+impl FromWorld for TerminusOrder{
+    fn from_world(world: &mut World) -> Self {
+        let order =
+        world.spawn (
+            OrderCore {
+                recieving_unit: Entity::PLACEHOLDER,
+                next_order: Entity::PLACEHOLDER,
+                order_type: OrderType::Terminus,
+            }
+        )
+        .id();
+
+        return TerminusOrder { order }
+    }
+}
+
 #[derive(Component)]
 pub struct OrderCore {
     pub recieving_unit: Entity, 
@@ -20,6 +40,7 @@ pub struct OrderCore {
 #[derive(Clone, Copy)]
 #[derive(PartialEq, Eq)]
 pub enum OrderType {
+    Terminus,
     PureMovement,
     AttackMove,
     AttackTarget,
