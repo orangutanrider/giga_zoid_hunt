@@ -12,7 +12,8 @@ impl Plugin for InitializePlugin {
         println!("");
         println!("Initializing unit::commander");
         app
-        .init_resource::<CommanderContext>();
+        .init_resource::<CommanderContext>()
+        .add_systems(Update, process_command_pushes);
     }
 }
 
@@ -29,12 +30,23 @@ impl Default for Commandable {
     }
 }
 
-
 #[derive(Resource, Default)]
 pub struct CommanderContext {
     pushed_commands: Vec<Order>,
 }
 impl CommanderContext {
+    pub fn command_clear_orders(
+        &mut self,
+        unit: Unit,
+    ) {
+        self.pushed_commands.push(Order { 
+            recieving_unit: unit.entity, 
+            order_type: OrderType::ClearOrderList, 
+            waypoint: Vec2::ZERO,
+            target_unit: Entity::PLACEHOLDER,
+        });
+    }
+
     pub fn command_pure_movement(
         &mut self,
         unit: Unit,
@@ -89,6 +101,9 @@ fn process_command_pushes(
         let mut commandable = commandable.unwrap();
 
         // Give unit order
-        commandable.orders
+        commandable.orders.push_back(*command);
     }
+
+    // Clear commands, they have now been processed
+    context.pushed_commands.clear();
 }
