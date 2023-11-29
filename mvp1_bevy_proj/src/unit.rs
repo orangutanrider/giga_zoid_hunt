@@ -1,5 +1,5 @@
 mod commander;
-mod order_processing;
+mod orders;
 
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
