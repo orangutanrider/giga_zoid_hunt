@@ -1,4 +1,4 @@
-/// Handles how units follow and process orders
+/// Handles the logic for completing a unit's current order
 
 use bevy::prelude::*;
 use super::*;
@@ -25,6 +25,7 @@ pub struct Order {
 #[derive(Clone, Copy)]
 #[derive(PartialEq, Eq)]
 pub enum OrderType {
+    ClearOrderList,
     PureMovement,
     AttackMove,
     AttackTarget,
