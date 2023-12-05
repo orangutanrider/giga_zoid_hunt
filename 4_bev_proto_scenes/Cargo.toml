@@ -1,5 +1,5 @@
 [package]
-name = "proto4_scenes_bevy_proj"
+name = "4_bev_proto_scenes"
 version = "0.1.0"
 edition = "2021"
 authors = ["Dominic_Rooney"]
