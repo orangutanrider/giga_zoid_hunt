@@ -1,0 +1,46 @@
+========
+https://www.youtube.com/watch?v=VFIOSWy93H0
+
+Okay
+Pointers are basically references?
+
+Okay
+it moves data
+mmm
+that is a bit fucked
+
+Moving stuff
+huh, man that is strange
+
+Yeah shit man
+
+
+Okay yeah
+so you can take in a reference and own it
+and then return that string and return ownership
+
+==
+Okay references now
+I'm guessing that this is literally what pointers are
+
+but yeh there are some obvious difficutlies that come with this
+
+okay and you can use '&' to declare a reference
+
+and you can have mutable references too
+
+oh but you can only have one mutable reference to a particular piece of data, per scope
+eh yeh that makes sense, i don't see why you'd need it to be otherwise
+
+okay and you can't declare a heap object and return a reference of it in the same scope
+yeah makes sense
+(why wouldn't you just return the heap object)
+
+okay and you can return a slice of a heap object
+man
+that is fucked
+
+okay but you can return a slice of it
+and it actually works with references
+
+that is still a bit fucked but yeh it works
