@@ -1,0 +1,28 @@
+========
+Naming convention for Bevy Rust projects:
+<index>_<projectType>_<type>_<name>
+
+==
+Index
+Increment by 1 for each new project
+
+==
+projectType
+One of the following:
+
+bev
+rus
+mix
+
+==
+type
+One of the following:
+
+proto
+real
+
+==
+[name]
+
+write whatever you want here
+use _ instead of spaces
