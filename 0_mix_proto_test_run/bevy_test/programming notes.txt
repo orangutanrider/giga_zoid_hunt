@@ -1,0 +1,35 @@
+========
+ECS is a software pattern that involves breaking your program up into Entities, Components, and Systems. 
+
+Entities | Components | Systems
+
+For example, one entity might have a Position and Velocity component, whereas another entity might have a Position and UI component.
+Systems are logic that runs on a specific set of component types.
+You might have a movement system that runs on all entities with a Position and Velocity component.
+
+// That sounds kinda weird but okay
+
+The ECS pattern encourages clean, decoupled designs by forcing you to break up your app data and logic into its core components.
+
+========
+ECS Decleration Examples
+
+==
+Component: rust strcuts that implement the Component trait
+
+#[derive(Component)]
+struct Position { x: f32, y: f32 }
+
+==
+System: normal rust functions
+
+fn print_position_system(query: Query<&Position>) {
+    for position in &query {
+        println!("position: {} {}", position.x, position.y);
+    }
+}
+
+==
+Entities: a simple type containing a unique integer
+
+struct Entity(u64);
