@@ -1,13 +1,15 @@
 ========
 Naming convention for Bevy Rust projects:
-<index>_<projectType>_<type>_<name>
+n<index>_<projectType>_<type>_<name>
 
 ==
-Index
+n<index>
 Increment by 1 for each new project
 
+rust projects cannot start with a number, so there is an "n" character before the index
+
 ==
-projectType
+<projectType>
 One of the following:
 
 bev
@@ -15,14 +17,14 @@ rus
 mix
 
 ==
-type
+<type>
 One of the following:
 
 proto
 real
 
 ==
-[name]
+<name>
 
 write whatever you want here
 use _ instead of spaces

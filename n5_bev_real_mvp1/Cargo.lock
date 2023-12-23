@@ -2291,7 +2291,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mvp1_bevy_proj"
+name = "n5_bev_real_mvp1"
 version = "0.1.0"
 dependencies = [
  "bevy",

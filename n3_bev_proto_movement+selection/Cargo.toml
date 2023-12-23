@@ -1,5 +1,5 @@
 [package]
-name = "3_bev_proto_movement+selection"
+name = "n3_bev_proto_movement+selection"
 version = "0.1.0"
 edition = "2021"
 authors = ["Dominic_Rooney"]
