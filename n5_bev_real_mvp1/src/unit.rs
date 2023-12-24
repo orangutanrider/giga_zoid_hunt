@@ -1,4 +1,5 @@
 mod commander;
+mod commandable;
 mod orders;
 
 use bevy::prelude::*;
