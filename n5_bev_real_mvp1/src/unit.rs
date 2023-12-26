@@ -6,7 +6,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::gameplay_controller::selection::Selectable;
-//use commander::Commandable;
+use commandable::Commandable;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
@@ -47,7 +47,7 @@ pub struct PlayerUnitCoreBundle { // Root entity and attached components for uni
     transform: Transform,
 
     selectable: Selectable,
-    //commandable: Commandable,
+    commandable: Commandable,
 
     // Physics
     rigid_body: RigidBody,
@@ -63,7 +63,7 @@ impl Default for PlayerUnitCoreBundle{
             transform: Transform::default(),
             
             selectable: Selectable::default(),
-            //commandable: Commandable::default(),
+            commandable: Commandable::default(),
             
             // Physics
             rigid_body: RigidBody::KinematicPositionBased, 

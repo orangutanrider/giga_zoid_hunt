@@ -1,3 +1,5 @@
+/// The Unit's way of recieving and storing orders from a commander
+
 use bevy::prelude::*;
 use super::orders::*;
 
@@ -9,9 +11,9 @@ pub struct Commandable {
     current_order_cursor: usize, 
     
     order_cores: [OrderCore; Commandable::MAX_CONCURRENT_ORDERS],
-    attack_target_orders: [AttackTarget; Commandable::MAX_CONCURRENT_ORDERS],
-    attack_move_orders: [AttackMove; Commandable::MAX_CONCURRENT_ORDERS],
-    pure_movement_orders: [PureMovement; Commandable::MAX_CONCURRENT_ORDERS],
+    attack_target_orders: [AttackTargetOrder; Commandable::MAX_CONCURRENT_ORDERS],
+    attack_move_orders: [AttackMoveOrder; Commandable::MAX_CONCURRENT_ORDERS],
+    pure_movement_orders: [PureMovementOrder; Commandable::MAX_CONCURRENT_ORDERS],
 }
 impl Default for Commandable {
     fn default() -> Self {
@@ -52,7 +54,7 @@ impl Commandable {
         self.clear_orders();
     }
 
-    pub fn give_pure_move_order(&mut self, order: PureMovement) {
+    pub fn give_pure_move_order(&mut self, order: PureMovementOrder) {
         self.order_cores[self.generate_order_curor] = OrderCore{
             order_type: OrderType::PureMovement,
         };
@@ -60,7 +62,7 @@ impl Commandable {
         self.generate_order_curor += 1;
     }
 
-    pub fn give_attack_move_order(&mut self, order: AttackMove) {
+    pub fn give_attack_move_order(&mut self, order: AttackMoveOrder) {
         self.order_cores[self.generate_order_curor] = OrderCore{
             order_type: OrderType::AttackMove,
         };
@@ -68,7 +70,7 @@ impl Commandable {
         self.generate_order_curor += 1;
     }
 
-    pub fn give_attack_target_order(&mut self, order: AttackTarget) {
+    pub fn give_attack_target_order(&mut self, order: AttackTargetOrder) {
         self.order_cores[self.generate_order_curor] = OrderCore{
             order_type: OrderType::AttackTarget,
         };
