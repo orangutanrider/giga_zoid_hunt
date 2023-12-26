@@ -1,84 +1,70 @@
-/// unit's AIs follow orders that're given to them from external sources
+/// Declerations for unit order data
 
 use bevy::prelude::*;
-
-pub struct InitializePlugin;
-impl Plugin for InitializePlugin {
-    fn build(&self, app: &mut App) {
-        println!("");
-        println!("Initializing unit::orders");
-    }
-}
-
-#[derive(Resource)]
-pub struct TerminusOrder {
-    order: Entity,
-}
-impl FromWorld for TerminusOrder{
-    fn from_world(world: &mut World) -> Self {
-        let order =
-        world.spawn (
-            OrderCore {
-                recieving_unit: Entity::PLACEHOLDER,
-                next_order: Entity::PLACEHOLDER,
-                order_type: OrderType::Terminus,
-            }
-        )
-        .id();
-
-        return TerminusOrder { order }
-    }
-}
-
-#[derive(Component)]
-pub struct OrderCore {
-    pub recieving_unit: Entity, 
-    pub next_order: Entity,
-    pub order_type: OrderType,
-}
 
 #[derive(Clone, Copy)]
 #[derive(PartialEq, Eq)]
 pub enum OrderType {
-    Terminus,
     PureMovement,
     AttackMove,
     AttackTarget,
+    Empty
+}
+
+#[derive(Clone, Copy)]
+pub struct OrderCore {
+    pub order_type: OrderType,
+}
+impl OrderCore {
+    pub const EMPTY: OrderCore = OrderCore {
+        order_type: OrderType::Empty
+    }; 
+}
+impl Default for OrderCore {
+    fn default() -> Self {
+        Self { 
+            order_type: OrderType::Empty, 
+        }
+    }
 }
 
 // ATTACK TARGET
-#[derive(Component)]
-pub struct AttackTarget {
-    pub order_entity: Entity,
+#[derive(Clone, Copy)]
+pub struct AttackTargetOrder {
     pub invalidated: bool,
     pub target_unit: Entity,
 }
-#[derive(Bundle)]
-pub struct OrderAttackTargetBundle {
-    order_core: OrderCore,
-    attack_target: AttackTarget,
+impl Default for AttackTargetOrder {
+    fn default() -> Self {
+        Self {
+            invalidated: false, 
+            target_unit: Entity::PLACEHOLDER, 
+        }
+    }
 }
 
 // ATTACK MOVE
-#[derive(Component)]
-pub struct AttackMove {
-    pub order_entity: Entity,
+#[derive(Clone, Copy)]
+pub struct AttackMoveOrder {
     pub waypoint: Vec2,
 }
-#[derive(Bundle)]
-pub struct OrderAttackMoveBundle {
-    order_core: OrderCore,
-    attack_move: AttackMove,
+impl Default for AttackMoveOrder {
+    fn default() -> Self {
+        Self { 
+            waypoint: Vec2::ZERO,
+        }
+    }
 }
 
 // PURE MOVEMENT
-#[derive(Component)]
-pub struct PureMovement {
-    pub order_entity: Entity,
+#[derive(Clone, Copy)]
+pub struct PureMovementOrder {
     pub waypoint: Vec2,
 }
-#[derive(Bundle)]
-pub struct OrderPureMovementBundle {
-    order_core: OrderCore,
-    pure_movement: PureMovement,
+impl Default for PureMovementOrder {
+    fn default() -> Self {
+        Self { 
+            waypoint: Vec2::ZERO,
+        }
+    }
 }

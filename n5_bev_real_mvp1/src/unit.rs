@@ -1,11 +1,12 @@
 mod commander;
+mod commandable;
 mod orders;
 
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::gameplay_controller::selection::Selectable;
-use commander::Commandable;
+use commandable::Commandable;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
