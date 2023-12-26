@@ -1,17 +1,9 @@
-/// Commanders handle the creation of orders for units
+/// Commanders handle the creation of orders for units, they give the unit's their data, that the then units store locally
 
 mod player;
 
 use bevy::prelude::*;
 use super::*;
-
-pub struct InitializePlugin;
-impl Plugin for InitializePlugin {
-    fn build(&self, app: &mut App) {
-        println!("");
-        println!("Initializing unit::commander");
-    }
-}
 
 #[derive(Clone, Copy)]
 #[derive(PartialEq, Eq)]
@@ -29,16 +21,16 @@ pub struct CommandCore {
 }
 
 #[derive(Clone, Copy)]
-pub struct PureMovement {
+pub struct PureMovementCommand {
     pub waypoint: Vec2,
 }
 
 #[derive(Clone, Copy)]
-pub struct AttackMove{
+pub struct AttackMoveCommand {
     pub waypoint: Vec2,
 }
 
 #[derive(Clone, Copy)]
-pub struct AttackTarget {
+pub struct AttackTargetCommand {
     pub target_unit: Entity,
 }

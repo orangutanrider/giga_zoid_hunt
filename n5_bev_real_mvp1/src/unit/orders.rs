@@ -1,4 +1,4 @@
-/// unit's AIs follow orders that're given to them from external sources
+/// Declerations for unit order data
 
 use bevy::prelude::*;
 
@@ -30,11 +30,11 @@ impl Default for OrderCore {
 
 // ATTACK TARGET
 #[derive(Clone, Copy)]
-pub struct AttackTarget {
+pub struct AttackTargetOrder {
     pub invalidated: bool,
     pub target_unit: Entity,
 }
-impl Default for AttackTarget {
+impl Default for AttackTargetOrder {
     fn default() -> Self {
         Self {
             invalidated: false, 
@@ -45,10 +45,10 @@ impl Default for AttackTarget {
 
 // ATTACK MOVE
 #[derive(Clone, Copy)]
-pub struct AttackMove {
+pub struct AttackMoveOrder {
     pub waypoint: Vec2,
 }
-impl Default for AttackMove {
+impl Default for AttackMoveOrder {
     fn default() -> Self {
         Self { 
             waypoint: Vec2::ZERO,
@@ -58,10 +58,10 @@ impl Default for AttackMove {
 
 // PURE MOVEMENT
 #[derive(Clone, Copy)]
-pub struct PureMovement {
+pub struct PureMovementOrder {
     pub waypoint: Vec2,
 }
-impl Default for PureMovement {
+impl Default for PureMovementOrder {
     fn default() -> Self {
         Self { 
             waypoint: Vec2::ZERO,
