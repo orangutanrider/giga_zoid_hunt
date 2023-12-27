@@ -1,5 +1,7 @@
 /// Handles selection callbacks and shift input
 
+mod mouse;
+
 use bevy::prelude::*;
 use crate::unit::*;
 use crate::unit::selectable::*;
@@ -7,7 +9,6 @@ use crate::unit::selectable::*;
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
-        println!("");
         println!("Initializing gameplay_controller::selection");
         app
         .init_resource::<SelectionContext>()

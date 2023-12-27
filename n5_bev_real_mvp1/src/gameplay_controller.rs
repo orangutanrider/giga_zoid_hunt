@@ -1,4 +1,5 @@
 pub mod selection;
+pub mod rapier_mouse;
 
 use bevy::prelude::*;
 
