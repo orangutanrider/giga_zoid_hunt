@@ -1,21 +1,23 @@
-mod commander;
-mod commandable;
-mod orders;
+pub mod commander;
+pub mod commandable;
+pub mod orders;
+pub mod commands;
+pub mod selectable;
 
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
 
-use crate::gameplay_controller::selection::Selectable;
-use commandable::Commandable;
+//use bevy_rapier2d::prelude::*;
+//use selectable::Selectable;
+//use commandable::Commandable;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
-        println!("");
         println!("Initializing unit");
     }
 }
 
+/*
 #[derive(Bundle)]
 pub struct UnitCoreBundle { // Root entity and attached components for units
     unit: Unit,
@@ -41,7 +43,9 @@ impl Default for UnitCoreBundle{
         }
     }
 }
+*/
 
+/* 
 pub struct PlayerUnitCoreBundle { // Root entity and attached components for units
     unit: Unit,
     transform: Transform,
@@ -72,6 +76,7 @@ impl Default for PlayerUnitCoreBundle{
         }
     }
 }
+*/
 
 #[derive(Component)]
 pub struct Unit {

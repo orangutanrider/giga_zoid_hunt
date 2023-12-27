@@ -1,4 +1,4 @@
-/// Declerations for unit order data
+/// Data structures for commandable units
 
 use bevy::prelude::*;
 
@@ -8,7 +8,7 @@ pub enum OrderType {
     PureMovement,
     AttackMove,
     AttackTarget,
-    Empty
+    Empty,
 }
 
 #[derive(Clone, Copy)]

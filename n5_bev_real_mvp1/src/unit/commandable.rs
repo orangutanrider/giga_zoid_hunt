@@ -1,4 +1,4 @@
-/// The Unit's way of recieving and storing orders from a commander
+/// Unit methods for recieving and storing orders
 
 use bevy::prelude::*;
 use super::orders::*;
