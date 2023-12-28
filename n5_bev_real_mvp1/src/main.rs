@@ -35,9 +35,10 @@ impl Plugin for InitializePlugin{
     fn build(&self, app: &mut App) {
         println!("Initializing main");
         app
-        //.add_plugins((
-
-        //))
+        .add_plugins((
+            unit::InitializePlugin,
+            gameplay_controller::InitializePlugin,
+        ))
         .add_systems(Startup, (
             spawn_main_camera,
         ));

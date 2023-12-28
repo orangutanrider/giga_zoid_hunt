@@ -2,9 +2,6 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use bevy::render::primitives::Aabb;
 
-use crate::unit::*;
-use crate::unit::selectable::*;
-
 const UNIT_FILTER: QueryFilter = QueryFilter{
     flags: QueryFilterFlags::ONLY_KINEMATIC, 
     groups: None, 
@@ -59,7 +56,8 @@ pub fn vec2s_to_aabb(vec1: Vec2, vec2: Vec2) -> Aabb {
     // min X
     if vec1.x < vec2.x{
         min.x = vec1.x;
-    } else{
+    } 
+    else{
         min.x = vec2.x;
     }
     // min y
