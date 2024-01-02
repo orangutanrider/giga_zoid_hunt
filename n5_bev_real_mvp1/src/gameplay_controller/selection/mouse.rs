@@ -35,6 +35,7 @@ fn selection_box(
     unit_q: Query<&mut Unit, With<Selectable>>,
 ) {
     if buttons.just_pressed(MouseButton::Left) {
+        println!("box select button down input");
         box_q.single_mut().origin = mouse_world.truncate(); // Store origin
         return;
     }
@@ -42,6 +43,7 @@ fn selection_box(
     if !buttons.just_released(MouseButton::Left) {
         return;
     } // If button has been released
+    println!("box select button up input");
 
     let origin = box_q.single_mut().origin;
     let end_point = mouse_world.truncate();
@@ -52,10 +54,12 @@ fn selection_box(
     let callback = |entity| {
         let unit = unit_q.get(entity);
 
+        println!("box select hit");
         if unit.is_err(){ // Unit was not gotten
             return false;
         }
-        
+        println!("box select, succesfully recieved unit");
+
         // Select Unit
         let unit = unit.unwrap();
         selection.add_select(unit);

@@ -6,11 +6,14 @@ use bevy::prelude::*;
 use crate::unit::*;
 use crate::unit::selectable::*;
 
+
+
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
         println!("Initializing gameplay_controller::selection");
         app
+        .add_plugins(mouse::InitializePlugin)
         .init_resource::<SelectionContext>()
         .add_systems(PostUpdate, (
             process_selection_pushes,

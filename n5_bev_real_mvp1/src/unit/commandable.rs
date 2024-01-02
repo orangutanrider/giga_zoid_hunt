@@ -6,7 +6,8 @@ use super::orders::*;
 /// Attach to a unit, by adding it onto the entity that holds their UnitCoreBundle components
 #[derive(Component)]
 pub struct Commandable {
-    unit: Entity, 
+    pub unit: Entity, 
+
     generate_order_cursor: usize,
     current_order_cursor: usize, 
     
@@ -128,6 +129,20 @@ impl Commandable {
     }
     pub fn current_order_as_attack_target(&self) -> AttackTargetOrder {
         return self.attack_target_orders[self.current_order_cursor].clone();
+    }
+
+    // Order at index
+    pub fn order_at_index(&self, index: usize) -> OrderCore {
+        return self.order_cores[index].clone();
+    }
+    pub fn order_at_index_as_pure_move(&self, index: usize) -> PureMovementOrder {
+        return self.pure_movement_orders[index].clone();
+    }
+    pub fn order_at_index_as_attack_move(&self, index: usize) -> AttackMoveOrder {
+        return self.attack_move_orders[index].clone();
+    }
+    pub fn order_at_index_as_attack_target(&self, index: usize) -> AttackTargetOrder {
+        return self.attack_target_orders[index].clone();
     }
 
     // Current order list length
