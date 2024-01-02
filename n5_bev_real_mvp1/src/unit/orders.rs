@@ -13,16 +13,19 @@ pub enum OrderType {
 
 #[derive(Clone, Copy)]
 pub struct OrderCore {
+    pub index: usize,
     pub order_type: OrderType,
 }
 impl OrderCore {
     pub const EMPTY: OrderCore = OrderCore {
-        order_type: OrderType::Empty
+        index: 0,
+        order_type: OrderType::Empty,
     }; 
 }
 impl Default for OrderCore {
     fn default() -> Self {
         Self { 
+            index: 0,
             order_type: OrderType::Empty, 
         }
     }
