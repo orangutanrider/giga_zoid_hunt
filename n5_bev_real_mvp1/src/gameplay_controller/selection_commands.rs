@@ -49,8 +49,12 @@ fn attack_input(
     if !keys_input.just_pressed(KeyCode::A){
         return;
     } // If A pressed
+    println!("Giving attack move command to selection");
 
     let shift_held = keys_input.pressed(KeyCode::ShiftLeft);
+    if shift_held {
+        println!("Shift has been held for attack move command");
+    }
 
     let waypoint = mouse_world.truncate();
     let cast_result = single_cast(rapier, waypoint);
@@ -60,6 +64,8 @@ fn attack_input(
     // todo!();
 
     // Otherwise do attack move
+
+    println!("Num selected for the attack move command: {}", selection.selected.len());
     for entity in selection.selected.iter() {
         let commandable = commandable_q.get_mut(*entity);
         let mut commandable = commandable.unwrap();

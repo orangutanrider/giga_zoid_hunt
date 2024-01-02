@@ -2,6 +2,7 @@
 
 use bevy::prelude::*;
 
+#[derive(std::fmt::Debug)]
 #[derive(Clone, Copy)]
 #[derive(PartialEq, Eq)]
 pub enum OrderType {
