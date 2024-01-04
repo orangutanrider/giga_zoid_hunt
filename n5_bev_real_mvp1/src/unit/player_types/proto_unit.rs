@@ -15,8 +15,6 @@ impl Plugin for InitializePlugin {
         .add_systems(Startup, startup)
         .add_systems(Update, (
             prnt_orders_debug,
-            prnt_right_click_world_position_debug,
-            prnt_cursor_positions_debug,
         ));
     }
 }
@@ -29,32 +27,6 @@ fn startup(
     spawn_proto_unit(&mut commands, &asset_server, &mut unit_q);
 }
 
-fn prnt_cursor_positions_debug(
-    q: Query<& Commandable, With<ProtoUnit>>,
-    keys: Res<Input<KeyCode>>,
-) {
-    if !keys.just_pressed(KeyCode::O) {
-        return;
-    }
-
-    for commandable in q.iter(){ 
-        println!("proto unit {}, cursor positions are the following", commandable.unit.index());
-        println!("current order cursor: {}", commandable.current_order_cursor_position());
-        println!("generation cursor: {}", commandable.generate_order_cursor_position());
-    }
-}
-
-fn prnt_right_click_world_position_debug(
-    buttons: Res<Input<MouseButton>>,
-    mouse_world: Res<MousePosWorld>
-) {
-    if !buttons.just_pressed(MouseButton::Right) {
-        return;
-    }
-
-    println!("mouse_world: {}", mouse_world.truncate());
-}
-
 fn prnt_orders_debug(
     q: Query<& Commandable, With<ProtoUnit>>,
     keys: Res<Input<KeyCode>>,
@@ -65,28 +37,7 @@ fn prnt_orders_debug(
 
     for commandable in q.iter(){
         println!("proto unit {} has the following orders", commandable.unit.index());
-
-        let callback = |order_core: OrderCore| {
-            println!("(OrderCore) index{} type{:?}", order_core.index, order_core.order_type);
-            match order_core.order_type {
-                OrderType::Empty => {},
-                OrderType::PureMovement => {
-                    println!("(PureMovement) waypoint{}", 
-                    commandable.order_at_index_as_pure_move(order_core.index).waypoint)
-                },
-                OrderType::AttackMove => {
-                    println!("(AttackMove) waypoint{}", 
-                    commandable.order_at_index_as_attack_move(order_core.index).waypoint)
-                },
-                OrderType::AttackTarget => {
-                    println!("(AttackTarget) target{} invalidated{}", 
-                    commandable.order_at_index_as_attack_target(order_core.index).target_unit.index(), 
-                    commandable.order_at_index_as_attack_target(order_core.index).invalidated)
-                },
-            }
-        };
-
-        commandable.read_on_each_current_order(callback)
+        commandable.println_order_data();
     }
 }
 
