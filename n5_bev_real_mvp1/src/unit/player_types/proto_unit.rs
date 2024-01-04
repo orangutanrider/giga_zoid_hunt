@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use mouse_tracking::*;
 use crate::unit::*;
 use crate::unit::selectable::*;
 use crate::unit::commandable::*;
@@ -14,6 +15,8 @@ impl Plugin for InitializePlugin {
         .add_systems(Startup, startup)
         .add_systems(Update, (
             prnt_orders_debug,
+            prnt_right_click_world_position_debug,
+            prnt_cursor_positions_debug,
         ));
     }
 }
@@ -24,6 +27,32 @@ fn startup(
     mut unit_q: Query<&mut Unit>,
 ){
     spawn_proto_unit(&mut commands, &asset_server, &mut unit_q);
+}
+
+fn prnt_cursor_positions_debug(
+    q: Query<& Commandable, With<ProtoUnit>>,
+    keys: Res<Input<KeyCode>>,
+) {
+    if !keys.just_pressed(KeyCode::O) {
+        return;
+    }
+
+    for commandable in q.iter(){ 
+        println!("proto unit {}, cursor positions are the following", commandable.unit.index());
+        println!("current order cursor: {}", commandable.current_order_cursor_position());
+        println!("generation cursor: {}", commandable.generate_order_cursor_position());
+    }
+}
+
+fn prnt_right_click_world_position_debug(
+    buttons: Res<Input<MouseButton>>,
+    mouse_world: Res<MousePosWorld>
+) {
+    if !buttons.just_pressed(MouseButton::Right) {
+        return;
+    }
+
+    println!("mouse_world: {}", mouse_world.truncate());
 }
 
 fn prnt_orders_debug(

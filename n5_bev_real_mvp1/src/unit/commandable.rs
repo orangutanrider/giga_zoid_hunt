@@ -30,6 +30,7 @@ impl Default for Commandable {
         };
 
         return_val.initialize_order_core_indexes();
+        return_val.println_order_cores();
 
         return return_val;
     }
@@ -44,7 +45,7 @@ impl Commandable {
         // Does this via recursion
 
         // Edit
-        self.order_cores[self.current_order_cursor] = OrderCore::EMPTY;
+        self.order_cores[self.current_order_cursor].order_type = OrderType::Empty;
 
         // Iterate
         self.current_order_cursor += 1;
@@ -62,28 +63,19 @@ impl Commandable {
     }
 
     pub fn give_pure_move_order(&mut self, order: PureMovementOrder) {
-        self.order_cores[self.generate_order_cursor] = OrderCore{
-            index: self.order_cores[self.generate_order_cursor].index,
-            order_type: OrderType::PureMovement,
-        };
+        self.order_cores[self.generate_order_cursor].order_type = OrderType::PureMovement;
         self.pure_movement_orders[self.generate_order_cursor] = order;
         self.generate_order_cursor += 1;
     }
 
     pub fn give_attack_move_order(&mut self, order: AttackMoveOrder) {
-        self.order_cores[self.generate_order_cursor] = OrderCore{
-            index: self.order_cores[self.generate_order_cursor].index,
-            order_type: OrderType::AttackMove,
-        };
+        self.order_cores[self.generate_order_cursor].order_type = OrderType::AttackMove;
         self.attack_move_orders[self.generate_order_cursor] = order;
         self.generate_order_cursor += 1;
     }
 
     pub fn give_attack_target_order(&mut self, order: AttackTargetOrder) {
-        self.order_cores[self.generate_order_cursor] = OrderCore{
-            index: self.order_cores[self.generate_order_cursor].index,
-            order_type: OrderType::AttackTarget,
-        };
+        self.order_cores[self.generate_order_cursor].order_type = OrderType::AttackTarget;
         self.attack_target_orders[self.generate_order_cursor] = order;
         self.generate_order_cursor += 1;
     }
@@ -96,9 +88,9 @@ impl Commandable {
         &self,
         callback: impl FnMut(OrderCore),
     ){
-        self.give_callback_data_from_start_to_generate_cursor(callback, self.current_order_cursor);
+        self.give_callback_data_from_start_to_generation_cursor(callback, self.current_order_cursor);
     }
-    fn give_callback_data_from_start_to_generate_cursor(
+    fn give_callback_data_from_start_to_generation_cursor(
         &self,
         mut callback: impl FnMut(OrderCore),
         iter_start: usize,
@@ -108,7 +100,7 @@ impl Commandable {
         }
         let order_core = self.order_cores[iter_start].clone();
         callback(order_core);
-        self.give_callback_data_from_start_to_generate_cursor(callback, iter_start + 1);
+        self.give_callback_data_from_start_to_generation_cursor(callback, iter_start + 1);
     }
 
     // Increment/Complete current order
@@ -177,5 +169,20 @@ impl Commandable {
         }
         self.order_cores[iter_start].index = iter_start;
         self.iterate_and_set_order_core_indexes_from(iter_start + 1);
+    }
+}
+
+// DEBUG 
+impl Commandable {
+    pub fn println_order_cores(&mut self) {
+        println!("println_order_cores");
+        self.iterate_and_println_order_cores(0);
+    }
+    fn iterate_and_println_order_cores(&mut self, iter_start: usize) {
+        if iter_start >= Commandable::MAX_CONCURRENT_ORDERS {
+            return;
+        }
+        println!("OrderCore{}, index:{}, type:{:?}", iter_start, self.order_cores[iter_start].index, self.order_cores[iter_start].order_type);
+        self.iterate_and_println_order_cores(iter_start + 1);
     }
 }
