@@ -17,12 +17,6 @@ pub struct OrderCore {
     pub index: usize,
     pub order_type: OrderType,
 }
-impl OrderCore {
-    pub const EMPTY: OrderCore = OrderCore {
-        index: 0,
-        order_type: OrderType::Empty,
-    }; 
-}
 impl Default for OrderCore {
     fn default() -> Self {
         Self { 

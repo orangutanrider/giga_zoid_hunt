@@ -87,3 +87,6 @@ impl Default for PlayerUnitCoreBundle{
 pub struct Unit {
     pub entity: Entity,
 }
+
+// I'm going to replace the entity field inside unit with this
+pub struct UnitID(Entity);
