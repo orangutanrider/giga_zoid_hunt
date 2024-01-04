@@ -85,8 +85,11 @@ impl Default for PlayerUnitCoreBundle{
 
 #[derive(Component)]
 pub struct Unit {
-    pub entity: Entity,
+    pub id: UnitID,
 }
 
-// I'm going to replace the entity field inside unit with this
-pub struct UnitID(Entity);
+#[derive(Clone, Copy)]
+pub struct UnitID(pub Entity);
+impl UnitID {
+    pub const PLACEHOLDER: UnitID = UnitID(Entity::PLACEHOLDER);
+}

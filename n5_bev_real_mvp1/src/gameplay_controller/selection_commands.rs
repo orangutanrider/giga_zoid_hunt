@@ -31,8 +31,8 @@ fn stop_input(
         return;
     } // If S pressed
 
-    for entity in selection.selected.iter() {
-        let commandable = commandable_q.get_mut(*entity);
+    for unit_id in selection.selected.iter() {
+        let commandable = commandable_q.get_mut(unit_id.0);
         let mut commandable = commandable.unwrap();
         commandable.clear_orders();
     }
@@ -66,8 +66,8 @@ fn attack_input(
     // Otherwise do attack move
 
     println!("Num selected for the attack move command: {}", selection.selected.len());
-    for entity in selection.selected.iter() {
-        let commandable = commandable_q.get_mut(*entity);
+    for unit_id in selection.selected.iter() {
+        let commandable = commandable_q.get_mut(unit_id.0);
         let mut commandable = commandable.unwrap();
 
         if shift_held == false {
@@ -96,8 +96,8 @@ fn move_input(
 
     let waypoint = mouse_world.truncate();
 
-    for entity in selection.selected.iter() {
-        let commandable = commandable_q.get_mut(*entity);
+    for unit_id in selection.selected.iter() {
+        let commandable = commandable_q.get_mut(unit_id.0);
         let mut commandable = commandable.unwrap();
 
         if shift_held == false {
