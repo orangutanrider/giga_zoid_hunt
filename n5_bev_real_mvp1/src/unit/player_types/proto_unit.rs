@@ -94,6 +94,6 @@ pub fn spawn_proto_unit(
         ..Default::default()
     });
 
-    let entity = spawn.id();
-    spawn.insert(Unit{entity});
+    let id = spawn.id();
+    spawn.insert(Unit{id: UnitID(id)});
 }
