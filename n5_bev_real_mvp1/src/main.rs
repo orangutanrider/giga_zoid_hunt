@@ -1,6 +1,5 @@
 mod unit;
 mod gameplay_controller;
-mod unit_commander;
 mod player_units;
 
 use bevy::prelude::*;
@@ -39,7 +38,6 @@ impl Plugin for InitializePlugin{
         .add_plugins((
             //unit::InitializePlugin,
             gameplay_controller::InitializePlugin,
-            unit_commander::InitializePlugin,
             player_units::InitializePlugin,
         ))
         .add_systems(Startup, (
