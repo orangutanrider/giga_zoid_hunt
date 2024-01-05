@@ -1,9 +1,5 @@
-pub mod commander;
 pub mod commandable;
-pub mod orders;
-pub mod commands;
 pub mod selectable;
-pub mod player_types;
 
 use bevy::prelude::*;
 
@@ -11,16 +7,14 @@ use bevy::prelude::*;
 //use selectable::Selectable;
 //use commandable::Commandable;
 
+/* 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
         println!("Initializing unit");
-        app.add_plugins((
-            commander::InitializePlugin,
-            player_types::InitializePlugin,
-        ));
     }
 }
+*/
 
 /*
 #[derive(Bundle)]

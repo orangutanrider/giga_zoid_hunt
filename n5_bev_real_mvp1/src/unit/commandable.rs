@@ -1,8 +1,10 @@
 /// Commandable declerations 
 /// Unit methods for recieving and managing orders
 
+pub mod orders;
+
 use bevy::prelude::*;
-use super::orders::*;
+use orders::*;
 
 /// Attach to a unit, by adding it onto the entity that holds their UnitCoreBundle components
 #[derive(Component)]

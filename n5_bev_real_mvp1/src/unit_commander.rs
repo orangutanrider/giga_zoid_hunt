@@ -1,10 +1,11 @@
 /// The unit commander, handles the callbacks for assigning orders to units
 
-use bevy::prelude::*;
-use crate::unit::orders::*;
+pub mod commands;
 
-use super::commands::*;
-use super::commandable::Commandable;
+use bevy::prelude::*;
+use crate::unit::commandable::*;
+use crate::unit::commandable::orders::*;
+use commands::*;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
@@ -34,8 +35,8 @@ impl Default for UnitCommander {
         }
     }
 }
+// Recieve commands and give orders
 impl UnitCommander {
-    // Callbacks
     pub fn command_clear_orders(&mut self, unit: Entity) {
         self.pushed_commands.push(CommandCore { 
             recieving_unit: unit, 
