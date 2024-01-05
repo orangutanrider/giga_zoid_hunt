@@ -1,5 +1,7 @@
 mod unit;
 mod gameplay_controller;
+mod unit_commander;
+mod player_units;
 
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
@@ -20,12 +22,11 @@ fn main() {
     ));
 
     #[cfg(debug_assertions)]
-    app.add_plugins((
+    app.add_plugins(
         RapierDebugRenderPlugin{
             mode: DebugRenderMode::all(),
             ..default()
-        }
-    ));
+    });
 
     app.run();
 }
@@ -36,8 +37,10 @@ impl Plugin for InitializePlugin{
         println!("Initializing main");
         app
         .add_plugins((
-            unit::InitializePlugin,
+            //unit::InitializePlugin,
             gameplay_controller::InitializePlugin,
+            unit_commander::InitializePlugin,
+            player_units::InitializePlugin,
         ))
         .add_systems(Startup, (
             spawn_main_camera,

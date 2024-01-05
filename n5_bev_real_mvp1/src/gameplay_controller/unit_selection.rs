@@ -1,6 +1,6 @@
 /// Handles selection callbacks and shift input
 
-mod mouse;
+mod mouse_input;
 
 use bevy::prelude::*;
 use crate::unit::*;
@@ -13,7 +13,7 @@ impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
         println!("Initializing gameplay_controller::selection");
         app
-        .add_plugins(mouse::InitializePlugin)
+        .add_plugins(mouse_input::InitializePlugin)
         .init_resource::<SelectionContext>()
         .add_systems(PostUpdate, (
             process_selection_pushes,

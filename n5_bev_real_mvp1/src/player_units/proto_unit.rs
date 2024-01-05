@@ -4,7 +4,7 @@ use mouse_tracking::*;
 use crate::unit::*;
 use crate::unit::selectable::*;
 use crate::unit::commandable::*;
-use crate::unit::orders::*;
+use crate::unit::commandable::orders::*;
 use super::*;
 
 pub struct InitializePlugin;
