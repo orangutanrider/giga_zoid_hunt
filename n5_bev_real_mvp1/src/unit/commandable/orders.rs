@@ -1,28 +1,26 @@
-/// Declerations for unit order data
+/// Data structures for commandable units
 
 use bevy::prelude::*;
 
+#[derive(std::fmt::Debug)]
 #[derive(Clone, Copy)]
 #[derive(PartialEq, Eq)]
 pub enum OrderType {
     PureMovement,
     AttackMove,
     AttackTarget,
-    Empty
+    Empty,
 }
 
 #[derive(Clone, Copy)]
 pub struct OrderCore {
+    pub index: usize,
     pub order_type: OrderType,
-}
-impl OrderCore {
-    pub const EMPTY: OrderCore = OrderCore {
-        order_type: OrderType::Empty
-    }; 
 }
 impl Default for OrderCore {
     fn default() -> Self {
         Self { 
+            index: 0,
             order_type: OrderType::Empty, 
         }
     }
