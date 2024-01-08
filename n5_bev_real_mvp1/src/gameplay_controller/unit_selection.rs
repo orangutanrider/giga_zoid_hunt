@@ -1,14 +1,19 @@
 /// Handles selection callbacks and shift input
 
+mod mouse_input;
+
 use bevy::prelude::*;
 use crate::unit::*;
+use crate::unit::selectable::*;
+
+
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
-        println!("");
         println!("Initializing gameplay_controller::selection");
         app
+        .add_plugins(mouse_input::InitializePlugin)
         .init_resource::<SelectionContext>()
         .add_systems(PostUpdate, (
             process_selection_pushes,
@@ -16,25 +21,10 @@ impl Plugin for InitializePlugin {
     }
 }
 
-/// Attach to a unit, by adding it onto the entity that holds their UnitCoreBundle components
-#[derive(Component)]
-pub struct Selectable {
-    pub is_selected: bool,
-    pub in_control_groups: [bool; 10],
-}
-impl Default for Selectable {
-    fn default() -> Self {
-        Self { 
-            is_selected: false,
-            in_control_groups: [false; 10]
-        }
-    }
-}
-
 #[derive(Clone, Copy)]
 pub struct SelectionPush {
     push_type: SelectionPushType,
-    selectable_unit: Entity,
+    selectable_unit: UnitID,
 }
 
 #[derive(Clone, Copy)]
@@ -46,28 +36,28 @@ pub enum SelectionPushType {
 
 #[derive(Resource, Default)]
 pub struct SelectionContext {
-    pub selected: Vec<Entity>,
+    pub selected: Vec<UnitID>,
     pushed_selections: Vec<SelectionPush>,
 }
 impl SelectionContext {
     pub fn add_select(&mut self, unit: &Unit) {
         self.pushed_selections.push(SelectionPush { 
             push_type: SelectionPushType::EntityPush, 
-            selectable_unit: unit.entity, 
+            selectable_unit: unit.id, 
         });
     }
      
     pub fn mark_selection_input(&mut self) {
         self.pushed_selections.push(SelectionPush { 
             push_type: SelectionPushType::PlayerInputMarker, 
-            selectable_unit: Entity::PLACEHOLDER,
+            selectable_unit: UnitID::PLACEHOLDER,
         });
     }
 
     fn clear_selected(&mut self, q: &mut Query<&mut Selectable>) {
         // Update component data
-        for entity in self.selected.iter_mut() {
-            let selectable = q.get_mut(*entity);
+        for unit_id in self.selected.iter_mut() {
+            let selectable = q.get_mut(unit_id.0);
             let mut selectable = selectable.unwrap();
             let selectable = selectable.as_mut();
 
@@ -102,7 +92,7 @@ fn process_selection_pushes(
         }
 
         // Get selectable
-        let selectable = q.get_mut(selection_push.selectable_unit);
+        let selectable = q.get_mut(selection_push.selectable_unit.0);
         let mut selectable = selectable.unwrap();
 
         // Don't add already selected units to selection
