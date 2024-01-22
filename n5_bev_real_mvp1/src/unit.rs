@@ -1,5 +1,6 @@
 pub mod commandable;
 pub mod selectable;
+pub mod movement;
 
 use bevy::prelude::*;
 
