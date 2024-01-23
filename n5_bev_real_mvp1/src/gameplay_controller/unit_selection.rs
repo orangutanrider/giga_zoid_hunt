@@ -62,7 +62,16 @@ impl<'w, 's> UnitSelectionCommands<'w, 's> {
         selected.selected.push(unit_id);
     }
 
-    pub fn clear_selection(&mut self){
+    pub fn clear_selection(&mut self) {
+        // Clear flags
+        let q = &mut self.selectable.p0();
+        for unit_id in self.selected.iter() {
+            let selectable = q.get_mut(unit_id.0);
+            let mut selectable = selectable.unwrap();
+            selectable.is_selected = false;
+        }
+
+        // Remove from selection
         self.selected.clear();
     }
 

@@ -8,14 +8,14 @@ use bevy::prelude::*;
 //use selectable::Selectable;
 //use commandable::Commandable;
 
-/* 
+
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
         println!("Initializing unit");
     }
 }
-*/
+
 
 /*
 #[derive(Bundle)]
