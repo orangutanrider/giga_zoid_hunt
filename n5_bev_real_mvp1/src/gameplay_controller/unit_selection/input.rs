@@ -32,7 +32,7 @@ impl<'w> SelectInput<'w> {
 
 /// Update function
 fn select_units(
-    mouse: UnitMouse,
+    unit_mouse: UnitMouse,
     input: SelectInput,
     mut selection_commands: UnitSelectionCommands,
 ){
@@ -41,8 +41,29 @@ fn select_units(
     }
     selection_commands.select_input();
 
-    let units = mouse.selection_drag_click_release();
+    let selectable_q = & selection_commands.selectable.p1();
+    let units = selection_drag_click_release(&unit_mouse, selectable_q);
     for unit_id in units.iter() {
         selection_commands.select_unit(*unit_id);
     }
+}
+
+fn selection_drag_click_release(
+    unit_mouse: &UnitMouse,
+    selectable_q: &Query<&Selectable>
+) -> Vec<UnitID> {
+    let mut return_vec: Vec<UnitID> = Vec::new();
+    let callback = |entity| -> bool {
+        let selectable = selectable_q.get(entity);
+        if selectable.is_err() {
+            return false;
+        }
+        return_vec.push(UnitID(entity));
+        return true;
+    };
+    let location1 = unit_mouse.mouse_down_origin();
+    let location2 = unit_mouse.mouse_location();
+    unit_mouse.box_intersect(location1, location2, callback);
+
+    return return_vec;
 }

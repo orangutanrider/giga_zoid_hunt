@@ -33,76 +33,21 @@ fn mouse_down_store_origin(
 struct SelectionBoxOrigin(Vec3);
 
 #[derive(SystemParam)]
-pub struct UnitMouse<'w, 's> {
+pub struct UnitMouse<'w> {
     mouse_origin: Res<'w, SelectionBoxOrigin>,
     mouse_world: Res<'w, MousePosWorld>,
     rapier: Res<'w, RapierContext>,
-    transform_q: Query<'w, 's, &'static Transform>,
-    selectable_q: Query<'w, 's, &'static mut Selectable>,
-    enemy_q: Query<'w, 's, &'static mut Unit>, // Replace with enemy 
 }
-impl<'w, 's> UnitMouse<'w, 's> {
+impl<'w> UnitMouse<'w> {
     pub fn mouse_location(&self) -> Vec2 {
         return self.mouse_origin.0.truncate();
     }
 
-    /// Returns a enemy unit, out of the units in a small detected area around the mouse, picking the one closest to the mouse
-    /// Uses translation for deciding which unit is closer
-    pub fn enemy_cast (
-        &self,
-    ) -> Option<UnitID> {
-        let mut results: Vec<Entity> = Vec::new();
-        let callback = |entity| -> bool {
-            let enemy = self.enemy_q.get(entity);
-            if enemy.is_err() {
-                return false;
-            }
-            results.push(entity);
-            return true;
-        };
-        let location = self.mouse_world.truncate();
-        self.single_cast(location, callback);
-
-        if results.is_empty() {
-            return None;
-        }
-
-        let mut lowest_distance = f32::MAX;
-        let mut nearest_entity = Entity::PLACEHOLDER;
-        for entity in results.iter() {
-            let transform = self.transform_q.get(entity.clone());
-            let transform = transform.unwrap();
-            let entity_position = transform.translation.truncate();
-            let distance = location.distance(entity_position);
-            if distance < lowest_distance {
-                lowest_distance = distance;
-                nearest_entity = *entity;
-            }
-        }
-
-        return Some(UnitID(nearest_entity));
+    pub fn mouse_down_origin(&self) -> Vec2 {
+        return self.mouse_origin.0.truncate();
     }
 
-    pub fn selection_drag_click_release(
-        &self,
-    ) -> Vec<UnitID> {
-        let mut return_vec: Vec<UnitID> = Vec::new();
-        let callback = |entity| -> bool {
-            let selectable = self.selectable_q.get(entity);
-            if selectable.is_err() {
-                return false;
-            }
-            return_vec.push(UnitID(entity));
-            return true;
-        };
-        let location1 = self.mouse_origin.0.truncate();
-        let location2 = self.mouse_world.truncate();
-        self.box_intersect(location1, location2, callback);
-
-        return return_vec;
-    }
-
-    fn single_cast(
+    pub fn single_cast(
         &self,
         location: Vec2,
         callback: impl FnMut(Entity) -> bool,
@@ -119,7 +64,7 @@ impl<'w, 's> UnitMouse<'w, 's> {
         );
     }
     
-    fn box_intersect(
+    pub fn box_intersect(
         &self,
         location1: Vec2,
         location2: Vec2,

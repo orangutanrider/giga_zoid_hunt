@@ -58,7 +58,7 @@ impl<'w> StopInput<'w> {
 struct CommanderContext<'w, 's> {
     order_commands: OrderUnitCommands<'w, 's>,
     selection_commands: UnitSelectionCommands<'w, 's>,
-    mouse: UnitMouse<'w, 's>,
+    mouse: UnitMouse<'w>,
 }
 
 /// Update system
