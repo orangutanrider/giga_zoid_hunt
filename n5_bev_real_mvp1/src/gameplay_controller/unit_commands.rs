@@ -14,7 +14,8 @@ mod input;
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
-
+        app
+        .add_plugins(input::InitializePlugin);
     }
 }
 
@@ -28,6 +29,15 @@ impl<'w, 's> OrderUnitCommands<'w, 's> {
     fn get_mut_commandable(&mut self, unit_id: &UnitID) -> Mut<'_, Commandable> {
         let commandable_q = &mut self.commandable_q;
         let commandable = commandable_q.get_mut(unit_id.0);
+        let commandable = commandable.unwrap();
+
+        return commandable;
+    }
+
+    /// let mut commandable = self.get_commandable(unit_id);
+    fn get_commandable(& self, unit_id: &UnitID) -> & Commandable {
+        let commandable_q = & self.commandable_q;
+        let commandable = commandable_q.get(unit_id.0);
         let commandable = commandable.unwrap();
 
         return commandable;
@@ -52,6 +62,7 @@ impl<'w, 's> OrderUnitCommands<'w, 's> {
             for unit_id in selection_commands.selected_iter() {
                 let mut commandable = self.get_mut_commandable(unit_id);
                 commandable.give_pure_move_order(PureMovementOrder{waypoint});
+                commandable.println_order_data();
             }
         }
         else {
@@ -59,6 +70,7 @@ impl<'w, 's> OrderUnitCommands<'w, 's> {
                 let mut commandable = self.get_mut_commandable(unit_id);
                 commandable.clear_orders();
                 commandable.give_pure_move_order(PureMovementOrder{waypoint});
+                commandable.println_order_data();
             }
         }
     }
