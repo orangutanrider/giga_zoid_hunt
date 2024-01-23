@@ -14,30 +14,20 @@ pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
         println!("Initializing gameplay_controller::selection");
-        //app
-        //.add_plugins(input::InitializePlugin)
-        //.init_resource::<SelectedUnits>();
+        app
+        .add_plugins(input::InitializePlugin)
+        .init_resource::<SelectedUnits>();
     }
-}
-
-#[derive(Clone, Copy)]
-pub struct SelectionPush {
-    push_type: SelectionPushType,
-    selectable_unit: UnitID,
-}
-
-#[derive(Clone, Copy)]
-#[derive(PartialEq, Eq)]
-pub enum SelectionPushType {
-    PlayerInputMarker,
-    EntityPush,
 }
 
 #[derive(SystemParam)]
 pub struct UnitSelectionCommands<'w, 's>{
     add_mode: AddModeInput<'w>,
     selected: ResMut<'w, SelectedUnits>,
-    q: Query<'w, 's, &'static mut Selectable>,
+    selectable: ParamSet<'w, 's, (
+        Query<'w, 's, &'static mut Selectable>,
+        Query<'w, 's, &'static Selectable>,
+    )>
 }
 impl<'w, 's> UnitSelectionCommands<'w, 's> {
     pub fn select_input(&mut self) {
@@ -48,7 +38,7 @@ impl<'w, 's> UnitSelectionCommands<'w, 's> {
 
     pub fn select_unit(&mut self, unit_id: UnitID) {
         let selected = &mut self.selected;
-        let q = &mut self.q;
+        let q = &mut self.selectable.p0();
 
         // If shift isn't held, clear selection when new selections arrive
         if !self.add_mode.is_pressed() {
