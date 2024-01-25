@@ -22,6 +22,25 @@ pub struct Commandable {
     attack_move_orders: [AttackMoveOrder; Commandable::MAX_CONCURRENT_ORDERS],
     pure_movement_orders: [PureMovementOrder; Commandable::MAX_CONCURRENT_ORDERS],
 }
+impl Commandable {
+    pub fn new(entity: Entity) -> Commandable {
+        let mut return_val = Commandable { 
+            unit: entity,
+
+            gen_cursor: 0, 
+            curr_cursor: 0,
+
+            order_cores: [Default::default(); Commandable::MAX_CONCURRENT_ORDERS], 
+            attack_target_orders: [Default::default(); Commandable::MAX_CONCURRENT_ORDERS], 
+            attack_move_orders: [Default::default(); Commandable::MAX_CONCURRENT_ORDERS], 
+            pure_movement_orders: [Default::default(); Commandable::MAX_CONCURRENT_ORDERS],
+        };
+
+        return_val.initialize_order_core_index_data();
+
+        return return_val;
+    }
+}
 impl Default for Commandable {
     fn default() -> Self {
         let mut return_val = Self { 

@@ -7,6 +7,9 @@ use crate::unit::*;
 use crate::unit::selectable::*;
 use crate::unit::commandable::*;
 use crate::unit::commandable::orders::*;
+use self::movement::BasicMover;
+use self::movement::KinematicPositionBasicMoverAugment;
+
 use super::*;
 
 pub struct InitializePlugin;
@@ -17,16 +20,16 @@ impl Plugin for InitializePlugin {
         .add_systems(Startup, startup)
         .add_systems(Update, (
             prnt_orders_debug,
-        ));
+        ))
+        .add_plugins(ai::InitializePlugin);
     }
 }
 
 fn startup(
     mut commands: Commands, 
     asset_server: Res<AssetServer>, 
-    mut unit_q: Query<&mut Unit>,
 ){
-    spawn_proto_unit(&mut commands, &asset_server, &mut unit_q);
+    spawn_proto_unit(&mut commands, &asset_server);
 }
 
 fn prnt_orders_debug(
@@ -49,10 +52,12 @@ struct ProtoUnitBundle {
     player_team: PlayerTeam,
 
     selectable: Selectable,
-    commandable: Commandable,
 
+    // Eventually, I'd like the sprites to not be on the main body entity
     sprite_bundle: SpriteBundle,
 
+    mover: BasicMover,
+    
     rigid_body: RigidBody,
     locked_axes: LockedAxes,
     collider: Collider,
@@ -64,8 +69,8 @@ impl Default for ProtoUnitBundle {
             player_team: PlayerTeam{}, 
 
             selectable: Default::default(), 
-            commandable: Default::default(), 
 
+            // Eventually, I'd like the sprites to not be on the main body entity
             sprite_bundle: SpriteBundle{
                 sprite: Default::default(),
                 transform: Default::default(),
@@ -75,17 +80,21 @@ impl Default for ProtoUnitBundle {
                 computed_visibility: Default::default(),
             },
 
+            mover: BasicMover::new(ProtoUnit::MOVE_SPEED),
+
             rigid_body: RigidBody::KinematicPositionBased, 
             locked_axes: LockedAxes::ROTATION_LOCKED, 
             collider: Collider::ball(32.0),  
         }
     }
 }
+impl ProtoUnit {
+    const MOVE_SPEED: f32 = 1.0;
+}
 
 pub fn spawn_proto_unit(
     commands: &mut Commands, 
     asset_server: &Res<AssetServer>, 
-    unit_q: &mut Query<&mut Unit>,
 ){
     let mut spawn = commands.spawn(
         ProtoUnitBundle {
@@ -98,4 +107,6 @@ pub fn spawn_proto_unit(
 
     let id = spawn.id();
     spawn.insert(Unit{id: UnitID(id)});
+    spawn.insert(KinematicPositionBasicMoverAugment::new(id));
+    spawn.insert(Commandable::new(id));
 }

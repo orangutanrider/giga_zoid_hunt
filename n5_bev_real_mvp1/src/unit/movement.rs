@@ -2,10 +2,17 @@ mod basic_kinematic_position;
 
 use bevy::prelude::*;
 
-// Mover is where data is inputed
-// The other components (the augments) will enable systems that utillise the mover component to create the movement
+pub struct InitializePlugin;
+impl Plugin for InitializePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins((
+            basic_kinematic_position::InitializePlugin,
+        ));
+    }
+}
 
-// move input is edited directly
+/// Mover is where data is inputed
+/// The other components (the augments) enable systems that utillise the mover component to create the movement
 #[derive(Component)]
 pub struct BasicMover{
     /// to be updated constantly, to direct the movement
@@ -27,7 +34,7 @@ impl BasicMover{
     }
 }
 
-// Mover augments create the movement, by utlising movers
+/// Augment creates movement, by using mover data
 #[derive(Component)]
 pub struct KinematicPositionBasicMoverAugment{
     entity: Entity,

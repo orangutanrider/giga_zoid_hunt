@@ -13,6 +13,9 @@ pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
         println!("Initializing unit");
+        app.add_plugins((
+            movement::InitializePlugin,
+        ));
     }
 }
 
