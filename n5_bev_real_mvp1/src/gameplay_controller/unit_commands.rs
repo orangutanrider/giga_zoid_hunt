@@ -62,7 +62,6 @@ impl<'w, 's> OrderUnitCommands<'w, 's> {
             for unit_id in selection_commands.selected_iter() {
                 let mut commandable = self.get_mut_commandable(unit_id);
                 commandable.give_pure_move_order(PureMovementOrder{waypoint});
-                commandable.println_order_data();
             }
         }
         else {
@@ -70,7 +69,6 @@ impl<'w, 's> OrderUnitCommands<'w, 's> {
                 let mut commandable = self.get_mut_commandable(unit_id);
                 commandable.clear_orders();
                 commandable.give_pure_move_order(PureMovementOrder{waypoint});
-                commandable.println_order_data();
             }
         }
     }
