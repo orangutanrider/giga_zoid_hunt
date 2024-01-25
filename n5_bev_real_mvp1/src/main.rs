@@ -36,7 +36,7 @@ impl Plugin for InitializePlugin{
         println!("Initializing main");
         app
         .add_plugins((
-            //unit::InitializePlugin,
+            unit::InitializePlugin,
             gameplay_controller::InitializePlugin,
             player_units::InitializePlugin,
         ))

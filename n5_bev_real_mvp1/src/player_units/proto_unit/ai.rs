@@ -1,9 +1,12 @@
-use bevy::prelude::*;
+use bevy::{ecs::system::SystemParam, prelude::*, transform};
+
+use super::{commandable::{self, orders::{OrderType, PureMovementOrder}, Commandable}, movement::BasicMover, ProtoUnit, Unit};
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
         println!("Initializing unit::player_units::proto_unit::ai");
+        app.add_systems(Update, ai_follow_current_order);
     }
 }
 
@@ -14,3 +17,47 @@ impl Plugin for InitializePlugin {
 
 // For idle state, do not attack, I will add settings for modifying this behaviour later in development
 // The plan is to have those behaviour settings be able to changed during gameplay, and set before playing too, but these options will be hidden by default, as to not overwhelm
+
+#[derive(SystemParam)]
+struct ProtoUnitAI<'w, 's> {
+    commandable_q: ParamSet<'w, 's, (
+        Query<'w, 's, &'static mut Commandable, With<ProtoUnit>>,
+        Query<'w, 's, &'static Commandable, With<ProtoUnit>>,
+    )>,
+    mover_q: Query<'w, 's, &'static mut BasicMover, With<ProtoUnit>>,
+    transform_q: Query<'w, 's, &'static Transform, With<ProtoUnit>>,
+}
+
+fn follow_pure_move(
+    mut mover: Mut<'_, BasicMover>,
+    position: Vec2,
+    order: & PureMovementOrder,
+) {
+    let move_vec = (order.waypoint - position).normalize_or_zero();
+    //println!("{}", order.waypoint);
+    //println!("{}", move_vec);
+    mover.input_move_vec(move_vec);
+}
+
+fn ai_follow_current_order (
+    mut params: ProtoUnitAI,
+) {
+    for commandable in params.commandable_q.p1().iter() {
+        let mover = params.mover_q.get_mut(commandable.unit);
+        let mover = mover.unwrap();
+        let transform = params.transform_q.get(commandable.unit);
+        let transform = transform.unwrap();
+        let position = transform.translation.truncate();
+        let current_order = commandable.current_order();
+        match current_order.order_type {
+            OrderType::Empty => {},
+            OrderType::PureMovement => {
+                follow_pure_move(mover, position,&commandable.current_order_as_pure_move());
+            },
+            OrderType::AttackMove => {
+
+            },
+            OrderType::AttackTarget => {},
+        }
+    }
+}

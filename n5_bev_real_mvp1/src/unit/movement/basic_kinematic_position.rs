@@ -10,7 +10,7 @@ impl Plugin for InitializePlugin {
 
 fn move_update(
     mover_q: Query<&BasicMover>,
-    mut aug_q: Query<&mut KinematicPositionBasicMoverAugment>,
+    mut aug_q: Query<&mut KinematicPositionBasicMoverAugment, With<BasicMover>>,
     mut transform_q: Query<&mut Transform>,
 ) {
     for aug in aug_q.iter_mut() {
@@ -29,6 +29,7 @@ fn movement(
     let mut transform = transform.unwrap();
     let mover = mover_q.get(entity);
     let mover = mover.unwrap();
+    let new_position = (transform.translation + mover.read_move_vec().extend(0.0)) * KinematicPositionBasicMoverAugment::AUG_GLOBAL_POWER;
 
-    transform.translation = transform.translation + mover.read_move_vec().extend(0.0);
+    transform.translation = new_position;
 }
