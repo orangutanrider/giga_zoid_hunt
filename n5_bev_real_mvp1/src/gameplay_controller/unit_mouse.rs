@@ -40,7 +40,7 @@ pub struct UnitMouse<'w> {
 }
 impl<'w> UnitMouse<'w> {
     pub fn mouse_location(&self) -> Vec2 {
-        return self.mouse_origin.0.truncate();
+        return self.mouse_world.truncate();
     }
 
     pub fn mouse_down_origin(&self) -> Vec2 {
