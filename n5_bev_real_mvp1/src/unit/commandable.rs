@@ -6,6 +6,50 @@ pub mod orders;
 use bevy::prelude::*;
 use orders::*;
 
+pub struct InitializePlugin;
+impl Plugin for InitializePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, process_orders);
+    }
+}
+
+/// Update
+fn process_orders(
+    mut q: Query<(&mut Commandable, & Transform)>
+) {
+    for (mut commandable, transform) in q.iter_mut(){
+        let position = transform.translation.truncate();
+        try_complete_current_order(&mut commandable, position)
+    }
+}
+
+pub fn try_complete_current_order(
+    commandable: &mut Commandable,
+    position: Vec2,
+) {
+    let order_core = commandable.current_order();
+    match order_core.order_type {
+        OrderType::Empty => {
+
+        },
+        OrderType::AttackMove => {
+            let order = commandable.current_order_as_attack_move();
+            if order.check_for_order_complete(position) {
+                commandable.complete_current_order()
+            }
+        },
+        OrderType::PureMovement => {
+            let order = commandable.current_order_as_pure_move();
+            if order.check_for_order_complete(position) {
+                commandable.complete_current_order()
+            }
+        },
+        OrderType::AttackTarget => {
+            let order = commandable.current_order_as_attack_target();
+        },
+    }
+}
+
 /// Attach to a unit, by adding it onto the entity that holds their UnitCoreBundle components
 #[derive(Component)]
 pub struct Commandable {
@@ -136,8 +180,7 @@ impl Commandable {
 
 /// Core read and managment functions
 impl Commandable {
-    /// Increment/Complete current order, moves cursor along and clears the previous order's data
-    pub fn complete_current_order(&mut self) {
+    fn complete_current_order(&mut self) {
         let cur = &mut self.curr_cursor;
 
         self.order_cores[*cur].order_type = OrderType::Empty;

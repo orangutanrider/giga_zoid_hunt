@@ -15,6 +15,7 @@ impl Plugin for InitializePlugin {
         println!("Initializing unit");
         app.add_plugins((
             movement::InitializePlugin,
+            commandable::InitializePlugin,
         ));
     }
 }
