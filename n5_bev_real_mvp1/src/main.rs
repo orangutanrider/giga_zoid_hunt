@@ -1,6 +1,7 @@
 mod unit;
 mod gameplay_controller;
 mod player_units;
+mod enemy_units;
 
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
@@ -39,6 +40,7 @@ impl Plugin for InitializePlugin{
             unit::InitializePlugin,
             gameplay_controller::InitializePlugin,
             player_units::InitializePlugin,
+            enemy_units::InitializePlugin,
         ))
         .add_systems(Startup, (
             spawn_main_camera,
