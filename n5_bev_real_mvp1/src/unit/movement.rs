@@ -30,7 +30,7 @@ impl BasicMover{
     }
 
     pub fn input_move_vec(&mut self, move_vec: Vec2) {
-        self.move_input = move_vec.normalize() * move_vec.length().clamp(0.0, 1.0);
+        self.move_input = move_vec.normalize_or_zero() * move_vec.length().clamp(0.0, 1.0);
     }
 }
 
