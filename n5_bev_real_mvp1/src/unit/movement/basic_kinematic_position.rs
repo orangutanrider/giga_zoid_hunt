@@ -29,7 +29,7 @@ fn movement(
     let mut transform = transform.unwrap();
     let mover = mover_q.get(entity);
     let mover = mover.unwrap();
-    let new_position = (transform.translation + mover.read_move_vec().extend(0.0)) * KinematicPositionBasicMoverAugment::AUG_GLOBAL_POWER;
+    let new_position = transform.translation + (mover.read_move_vec().extend(0.0) * KinematicPositionBasicMoverAugment::AUG_GLOBAL_POWER);
 
     transform.translation = new_position;
 }
