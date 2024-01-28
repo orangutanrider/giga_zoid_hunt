@@ -3,6 +3,7 @@ mod ai;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use mouse_tracking::*;
+use crate::rapier_groups::E_NON_SOLID_CGROUP;
 use crate::unit::*;
 use crate::unit::selectable::*;
 use crate::unit::commandable::*;
@@ -113,5 +114,7 @@ pub fn spawn_proto_unit(
     let id = spawn.id();
     spawn.insert(Unit{id: UnitID(id)});
     spawn.insert(KinematicPositionBasicMoverAugment::new(id));
+    spawn.insert(E_NON_SOLID_CGROUP);
+    spawn.insert(Sensor);
     //spawn.insert(Commandable::new(id));
 }

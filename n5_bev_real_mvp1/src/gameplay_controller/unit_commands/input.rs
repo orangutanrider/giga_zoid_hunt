@@ -59,6 +59,7 @@ struct CommanderContext<'w, 's> {
     order_commands: OrderUnitCommands<'w, 's>,
     selection_commands: UnitSelectionCommands<'w, 's>,
     mouse: UnitMouse<'w>,
+    rapier_context: Res<'w, RapierContext>,
 }
 
 /// Update system
@@ -74,8 +75,8 @@ fn order_attack (
     let selection_commands = & commander_context.selection_commands;
     let mouse = & commander_context.mouse;
     let waypoint = mouse.mouse_location();
-    //order_commands.command_attack(waypoint, & selection_commands); // replace with this eventually
-    order_commands.command_attack_move(waypoint, & selection_commands);
+    let rapier_context = & commander_context.rapier_context;
+    order_commands.command_attack(waypoint, & selection_commands, rapier_context);
 }
 
 /// Update system

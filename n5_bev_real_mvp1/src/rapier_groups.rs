@@ -11,27 +11,28 @@ use bevy_rapier2d::prelude::CollisionGroups;
 
 // Groups
 /// PLAYER: Attackable, Selectable
-const P_NON_SOLID: Group = Group::GROUP_2; 
+pub const P_NON_SOLID: Group = Group::GROUP_2; 
 /// Prince unit
-const PRINCE: Group = Group::GROUP_5;
+pub const PRINCE: Group = Group::GROUP_5;
 
 /// ENEMY: Attackable
-const E_NON_SOLID: Group = Group::GROUP_6;
+pub const E_NON_SOLID: Group = Group::GROUP_6;
 
 // Collision group presets
-const P_NON_SOLID_CGROUP: CollisionGroups = CollisionGroups::new(
+pub const P_NON_SOLID_CGROUP: CollisionGroups = CollisionGroups::new(
     P_NON_SOLID,
     Group::NONE, 
 );
 
-const E_NON_SOLID_CGROUP: CollisionGroups = CollisionGroups::new(
+pub const E_NON_SOLID_CGROUP: CollisionGroups = CollisionGroups::new(
     E_NON_SOLID,
-    Group::NONE, 
+    E_NON_SOLID
+    //Group::NONE, 
 );
 
 // Filter presets
 /// PLAYER: Attackable, Selectable
-const P_NON_SOLID_FILTER: QueryFilter = QueryFilter { 
+pub const P_NON_SOLID_FILTER: QueryFilter = QueryFilter { 
     flags: QueryFilterFlags::EXCLUDE_SOLIDS, 
     groups: Some(CollisionGroups::new(
         P_NON_SOLID,  // A filter can be both a member and a filter? I'm not sure if there is or is not a reason for this.
@@ -43,7 +44,7 @@ const P_NON_SOLID_FILTER: QueryFilter = QueryFilter {
 };
 
 /// ENEMY: Attackable
-const E_NON_SOLID_FILTER: QueryFilter = QueryFilter { 
+pub const E_NON_SOLID_FILTER: QueryFilter = QueryFilter { 
     flags: QueryFilterFlags::EXCLUDE_SOLIDS, 
     groups: Some(CollisionGroups::new(
         E_NON_SOLID, 

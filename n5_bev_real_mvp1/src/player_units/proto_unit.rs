@@ -89,6 +89,7 @@ impl Default for ProtoUnitBundle {
     }
 }
 impl ProtoUnit {
+    const ATTACK_RANGE: f32 = 100.0;
     const MOVE_SPEED: f32 = 1.0;
 }
 
