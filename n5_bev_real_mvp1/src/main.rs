@@ -2,6 +2,7 @@ mod unit;
 mod gameplay_controller;
 mod player_units;
 mod enemy_units;
+mod rapier_groups;
 
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;

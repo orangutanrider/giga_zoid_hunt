@@ -1,12 +1,16 @@
 use bevy::prelude::*;
 use bevy::ecs::system::SystemParam;
+use bevy_rapier2d::geometry::Collider;
+use bevy_rapier2d::plugin::RapierContext;
 
+use crate::unit::commandable;
 use crate::unit::commandable::*;
 use crate::unit::UnitID;
 
 use self::orders::*;
 
 use super::add_mode::AddModeInput;
+use super::unit_mouse::UnitMouse;
 use super::unit_selection::*;
 
 mod input;
@@ -47,10 +51,24 @@ impl<'w, 's> OrderUnitCommands<'w, 's> {
         &mut self,
         waypoint: Vec2,
         selection_commands: & UnitSelectionCommands, // replace with selected Resoruce if refactor
+        rapier_context: &Res<RapierContext>,
     ) {
-        // Raycast for enemy, if hit, call attack target
-        // Otherwise, call attack move
-        todo!();
+        let enemy_cast = rapier_context.cast_shape(
+            waypoint, 
+            0.0, 
+            Vec2::ZERO, 
+            &Collider::ball(100.0), 
+            0.0, 
+            crate::rapier_groups::E_NON_SOLID_FILTER,
+        );
+
+        if enemy_cast.is_none() {
+            self.command_attack_move(waypoint, selection_commands);
+        }
+        else{
+            let target = enemy_cast.unwrap().0;
+            self.command_attack_target(selection_commands, target);
+        }
     }
 
     pub fn command_pure_move(
@@ -106,7 +124,20 @@ impl<'w, 's> OrderUnitCommands<'w, 's> {
     pub fn command_attack_target(
         &mut self,
         selection_commands: & UnitSelectionCommands, // replace with selected Resoruce if refactor
+        target: Entity,
     ) {
-        todo!();
+        if self.add_mode.is_pressed() {
+            for unit_id in selection_commands.selected_iter() {
+                let mut commandable = self.get_mut_commandable(unit_id);
+                commandable.give_attack_target_order(AttackTargetOrder{invalidated: false, target_unit: target});
+            }
+        }
+        else {
+            for unit_id in selection_commands.selected_iter() {
+                let mut commandable = self.get_mut_commandable(unit_id);
+                commandable.clear_orders();
+                commandable.give_attack_target_order(AttackTargetOrder{invalidated: false, target_unit: target});
+            }
+        }
     }
 }
