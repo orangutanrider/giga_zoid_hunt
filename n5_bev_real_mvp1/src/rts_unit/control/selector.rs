@@ -1,10 +1,8 @@
-/// Handles unit selection functions, does nothing on its own
-
-pub mod input;
+pub mod selectable;
 
 use bevy::prelude::*;
-use crate::unit::*;
-use crate::unit::selectable::*;
+use crate::rts_unit::*;
+use crate::rts_unit::selectable::*;
 use bevy::ecs::system::SystemParam;
 use std::slice::Iter;
 
