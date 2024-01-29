@@ -4,7 +4,7 @@ pub mod player;
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub struct PlayerTeamUnitFlag;
+pub struct PlayerTeamRtsUnit;
 
 #[derive(Component)]
-pub struct EnemyTeamUnitFlag;
+pub struct EnemyTeamRtsUnit;

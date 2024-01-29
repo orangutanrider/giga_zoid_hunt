@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy::ecs::system::SystemParam;
 
 use crate::rts_unit::*;
-use self::unit_components::Selectable;
+use selectable::Selectable;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
