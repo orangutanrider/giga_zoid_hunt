@@ -1,103 +1,57 @@
-/// Handles selection callbacks and shift input
+/// Handles unit selection functions, does nothing on its own
 
-mod mouse_input;
+pub mod input;
 
 use bevy::prelude::*;
 use crate::unit::*;
 use crate::unit::selectable::*;
+use bevy::ecs::system::SystemParam;
+use std::slice::Iter;
 
-
+use super::add_mode::AddModeInput;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
         println!("Initializing gameplay_controller::selection");
         app
-        .add_plugins(mouse_input::InitializePlugin)
-        .init_resource::<SelectionContext>()
-        .add_systems(PostUpdate, (
-            process_selection_pushes,
-        ));
+        .add_plugins(input::InitializePlugin)
+        .init_resource::<SelectedUnits>();
     }
 }
 
-#[derive(Clone, Copy)]
-pub struct SelectionPush {
-    push_type: SelectionPushType,
-    selectable_unit: UnitID,
+#[derive(SystemParam)]
+pub struct UnitSelectionCommands<'w, 's>{
+    add_mode: AddModeInput<'w>,
+    selected: ResMut<'w, SelectedUnits>,
+    selectable: ParamSet<'w, 's, (
+        Query<'w, 's, &'static mut Selectable>,
+        Query<'w, 's, &'static Selectable>,
+    )>
 }
-
-#[derive(Clone, Copy)]
-#[derive(PartialEq, Eq)]
-pub enum SelectionPushType {
-    PlayerInputMarker,
-    EntityPush,
-}
-
-#[derive(Resource, Default)]
-pub struct SelectionContext {
-    pub selected: Vec<UnitID>,
-    pushed_selections: Vec<SelectionPush>,
-}
-impl SelectionContext {
-    pub fn add_select(&mut self, unit: &Unit) {
-        self.pushed_selections.push(SelectionPush { 
-            push_type: SelectionPushType::EntityPush, 
-            selectable_unit: unit.id, 
-        });
-    }
-     
-    pub fn mark_selection_input(&mut self) {
-        self.pushed_selections.push(SelectionPush { 
-            push_type: SelectionPushType::PlayerInputMarker, 
-            selectable_unit: UnitID::PLACEHOLDER,
-        });
-    }
-
-    fn clear_selected(&mut self, q: &mut Query<&mut Selectable>) {
-        // Update component data
-        for unit_id in self.selected.iter_mut() {
-            let selectable = q.get_mut(unit_id.0);
-            let mut selectable = selectable.unwrap();
-            let selectable = selectable.as_mut();
-
-            selectable.is_selected = false;
+impl<'w, 's> UnitSelectionCommands<'w, 's> {
+    pub fn select_input(&mut self) {
+        if !self.add_mode.is_pressed() {
+            self.clear_selection();
         }
-
-        // Clear selected
-        self.selected.clear();
-    }
-}
-
-// Update system
-fn process_selection_pushes(
-    input: Res<Input<KeyCode>>, // Replace with input package/asset
-    mut context: ResMut<SelectionContext>,
-    mut q: Query<&mut Selectable>,
-) {
-    if context.pushed_selections.len() == 0 {
-        return;
     }
 
-    // If shift isn't held, clear selection when new selections arrive
-    if !input.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight]) {
-        context.clear_selected(&mut q);
-    }
+    pub fn select_unit(&mut self, unit_id: UnitID) {
+        let selected = &mut self.selected;
+        let q = &mut self.selectable.p0();
 
-    // Process pushes, add to selected
-    let pushes = context.pushed_selections.clone(); // Could potentially use two loops instead of doing this
-    for selection_push in pushes.iter() {
-        if selection_push.push_type == SelectionPushType::PlayerInputMarker{
-            continue;
+        // If shift isn't held, clear selection when new selections arrive
+        if !self.add_mode.is_pressed() {
+            selected.clear();
         }
-
+        
         // Get selectable
-        let selectable = q.get_mut(selection_push.selectable_unit.0);
+        let selectable = q.get_mut(unit_id.0);
         let mut selectable = selectable.unwrap();
 
         // Don't add already selected units to selection
         if selectable.is_selected == true {
-            continue;
+            return;
         }
 
         // Set selected true
@@ -105,9 +59,37 @@ fn process_selection_pushes(
         selectable.is_selected = true;
 
         // Add to selection
-        context.selected.push(selection_push.selectable_unit);
+        selected.selected.push(unit_id);
     }
 
-    // Clear pushes; they have now been processed
-    context.pushed_selections.clear();
+    pub fn clear_selection(&mut self) {
+        // Clear flags
+        let q = &mut self.selectable.p0();
+        for unit_id in self.selected.iter() {
+            let selectable = q.get_mut(unit_id.0);
+            let mut selectable = selectable.unwrap();
+            selectable.is_selected = false;
+        }
+
+        // Remove from selection
+        self.selected.clear();
+    }
+
+    pub fn selected_iter(&self) -> Iter<'_, UnitID> {
+        return self.selected.iter();
+    }
+}
+
+#[derive(Resource, Default)]
+pub struct SelectedUnits {
+    selected: Vec<UnitID>,
+}
+impl SelectedUnits {
+    pub fn iter(&self) -> Iter<'_, UnitID> {
+        return self.selected.iter();
+    }
+
+    fn clear(&mut self) {
+        self.selected.clear();
+    }
 }

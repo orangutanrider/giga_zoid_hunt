@@ -26,6 +26,9 @@ impl Default for OrderCore {
     }
 }
 
+pub const ORDER_COMPLETE_DISTANCE: f32 = 1.0;
+
+
 // ATTACK TARGET
 #[derive(Clone, Copy)]
 pub struct AttackTargetOrder {
@@ -53,6 +56,14 @@ impl Default for AttackMoveOrder {
         }
     }
 }
+impl AttackMoveOrder {
+    pub fn check_for_order_complete(&self, position: Vec2) -> bool {
+        if self.waypoint.distance(position) <= ORDER_COMPLETE_DISTANCE {
+            return true;
+        }
+        return false;
+    }
+}
 
 // PURE MOVEMENT
 #[derive(Clone, Copy)]
@@ -64,5 +75,13 @@ impl Default for PureMovementOrder {
         Self { 
             waypoint: Vec2::ZERO,
         }
+    }
+}
+impl PureMovementOrder {
+    pub fn check_for_order_complete(&self, position: Vec2) -> bool {
+        if self.waypoint.distance(position) <= ORDER_COMPLETE_DISTANCE {
+            return true;
+        }
+        return false;
     }
 }
