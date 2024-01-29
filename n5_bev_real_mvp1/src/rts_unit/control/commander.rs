@@ -9,20 +9,13 @@ use self::orders::*;
 use self::commandable::*;
 use super::selector::SelectedUnits;
 
-pub struct InitializePlugin;
-impl Plugin for InitializePlugin {
-    fn build(&self, app: &mut App) {
-
-    }
-}
-
 #[derive(SystemParam)]
 pub struct UnitCommander<'w, 's> {
     unit_selection: Res<'w, SelectedUnits>,
     commandable_q: Query<'w, 's, &'static mut Commandable>,
 }
 
-// Methods
+/// Methods
 impl<'w, 's> UnitCommander<'w, 's> {
     pub fn command_selection(
         &mut self,
