@@ -14,6 +14,7 @@ impl Plugin for InitializePlugin {
 }
 
 #[derive(Resource, Default)]
+/// Resource that stores the selected units, publicly it can be read but not edited, to edit use unit selector
 pub struct SelectedUnits {
     selected: Vec<RTSUnitID>,
 }
@@ -28,6 +29,7 @@ impl SelectedUnits {
 }
 
 #[derive(SystemParam)]
+/// System param that provides methods for selecting units
 pub struct UnitSelector<'w, 's>{
     unit_selection: ResMut<'w, SelectedUnits>,
     selectable_q: ParamSet<'w, 's, (

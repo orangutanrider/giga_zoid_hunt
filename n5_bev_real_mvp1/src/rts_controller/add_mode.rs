@@ -1,5 +1,3 @@
-/// Handles shift input
-
 use bevy::prelude::*;
 use bevy::ecs::system::SystemParam;
 

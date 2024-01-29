@@ -1,5 +1,5 @@
 mod rts_unit;
-mod gameplay_controller;
+mod rts_controller;
 mod player_units;
 mod enemy_units;
 mod rapier_config;
@@ -39,7 +39,7 @@ impl Plugin for InitializePlugin{
         app
         .add_plugins((
             rts_unit::InitializePlugin,
-            gameplay_controller::InitializePlugin,
+            rts_controller::InitializePlugin,
             player_units::InitializePlugin,
             enemy_units::InitializePlugin,
         ))
