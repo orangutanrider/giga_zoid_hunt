@@ -1,10 +1,9 @@
 /// Commandable declerations 
 /// Unit methods for recieving and managing orders
 
-pub mod orders;
 
 use bevy::prelude::*;
-use orders::*;
+use super::orders::*;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {

@@ -1,19 +1,20 @@
+pub mod commandable;
+pub mod orders;
+
 use bevy::prelude::*;
 use bevy::ecs::system::SystemParam;
 use bevy_rapier2d::geometry::Collider;
 use bevy_rapier2d::plugin::RapierContext;
 
-use crate::unit::commandable;
-use crate::unit::commandable::*;
-use crate::unit::UnitID;
+use crate::rts_unit::commandable;
+use crate::rts_unit::commandable::*;
+use crate::rts_unit::UnitID;
 
 use self::orders::*;
 
 use super::add_mode::AddModeInput;
 use super::unit_mouse::UnitMouse;
 use super::unit_selection::*;
-
-mod input;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
