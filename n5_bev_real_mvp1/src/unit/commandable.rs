@@ -6,6 +6,50 @@ pub mod orders;
 use bevy::prelude::*;
 use orders::*;
 
+pub struct InitializePlugin;
+impl Plugin for InitializePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, process_orders);
+    }
+}
+
+/// Update
+fn process_orders(
+    mut q: Query<(&mut Commandable, & Transform)>
+) {
+    for (mut commandable, transform) in q.iter_mut(){
+        let position = transform.translation.truncate();
+        try_complete_current_order(&mut commandable, position)
+    }
+}
+
+pub fn try_complete_current_order(
+    commandable: &mut Commandable,
+    position: Vec2,
+) {
+    let order_core = commandable.current_order();
+    match order_core.order_type {
+        OrderType::Empty => {
+
+        },
+        OrderType::AttackMove => {
+            let order = commandable.current_order_as_attack_move();
+            if order.check_for_order_complete(position) {
+                commandable.complete_current_order()
+            }
+        },
+        OrderType::PureMovement => {
+            let order = commandable.current_order_as_pure_move();
+            if order.check_for_order_complete(position) {
+                commandable.complete_current_order()
+            }
+        },
+        OrderType::AttackTarget => {
+            let order = commandable.current_order_as_attack_target();
+        },
+    }
+}
+
 /// Attach to a unit, by adding it onto the entity that holds their UnitCoreBundle components
 #[derive(Component)]
 pub struct Commandable {
@@ -21,6 +65,25 @@ pub struct Commandable {
     attack_target_orders: [AttackTargetOrder; Commandable::MAX_CONCURRENT_ORDERS],
     attack_move_orders: [AttackMoveOrder; Commandable::MAX_CONCURRENT_ORDERS],
     pure_movement_orders: [PureMovementOrder; Commandable::MAX_CONCURRENT_ORDERS],
+}
+impl Commandable {
+    pub fn new(entity: Entity) -> Commandable {
+        let mut return_val = Commandable { 
+            unit: entity,
+
+            gen_cursor: 0, 
+            curr_cursor: 0,
+
+            order_cores: [Default::default(); Commandable::MAX_CONCURRENT_ORDERS], 
+            attack_target_orders: [Default::default(); Commandable::MAX_CONCURRENT_ORDERS], 
+            attack_move_orders: [Default::default(); Commandable::MAX_CONCURRENT_ORDERS], 
+            pure_movement_orders: [Default::default(); Commandable::MAX_CONCURRENT_ORDERS],
+        };
+
+        return_val.initialize_order_core_index_data();
+
+        return return_val;
+    }
 }
 impl Default for Commandable {
     fn default() -> Self {
@@ -52,55 +115,64 @@ impl Commandable {
     /// Goes from the current order index to the current generation index, and wipes them
     /// Does this via recursion
     pub fn clear_orders(&mut self) {      
-        let cur = &mut self.curr_cursor;
+        self.clear_data_from_iter_start_to_gen_cursor(self.curr_cursor);
+        self.gen_cursor = self.curr_cursor;
+    }
+    fn clear_data_from_iter_start_to_gen_cursor(&mut self, iter_start: usize){
         let gen = self.gen_cursor;
 
         // Edit
-        self.order_cores[*cur].order_type = OrderType::Empty;
-        // Iterate
-        *cur += 1;
-        if *cur == Commandable::MAX_CONCURRENT_ORDERS {
-            *cur = 0;
-        }
+        self.order_cores[iter_start].order_type = OrderType::Empty;
+
+        let new_iter_start = loop_u_size(iter_start, 1);
+
         // Exit
-        if *cur == gen {
+        if new_iter_start == gen {
             return;
         }
+
         // Continue
-        self.clear_orders();
+        if new_iter_start == Self::MAX_CONCURRENT_ORDERS {
+            self.clear_data_from_iter_start_to_gen_cursor(0);
+        }
+        else{
+            self.clear_data_from_iter_start_to_gen_cursor(new_iter_start);
+        }
     }
 
     pub fn give_pure_move_order(&mut self, order: PureMovementOrder) {
-        let gen = &mut self.gen_cursor;
+        let gen = self.gen_cursor;
+        println!("PureMovementOrder given, waypoint: {}", order.waypoint);
 
         // Set order core's order type
-        self.order_cores[*gen].order_type = OrderType::PureMovement;
+        self.order_cores[gen].order_type = OrderType::PureMovement;
         // Set parralel entry's data
-        self.pure_movement_orders[*gen] = order;
+        self.pure_movement_orders[gen] = order;
         // Increment generation cursor
-        *gen += 1;
+        self.increment_gen_cursor();
     }
 
     pub fn give_attack_move_order(&mut self, order: AttackMoveOrder) {
-        let gen = &mut self.gen_cursor;
+        let gen = self.gen_cursor;
+        println!("AttackMoveOrder given, waypoint: {}", order.waypoint);
 
         // Set order core's order type
-        self.order_cores[*gen].order_type = OrderType::AttackMove;
+        self.order_cores[gen].order_type = OrderType::AttackMove;
         // Set parralel entry's data
-        self.attack_move_orders[*gen] = order;
+        self.attack_move_orders[gen] = order;
         // Increment generation cursor
-        *gen += 1;
+        self.increment_gen_cursor();
     }
 
     pub fn give_attack_target_order(&mut self, order: AttackTargetOrder) {
-        let gen = &mut self.gen_cursor;
+        let gen = self.gen_cursor;
 
         // Set order core's order type
-        self.order_cores[*gen].order_type = OrderType::AttackTarget;
+        self.order_cores[gen].order_type = OrderType::AttackTarget;
         // Set parralel entry's data
-        self.attack_target_orders[*gen] = order;
+        self.attack_target_orders[gen] = order;
         // Increment generation cursor
-        *gen += 1;
+        self.increment_gen_cursor();
     }
 
     // Attack target target invalidation systems are still to be added
@@ -108,12 +180,11 @@ impl Commandable {
 
 /// Core read and managment functions
 impl Commandable {
-    /// Increment/Complete current order, moves cursor along and clears the previous order's data
-    pub fn complete_current_order(&mut self) {
-        let mut cur = &mut self.curr_cursor;
+    fn complete_current_order(&mut self) {
+        let cur = &mut self.curr_cursor;
 
         self.order_cores[*cur].order_type = OrderType::Empty;
-        *cur += 1;
+        self.increment_curr_cursor();
     }
 
     /// Get copy of current order data
@@ -198,6 +269,21 @@ impl Commandable {
 
 /// Misc internal
 impl Commandable {
+    fn increment_gen_cursor(&mut self) {
+        let cursor = &mut self.gen_cursor;
+        *cursor += 1;
+        if *cursor == Commandable::MAX_CONCURRENT_ORDERS {
+            *cursor = 0;
+        }
+    }
+    fn increment_curr_cursor(&mut self) {
+        let cursor = &mut self.curr_cursor;
+        *cursor += 1;
+        if *cursor == Commandable::MAX_CONCURRENT_ORDERS {
+            *cursor = 0;
+        }
+    }
+
     /// Sets the order core index values, to their array positions
     /// Does this via recursion
     fn initialize_order_core_index_data(&mut self) {
@@ -210,6 +296,17 @@ impl Commandable {
         self.order_cores[iter_start].index = iter_start;
         self.set_order_core_index_data_from_iter_start_to_end(iter_start + 1);
     }
+}
+
+fn loop_u_size(u_size: usize, add: usize) -> usize {
+    let val = u_size + add;
+    if val >= Commandable::MAX_CONCURRENT_ORDERS {
+        return val - Commandable::MAX_CONCURRENT_ORDERS;
+    }
+    if val <= 0 {
+        return 0 + val;
+    }
+    return val;
 }
 
 /// Debug
@@ -236,13 +333,9 @@ impl Commandable {
 
     pub fn println_order_data(&self) { 
         println!("println_order_data");
-        self.println_order_data_from_iter_start_to_gen_cursor(0);
+        self.println_order_data_from_iter_start_to_gen_cursor(self.curr_cursor);
     }
     fn println_order_data_from_iter_start_to_gen_cursor(&self, iter_start: usize) {
-        if iter_start >= self.gen_cursor {
-            return;
-        }
-
         println!("{}", iter_start);
 
         let order_core = self.order_cores[iter_start];
@@ -263,6 +356,20 @@ impl Commandable {
                 println!("(AttackTarget{}), target_unit:{}, Invalidated:{}", iter_start, attack_target.target_unit.index(), attack_target.invalidated);
             },
         }
-        self.println_order_data_from_iter_start_to_gen_cursor(iter_start + 1);
+
+        let new_iter_start = loop_u_size(iter_start, 1);
+
+        // Exit
+        if new_iter_start == self.gen_cursor {
+            return;
+        }
+
+        // Continue
+        if new_iter_start == Self::MAX_CONCURRENT_ORDERS {
+            self.println_order_data_from_iter_start_to_gen_cursor(0);
+        }
+        else {
+            self.println_order_data_from_iter_start_to_gen_cursor(new_iter_start);
+        }
     }
 }
