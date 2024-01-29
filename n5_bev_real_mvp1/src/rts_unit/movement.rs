@@ -14,14 +14,14 @@ impl Plugin for InitializePlugin {
 /// Mover is where data is inputed
 /// The other components (the augments) enable systems that utillise the mover component to create the movement
 #[derive(Component)]
-pub struct BasicMover{
+pub struct Mover{
     /// to be updated constantly, to direct the movement
     move_input: Vec2, 
     /// parameter, should be set on creation and never updated again
     move_power: f32, 
 }
-impl BasicMover{
-    pub fn new(move_power: f32) -> BasicMover {
+impl Mover{
+    pub fn new(move_power: f32) -> Mover {
         return BasicMover { move_input: Vec2::ZERO, move_power };
     }
 
@@ -36,7 +36,7 @@ impl BasicMover{
 
 /// Augment creates movement, by using mover data
 #[derive(Component)]
-pub struct KinematicPositionBasicMoverAugment{
+pub struct KinematicPositionMoverAugment{
     entity: Entity,
 }
 impl KinematicPositionBasicMoverAugment {
