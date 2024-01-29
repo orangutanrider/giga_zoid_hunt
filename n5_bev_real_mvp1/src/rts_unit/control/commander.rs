@@ -38,7 +38,7 @@ impl<'w, 's> UnitCommander<'w, 's> {
         }
     }
 
-    pub fn command_selectoion_stop(
+    pub fn command_selection_stop(
         &mut self,
     ) {
         let unit_selection = self.unit_selection;

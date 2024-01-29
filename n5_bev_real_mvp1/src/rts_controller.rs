@@ -1,7 +1,8 @@
-pub mod unit_selection;
+mod unit_selection;
 mod unit_commands;
-pub mod unit_mouse;
+mod mouse;
 mod add_mode;
+mod rapier_queries;
 
 use bevy::prelude::*;
 
@@ -12,7 +13,7 @@ impl Plugin for InitializePlugin {
         app.add_plugins((
             unit_selection::InitializePlugin,
             unit_commands::InitializePlugin,
-            unit_mouse::InitializePlugin,
+            mouse::InitializePlugin,
         ));
     }
 }

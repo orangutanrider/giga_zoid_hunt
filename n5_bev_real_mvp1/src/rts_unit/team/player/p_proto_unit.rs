@@ -151,7 +151,7 @@ fn follow_pure_move(
     mover.input_move_vec(move_vec);
 }
 
-use crate::rapier_groups::*;
+use crate::rapier_config::*;
 fn follow_attack_move(
     rapier_context: & Res<RapierContext>,
     mut mover: Mut<'_, BasicMover>,

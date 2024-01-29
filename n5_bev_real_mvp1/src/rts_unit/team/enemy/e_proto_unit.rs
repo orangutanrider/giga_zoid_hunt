@@ -3,7 +3,7 @@ mod ai;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use mouse_tracking::*;
-use crate::rapier_groups::E_NON_SOLID_CGROUP;
+use crate::rapier_config::E_NON_SOLID_CGROUP;
 use crate::rts_unit::*;
 use crate::rts_unit::selectable::*;
 use crate::rts_unit::commandable::*;

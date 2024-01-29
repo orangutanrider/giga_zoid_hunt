@@ -41,9 +41,17 @@ pub struct AttackTargetOrder {
 }
 impl Default for AttackTargetOrder {
     fn default() -> Self {
-        Self {
+        return Self {
             invalidated: false, 
             target_unit: Entity::PLACEHOLDER, 
+        }
+    }
+}
+impl AttackTargetOrder {
+    pub fn new(target_unit: Entity) -> Self {
+        return Self {
+            invalidated: false, 
+            target_unit, 
         }
     }
 }
@@ -55,12 +63,16 @@ pub struct AttackMoveOrder {
 }
 impl Default for AttackMoveOrder {
     fn default() -> Self {
-        Self { 
+        return Self { 
             waypoint: Vec2::ZERO,
         }
     }
 }
 impl AttackMoveOrder {
+    pub fn new(waypoint: Vec2) -> Self {
+        return Self { waypoint }
+    }
+
     pub fn check_for_order_complete(&self, position: Vec2) -> bool {
         if self.waypoint.distance(position) <= ORDER_COMPLETE_DISTANCE {
             return true;
@@ -76,12 +88,16 @@ pub struct PureMovementOrder {
 }
 impl Default for PureMovementOrder {
     fn default() -> Self {
-        Self { 
+        return Self { 
             waypoint: Vec2::ZERO,
         }
     }
 }
 impl PureMovementOrder {
+    pub fn new(waypoint: Vec2) -> Self {
+        return Self { waypoint }
+    }
+
     pub fn check_for_order_complete(&self, position: Vec2) -> bool {
         if self.waypoint.distance(position) <= ORDER_COMPLETE_DISTANCE {
             return true;

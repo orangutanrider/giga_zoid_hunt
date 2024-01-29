@@ -6,7 +6,7 @@ use bevy_rapier2d::prelude::{
 
 use super::groups::*;
 
-// membership indicates what groups the collider is part of.
+// membership indicates what groups the collider is part of. (relevance to filters is unknown)
 // filter indicates what groups the collider can interact with.
 
 // Player team filters
