@@ -4,5 +4,6 @@ pub use super::control::{
 };
 
 pub use super::movement::{
-    BasicMover,
-}
+    Mover,
+    kinematic_position_movement::KinematicPositionMover,
+};

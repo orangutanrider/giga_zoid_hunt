@@ -17,7 +17,7 @@ pub trait Mover {
 }
 
 #[derive(Clone, Copy)]
-pub struct MoverInternal {
+struct MoverInternal {
     move_vec: Vec2,
     mover_power: f32,
 }
