@@ -2,32 +2,36 @@
 
 use bevy::prelude::*;
 
+pub const ORDER_COMPLETE_DISTANCE: f32 = 1.0;
+
 #[derive(std::fmt::Debug)]
 #[derive(Clone, Copy)]
 #[derive(PartialEq, Eq)]
 pub enum OrderType {
-    PureMovement,
-    AttackMove,
-    AttackTarget,
+    PureMovement(PureMovementOrder),
+    AttackMove(AttackMoveOrder),
+    AttackTarget(AttackTargetOrder),
     Empty,
 }
 
 #[derive(Clone, Copy)]
-pub struct OrderCore {
-    pub index: usize,
+pub struct RTSUnitOrder {
     pub order_type: OrderType,
 }
-impl Default for OrderCore {
+impl Default for RTSUnitOrder {
     fn default() -> Self {
         Self { 
-            index: 0,
             order_type: OrderType::Empty, 
         }
     }
 }
-
-pub const ORDER_COMPLETE_DISTANCE: f32 = 1.0;
-
+impl RTSUnitOrder {
+    pub fn new(order_type: OrderType) -> Self {
+        return Self{
+            order_type
+        }
+    }
+}
 
 // ATTACK TARGET
 #[derive(Clone, Copy)]

@@ -18,12 +18,12 @@ impl Plugin for InitializePlugin {
 }
 
 #[derive(Component)]
-pub struct Unit {
+pub struct RTSUnit {
     pub id: UnitID,
 }
 
 #[derive(Clone, Copy)]
-pub struct UnitID(pub Entity);
-impl UnitID {
-    pub const PLACEHOLDER: UnitID = UnitID(Entity::PLACEHOLDER);
+pub struct RTSUnitID(pub Entity);
+impl RTSUnitID {
+    pub const PLACEHOLDER: RTSUnitID = RTSUnitID(Entity::PLACEHOLDER);
 }
