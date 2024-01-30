@@ -35,7 +35,7 @@ impl<'w> SelectionBoxInput<'w> {
 
 #[derive(Resource, Default)]
 /// Records and stores the mouse world position on SelectionBoxInput.just_pressed()
-struct SelectionBoxOrigin(Vec3); 
+struct SelectionBoxOrigin(Vec2); 
 
 fn record_select_input_origin(
     select_input: SelectionBoxInput,
@@ -51,6 +51,7 @@ fn record_select_input_origin(
 /// Update system
 fn selection_box(
     select_input: SelectionBoxInput,
+    input_origin: Res<SelectionBoxOrigin>,
     mut selector_context: RtsSelectorContext,
     rapier_queries: RtsControllerRapierQueries,
 ){
@@ -62,7 +63,7 @@ fn selection_box(
     let selector = &mut selector_context.unit_selector;
     selector.select_nothing(add_mode);
 
-    let origin = selector_context.mouse.origin();
+    let origin = input_origin.0;
     let release = selector_context.mouse.position();
 
     let callback = |entity: Entity| -> bool {

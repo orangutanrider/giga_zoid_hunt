@@ -8,7 +8,7 @@ use crate::rts_controller::rapier_queries::RtsControllerRapierQueries;
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, command_attack)
+        app.add_systems(Update, command_attack);
     }
 }
 
