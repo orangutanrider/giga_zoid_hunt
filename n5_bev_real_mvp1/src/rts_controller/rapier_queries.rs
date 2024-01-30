@@ -8,12 +8,12 @@ use crate::rapier_config::prelude::{
 };
 
 #[derive(SystemParam)]
-pub struct RtsControllerRapierQueries<'w, 's>{
+pub struct RtsControllerRapierQueries<'w>{
     rapier: Res<'w, RapierContext>,
 }
 
 /// Methods
-impl<'w, 's> RtsControllerRapierQueries<'w, 's> {
+impl<'w> RtsControllerRapierQueries<'w> {
     /// e_attackable = an attackable enemy
     pub fn cast_for_e_attackable(
         &self,

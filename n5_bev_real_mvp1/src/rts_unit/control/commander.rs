@@ -24,13 +24,13 @@ impl<'w, 's> UnitCommander<'w, 's> {
     ) {
         let unit_selection = self.unit_selection;
         if add_mode {
-            for unit_id in unit_selection.selected_iter() {
+            for unit_id in unit_selection.iter() {
                 let mut commandable = self.get_mut_commandable(unit_id);
                 commandable.give_order(order);
             }
         }
         else {
-            for unit_id in unit_selection.selected_iter() {
+            for unit_id in unit_selection.iter() {
                 let mut commandable = self.get_mut_commandable(unit_id);
                 commandable.clear_orders();
                 commandable.give_order(order);
@@ -42,7 +42,7 @@ impl<'w, 's> UnitCommander<'w, 's> {
         &mut self,
     ) {
         let unit_selection = self.unit_selection;
-        for unit_id in unit_selection.selected_iter() {
+        for unit_id in unit_selection.iter() {
             let mut commandable = self.get_mut_commandable(unit_id);
             commandable.clear_orders();
         }

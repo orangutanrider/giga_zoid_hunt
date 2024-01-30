@@ -1,7 +1,8 @@
 pub mod control;
 pub mod movement;
-pub mod team;
+pub mod unit_types;
 pub mod unit_components;
+pub mod behaviour;
 
 use bevy::prelude::*;
 
