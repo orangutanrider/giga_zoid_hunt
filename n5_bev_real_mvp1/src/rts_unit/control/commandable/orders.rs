@@ -1,5 +1,3 @@
-/// Data structures for commandable units
-
 use bevy::prelude::*;
 
 pub const ORDER_COMPLETE_DISTANCE: f32 = 1.0;

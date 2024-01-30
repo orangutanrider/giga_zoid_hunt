@@ -1,5 +1,8 @@
+pub mod commander;
+pub mod orders;
+
 use bevy::prelude::*;
-use super::orders::*;
+use orders::*;
 
 #[derive(Component)]
 pub struct Commandable {
