@@ -3,7 +3,7 @@ use bevy::ecs::system::SystemParam;
 
 use super::RtsCommanderContext;
 use crate::rts_unit::control::prelude::*;
-use crate::rts_controller::rapier_queries::RtsCommanderRapierQueries;
+use crate::rts_controller::rapier_queries::RtsControllerRapierQueries;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
@@ -28,7 +28,7 @@ impl<'w> AttackInput<'w> {
 fn command_attack (
     attack_input: AttackInput, 
     mut commander_context: RtsCommanderContext,
-    rapier_queries: RtsCommanderRapierQueries,
+    rapier_queries: RtsControllerRapierQueries,
 ) {
     if !attack_input.just_pressed() {
         return;
@@ -44,7 +44,7 @@ fn command_attack (
 
     let enemy_cast = rapier_queries.cast_for_e_attackable(mouse.position());
     if let Some(enemy_cast) = enemy_cast {
-        order = OrderType::AttackTarget(AttackTargetOrder::new())
+        order = OrderType::AttackTarget(AttackTargetOrder::new(enemy_cast.0))
     }
 
     unit_commander.command_selection(add_mode, order)

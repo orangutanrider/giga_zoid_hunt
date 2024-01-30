@@ -4,7 +4,6 @@ mod stop;
 
 use bevy::prelude::*;
 use bevy::ecs::system::SystemParam;
-use bevy_rapier2d::plugin::RapierContext;
 
 use crate::rts_unit::control::prelude::*;
 use super::mouse::RtsMouse;
