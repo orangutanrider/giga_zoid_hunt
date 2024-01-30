@@ -1,12 +1,14 @@
 pub use super::{
-    commander::UnitCommander,
-    selector::UnitSelector,
-    selector::SelectedUnits,
+    commandable::commander::UnitCommander,
+    selectable::selector::{
+        UnitSelector,
+        SelectedUnits,
+    },
 };
 
-pub use super::commander::{
+pub use super::commandable::{
     orders::*,
-    commandable::Commandable,
+    Commandable,
 };
 
-pub use super::selector::selectable::Selectable;
+pub use super::selectable::Selectable;

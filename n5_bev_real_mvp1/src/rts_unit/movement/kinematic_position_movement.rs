@@ -33,7 +33,7 @@ impl KinematicPositionMover {
 fn move_update(
     mut q: Query<(&mut Transform, & KinematicPositionMover)>,
 ) {
-    for (transform, mover) in q.iter_mut() {
+    for (mut transform, mover) in q.iter_mut() {
         movement(transform, mover);
     }
 }
@@ -41,9 +41,9 @@ fn move_update(
 /// https://rapier.rs/docs/user_guides/bevy_plugin/rigid_bodies
 /// Kinematic bodies are moved via transform 
 fn movement(
-    transform: Mut<'_, Transform>,
+    mut transform: Mut<'_, Transform>,
     mover: &KinematicPositionMover,
 ) {
-    let new_position = transform.translation + (mover.read_move_vec().extend(0.0) * KinematicPositionMover::AUG_GLOBAL_POWER);
+    let new_position = transform.translation + (mover.read_move_vec().extend(0.0) * KinematicPositionMover::GLOBAL_POWER);
     transform.translation = new_position;
 }

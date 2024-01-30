@@ -1,10 +1,8 @@
-pub mod selectable;
-
 use bevy::prelude::*;
 use bevy::ecs::system::SystemParam;
 
 use crate::rts_unit::*;
-use selectable::Selectable;
+use super::Selectable;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
@@ -78,7 +76,7 @@ impl<'w, 's> UnitSelector<'w, 's> {
 
     pub fn clear_selection(&mut self) {
         // Clear flags
-        let q = &mut self.unit_selection.p0();
+        let q = &mut self.selectable_q.p0();
         for unit_id in self.unit_selection.iter() {
             let selectable = q.get_mut(unit_id.0);
             let mut selectable = selectable.unwrap();
