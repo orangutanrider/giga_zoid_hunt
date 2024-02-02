@@ -9,32 +9,19 @@ impl Plugin for InitializePlugin {
 }
 
 #[derive(Component)]
-pub struct KinematicPositionMover{
-    mover_internal: MoverInternal,
-}
-impl Mover for KinematicPositionMover {
-    fn read_move_vec(&self) -> Vec2 {
-        return self.mover_internal.move_vec;
-    }
-
-    fn input_move_vec(&mut self, move_vec: Vec2) {
-        self.mover_internal.move_vec = move_vec;
-    }
-}
+pub struct KinematicPositionMover;
 impl KinematicPositionMover {
     const GLOBAL_POWER: f32 = 1.0;
-    pub fn new (mover_power: f32) -> Self {
-        return Self { 
-            mover_internal: MoverInternal::new(mover_power),
-        }
+    pub fn new () -> Self {
+        return Self { }
     }
 }
 
 fn move_update(
-    mut q: Query<(&mut Transform, & KinematicPositionMover)>,
+    mut q: Query<(&mut Transform, &MoveInput), With<KinematicPositionMover>>,
 ) {
-    for (mut transform, mover) in q.iter_mut() {
-        movement(transform, mover);
+    for (transform, input) in q.iter_mut() {
+        movement(transform, input.read());
     }
 }
 
@@ -42,8 +29,8 @@ fn move_update(
 /// Kinematic bodies are moved via transform 
 fn movement(
     mut transform: Mut<'_, Transform>,
-    mover: &KinematicPositionMover,
+    move_input: Vec2,
 ) {
-    let new_position = transform.translation + (mover.read_move_vec().extend(0.0) * KinematicPositionMover::GLOBAL_POWER);
+    let new_position = transform.translation + (move_input.extend(0.0) * KinematicPositionMover::GLOBAL_POWER);
     transform.translation = new_position;
 }
