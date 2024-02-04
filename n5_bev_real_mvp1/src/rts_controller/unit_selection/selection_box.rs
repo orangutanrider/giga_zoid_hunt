@@ -5,6 +5,7 @@ use super::RtsSelectorContext;
 use crate::rts_controller::mouse::RtsMouse;
 use crate::rts_controller::rapier_queries::RtsControllerRapierQueries;
 use crate::rts_unit::RTSUnitID;
+use crate::rts_unit::RTSUnitSubEntity;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
@@ -50,6 +51,7 @@ fn record_select_input_origin(
 
 /// Update system
 fn selection_box(
+    sub_entity_q: Query<&RTSUnitSubEntity>,
     select_input: SelectionBoxInput,
     input_origin: Res<SelectionBoxOrigin>,
     mut selector_context: RtsSelectorContext,
@@ -59,7 +61,7 @@ fn selection_box(
         return;
     }
     let add_mode = selector_context.add_mode_input.is_pressed();
-
+    
     let selector = &mut selector_context.unit_selector;
     selector.select_nothing(add_mode);
 
@@ -67,8 +69,9 @@ fn selection_box(
     let release = selector_context.mouse.position();
 
     let callback = |entity: Entity| -> bool {
-        let unit_id = RTSUnitID::new(entity);
-        selector.select_unit(add_mode, unit_id);
+        let sub_entity = sub_entity_q.get(entity);
+        let sub_entity = sub_entity.unwrap();
+        selector.select_unit(add_mode, sub_entity.root());
         return true;
     };
     rapier_queries.cast_for_p_selectable(origin, release, callback);

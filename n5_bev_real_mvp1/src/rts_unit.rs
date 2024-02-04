@@ -21,7 +21,7 @@ pub struct RTSUnit {
 }
 impl Default for RTSUnit {
     fn default() -> Self {
-        return Self::new(Entity::PLACEHOLDER)
+        return Self{id: RTSUnitID::PLACEHOLDER}
     }
 }
 impl RTSUnit {
@@ -34,7 +34,29 @@ impl RTSUnit {
     }
 }
 
+#[derive(Component)]
+/// For entities attached to the root in the transform tree
+pub struct RTSUnitSubEntity {
+    root: RTSUnitID,
+}
+impl Default for RTSUnitSubEntity {
+    fn default() -> Self {
+        return Self{root: RTSUnitID::PLACEHOLDER}
+    }
+}
+impl RTSUnitSubEntity {
+    pub fn new(rts_unit: &RTSUnit) -> Self {
+        let root = rts_unit.id;
+        return Self { root }
+    }
+    
+    pub fn root(&self) -> RTSUnitID {
+        return self.root
+    }
+}
+
 #[derive(Clone, Copy)]
+/// The root entity
 pub struct RTSUnitID(Entity);
 impl Default for RTSUnitID {
     fn default() -> Self {

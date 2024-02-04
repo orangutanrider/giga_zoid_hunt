@@ -9,8 +9,8 @@ impl Plugin for InitializePlugin {
 }
 
 #[derive(Component)]
-pub struct KinematicPositionMover;
-impl KinematicPositionMover {
+pub struct KinematicPositionMovement;
+impl KinematicPositionMovement {
     const GLOBAL_POWER: f32 = 1.0;
     pub fn new () -> Self {
         return Self { }
@@ -18,7 +18,7 @@ impl KinematicPositionMover {
 }
 
 fn move_update(
-    mut q: Query<(&mut Transform, &MoveInput), With<KinematicPositionMover>>,
+    mut q: Query<(&mut Transform, &Mover), With<KinematicPositionMovement>>,
 ) {
     for (transform, input) in q.iter_mut() {
         movement(transform, input.read());
@@ -31,6 +31,6 @@ fn movement(
     mut transform: Mut<'_, Transform>,
     move_input: Vec2,
 ) {
-    let new_position = transform.translation + (move_input.extend(0.0) * KinematicPositionMover::GLOBAL_POWER);
+    let new_position = transform.translation + (move_input.extend(0.0) * KinematicPositionMovement::GLOBAL_POWER);
     transform.translation = new_position;
 }
