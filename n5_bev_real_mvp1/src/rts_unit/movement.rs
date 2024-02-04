@@ -14,11 +14,11 @@ impl Plugin for InitializePlugin {
 #[derive(Component)]
 /// Responsible for recieving move input from behaviour scripts
 /// And providing it for the different mover components
-struct MoveToMover {
+pub struct Mover {
     move_vec: Vec2,
     mover_power: f32,
 }
-impl MoveToMover {
+impl Mover {
     pub fn new(mover_power:f32) -> Self {
         return Self { 
             move_vec: Vec2::ZERO, 
@@ -27,7 +27,7 @@ impl MoveToMover {
     }
 }
 
-impl MoveToMover {
+impl Mover {
     pub fn read(&self) -> Vec2{
         return self.move_vec * self.mover_power
     }
