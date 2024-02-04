@@ -12,3 +12,5 @@ pub use super::commandable::{
 };
 
 pub use super::selectable::Selectable;
+
+pub use super::*;
