@@ -16,17 +16,13 @@ impl Plugin for InitializePlugin{
 #[derive(Component)]
 /// Attach to root entity, points to control component's entity
 /// (Selectable, Commandable)
-pub struct ControlComponents{
-    components_entity: Entity,
-}
-impl ControlComponents {
-    pub fn new(components_entity: Entity) -> Self {
-        return Self{
-            components_entity,
-        }
+pub struct RTSUnitControlEntity(Entity);
+impl RTSUnitControlEntity {
+    pub fn new(control_entity: Entity) -> Self {
+        return Self(control_entity)
     }
 
-    pub fn components_entity(&self) -> Entity {
-        return self.components_entity
+    pub fn entity(&self) -> Entity {
+        return self.0
     }
 }
