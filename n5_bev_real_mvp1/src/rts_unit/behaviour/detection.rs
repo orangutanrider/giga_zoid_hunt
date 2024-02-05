@@ -1,2 +1,3 @@
 pub mod single_result_types;
-pub mod detectors;
+
+pub mod circle_cast_detector;

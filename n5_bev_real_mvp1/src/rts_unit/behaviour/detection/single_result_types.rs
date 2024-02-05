@@ -1,5 +1,6 @@
 pub mod closest_unit;
 pub mod target_unit;
+pub mod arbitrary_unit;
 
 use crate::rts_unit::RTSUnitID;
 

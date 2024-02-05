@@ -26,7 +26,7 @@ impl TargetUnitDetection {
 }
 
 impl TargetUnitDetection {
-    pub fn set_target(&mut self, target: Option<RTSUnitID>) {
+    fn set_target(&mut self, target: Option<RTSUnitID>) {
         self.target = target;
     }
 
