@@ -71,8 +71,8 @@ impl AttackMoveOrder {
         return Self { waypoint }
     }
 
-    pub fn check_for_order_complete(&self, position: Vec2) -> bool {
-        if self.waypoint.distance(position) <= ORDER_COMPLETE_DISTANCE {
+    pub fn is_within_distance_of(&self, distance: f32, position: Vec2) -> bool {
+        if self.waypoint.distance(position) <= distance {
             return true;
         }
         return false;
@@ -96,8 +96,8 @@ impl PureMovementOrder {
         return Self { waypoint }
     }
 
-    pub fn check_for_order_complete(&self, position: Vec2) -> bool {
-        if self.waypoint.distance(position) <= ORDER_COMPLETE_DISTANCE {
+    pub fn is_within_distance_of(&self, distance: f32, position: Vec2) -> bool {
+        if self.waypoint.distance(position) <= distance {
             return true;
         }
         return false;

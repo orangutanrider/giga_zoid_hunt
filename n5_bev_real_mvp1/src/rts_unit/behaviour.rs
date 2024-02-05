@@ -1,6 +1,7 @@
 pub mod attack;
 pub mod navigation;
 pub mod detection;
+pub mod order_processing;
 
 use bevy::prelude::*;
 
