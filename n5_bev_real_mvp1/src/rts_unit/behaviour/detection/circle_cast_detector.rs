@@ -1,19 +1,19 @@
-use bevy::ecs::query::WorldQuery;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use bevy::utils::HashMap;
 
 use crate::rapier_config::prelude::{
-    E_ATTACKABLE_FILTER,
-    P_ATTACKABLE_FILTER,
+    E_DETECTABLE_FILTER,
+    P_DETECTABLE_FILTER,
 };
-use crate::rts_unit::behaviour::detection::single_result_types::closest_unit;
-use crate::rts_unit::behaviour::detection::single_result_types::{
+use super::single_result_types::{
+    SingleResultDetection,
     closest_unit::ClosestUnitDetection,
     target_unit::TargetUnitDetection,
+    arbitrary_unit::ArbitraryUnitDetection,
 };
 use crate::rts_unit::unit_types::RtsTeam;
-use crate::rts_unit::{RTSUnitID, RTSUnitSubEntity};
+use crate::rts_unit::*;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
@@ -42,8 +42,8 @@ impl CircleCastUnitDetector {
 impl CircleCastUnitDetector {
     fn filter(&self) -> QueryFilter {
         match self.team {
-            RtsTeam::Enemy => { return P_ATTACKABLE_FILTER },
-            RtsTeam::Player => { return E_ATTACKABLE_FILTER },
+            RtsTeam::Enemy => { return P_DETECTABLE_FILTER },
+            RtsTeam::Player => { return E_DETECTABLE_FILTER },
         }
     }
 
@@ -138,36 +138,67 @@ fn closest_entity_from_detection_results(
     return Some(output_entity)
 }
 
+fn detection_processes_with_target(
+    collider_q: &Query<&Collider>,
+    position: Vec2,
+    target_unit: Entity,
+    target_output: &mut Option<Entity>,
+    entity_distance_output: &mut HashMap<Entity, f32>,
+) -> Box<dyn FnMut(Entity) -> bool> {
+    return Box::new(|entity|{
+        check_if_target_unit(target_unit, entity, target_output);
+        output_entity_distances(&collider_q, entity, position, entity_distance_output);
+        return true;
+    });
+}
+
+fn detection_processes_without_target(
+    collider_q: &Query<&Collider>,
+    position: Vec2,
+    entity_distance_output: &mut HashMap<Entity, f32>,
+) -> Box<dyn FnMut(Entity) -> bool> {
+    return Box::new(|entity|{
+        output_entity_distances(&collider_q, entity, position, entity_distance_output);
+        return true;
+    });
+}
+
 fn detector_update(
     mut detector_q: Query<(
         &mut CircleCastUnitDetector, &Transform, // Detector relevant
-        &mut ClosestUnitDetection, &mut TargetUnitDetection // Detection output
+        &mut ClosestUnitDetection, &mut TargetUnitDetection, &mut ArbitraryUnitDetection // Detection output
     )>, 
     collider_q: Query<&Collider>,
     sub_entity_q: Query<&RTSUnitSubEntity>,
     rapier_context: Res<RapierContext>,
 ){
     for (
-        detector, transform, 
-        closest_unit_detection, target_unit_detection
+        detector, transform, // Detector relevant
+        closest_unit_detection, target_unit_detection, arbitrary_unit_detection // Detection output
     ) in detector_q.iter_mut() {
         let position = transform.translation.truncate();
 
-        // Detection outputs
+        // During detection outputs
         let mut entity_distances = HashMap::new();
         let mut target_output: Option<Entity> = None;
 
         // During detection processses
-        
-        let callback = |entity| -> bool {
-            check_if_target_unit(target_unit, entity, &mut target_output);
-            output_entity_distances(&collider_q, entity, position, &mut entity_distances);
-            return true;
-        };
+        let target_unit = target_unit_detection.target();
+        let mut callback = detection_processes_without_target(&collider_q, position, &mut entity_distances);
+        if target_unit.is_some() {
+            let target_unit = target_unit.unwrap().0;
+            callback = detection_processes_with_target(&collider_q, position, target_unit, &mut target_output, &mut entity_distances);
+        }
 
         detector.detect_at(&rapier_context, position, callback);
 
         // Post detection processes
-        let closest_unit = closest_unit_from_detection_results(&sub_entity_q, &rapier_context, &collider_q, position, entity_distances);
+        let closest_output = closest_unit_from_detection_results(&sub_entity_q, &rapier_context, &collider_q, position, entity_distances);
+        let arbitrary_output = closest_output;
+
+        // Post detection output
+        closest_unit_detection.set_detection(closest_output);
+        //target_unit_detection.set_detection(target_output);
+        arbitrary_unit_detection.set_detection(arbitrary_output);
     }
 }
