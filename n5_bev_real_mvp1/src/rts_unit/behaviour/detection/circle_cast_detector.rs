@@ -135,22 +135,13 @@ fn closest_entity_from_detection_results(
 
 fn detector_update(
     mut detector_q: Query<(
-        &mut CircleCastUnitDetector, &Transform, // Detector relevant
-        &mut ClosestUnitDetection, &mut TargetUnitDetection, &mut ArbitraryUnitDetection // Detection output
+        &CircleCastUnitDetector, &Transform, // Detector relevant
     )>, 
     collider_q: Query<&Collider>,
     sub_entity_q: Query<&RTSUnitSubEntity>,
     rapier_context: Res<RapierContext>,
 ){
-    for (
-        // Detector relevant
-        detector, 
-        transform, 
-        // Detection output
-        mut closest_unit_detection, 
-        mut target_unit_detection, 
-        mut arbitrary_unit_detection 
-    ) in detector_q.iter_mut() {
+    for (detector, transform, ) in detector_q.iter_mut() {
         let position = transform.translation.truncate();
 
         // During detection outputs
