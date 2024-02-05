@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 
 use super::SingleResultDetection;
-use crate::rts_unit::RTSUnitID;
+use crate::rts_unit::soul::RTSUnitSoulID;
 
 #[derive(Component)]
 pub struct ClosestUnitDetection {
-    closest_unit: Option<RTSUnitID>,
+    closest_unit: Option<RTSUnitSoulID>,
 }
 impl Default for ClosestUnitDetection {
     fn default() -> Self {
@@ -22,15 +22,15 @@ impl ClosestUnitDetection {
 
 impl SingleResultDetection for ClosestUnitDetection {
     fn set_detection(
-        &self,
-        detection: Option<RTSUnitID>,
+        &mut self,
+        detection: Option<RTSUnitSoulID>,
     ) {
         self.closest_unit = detection;
     }
 
     fn detection(
         &self
-    ) -> Option<RTSUnitID> {
+    ) -> Option<RTSUnitSoulID> {
         return self.closest_unit;
     }
 }

@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 
 use super::SingleResultDetection;
-use crate::rts_unit::RTSUnitID;
+use crate::rts_unit::soul::RTSUnitSoulID;
 
 #[derive(Component)]
 pub struct TargetUnitDetection {
-    target: Option<RTSUnitID>,
-    target_detection: Option<RTSUnitID>,
+    target: Option<RTSUnitSoulID>,
+    target_detection: Option<RTSUnitSoulID>,
 }
 impl Default for TargetUnitDetection {
     fn default() -> Self {
@@ -26,26 +26,26 @@ impl TargetUnitDetection {
 }
 
 impl TargetUnitDetection {
-    fn set_target(&mut self, target: Option<RTSUnitID>) {
+    fn set_target(&mut self, target: Option<RTSUnitSoulID>) {
         self.target = target;
     }
 
-    pub fn target(&self) -> Option<RTSUnitID> {
+    pub fn target(&self) -> Option<RTSUnitSoulID> {
         return self.target
     }
 }
 
 impl SingleResultDetection for TargetUnitDetection {
     fn set_detection(
-        &self,
-        detection: Option<RTSUnitID>,
+        &mut self,
+        detection: Option<RTSUnitSoulID>,
     ) {
         todo!()
     }
 
     fn detection(
         &self
-    ) -> Option<RTSUnitID> {
+    ) -> Option<RTSUnitSoulID> {
         todo!()
     }
 }
