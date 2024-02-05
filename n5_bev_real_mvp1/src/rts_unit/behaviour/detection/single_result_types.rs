@@ -6,7 +6,7 @@ use crate::rts_unit::RTSUnitID;
 
 pub trait SingleResultDetection {
     fn set_detection(
-        &self,
+        &mut self,
         detection: Option<RTSUnitID>,
     );
     

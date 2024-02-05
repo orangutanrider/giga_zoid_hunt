@@ -19,7 +19,7 @@ impl Commandable {
     }
 }
 
-/// Recieve order methods
+/// Set methods
 impl Commandable {
     pub fn clear_orders(&mut self) {      
         self.orders.clear();
@@ -28,9 +28,13 @@ impl Commandable {
     pub fn give_order(&mut self, order: OrderType) {
         self.orders.push(RTSUnitOrder{order_type: order});
     }
+
+    pub fn complete_current_order(&mut self) {
+        self.orders.pop();
+    }
 }
 
-/// Read order methods
+/// Get methods
 impl Commandable {
     pub fn current_order(&self) -> RTSUnitOrder {
         return self.orders[self.orders.len() - 1]
@@ -42,13 +46,5 @@ impl Commandable {
 
     pub fn orders_iter(&self) -> core::slice::Iter<'_, RTSUnitOrder> {
         return self.orders.iter()
-    }
-}
-
-// Internal
-impl Commandable {
-    fn complete_current_order(&mut self) {
-        self.orders.pop();
-        let e = self.orders.iter();
     }
 }

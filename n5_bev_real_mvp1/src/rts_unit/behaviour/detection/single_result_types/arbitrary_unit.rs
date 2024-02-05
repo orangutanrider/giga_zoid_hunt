@@ -22,7 +22,7 @@ impl ArbitraryUnitDetection {
 
 impl SingleResultDetection for ArbitraryUnitDetection {
     fn set_detection(
-        &self,
+        &mut self,
         detection: Option<RTSUnitID>,
     ) {
         self.unit = detection;
