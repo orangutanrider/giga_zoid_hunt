@@ -3,6 +3,7 @@ pub mod movement;
 pub mod unit_types;
 pub mod unit_components;
 pub mod behaviour;
+pub mod soul;
 
 use bevy::prelude::*;
 

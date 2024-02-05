@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 
 use super::SingleResultDetection;
-use crate::rts_unit::RTSUnitID;
+use crate::rts_unit::soul::RTSUnitSoulID;
 
 #[derive(Component)]
 pub struct ArbitraryUnitDetection {
-    unit: Option<RTSUnitID>,
+    unit: Option<RTSUnitSoulID>,
 }
 impl Default for ArbitraryUnitDetection {
     fn default() -> Self {
@@ -23,14 +23,14 @@ impl ArbitraryUnitDetection {
 impl SingleResultDetection for ArbitraryUnitDetection {
     fn set_detection(
         &mut self,
-        detection: Option<RTSUnitID>,
+        detection: Option<RTSUnitSoulID>,
     ) {
         self.unit = detection;
     }
 
     fn detection(
         &self
-    ) -> Option<RTSUnitID> {
+    ) -> Option<RTSUnitSoulID> {
         return self.unit;
     }
 }

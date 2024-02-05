@@ -12,8 +12,11 @@ use super::single_result_types::{
     target_unit::TargetUnitDetection,
     arbitrary_unit::ArbitraryUnitDetection,
 };
-use crate::rts_unit::unit_types::RtsTeam;
-use crate::rts_unit::*;
+use crate::rts_unit::{
+    *,
+    unit_types::RtsTeam,
+    soul::RTSUnitSoulID,
+};
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
@@ -68,10 +71,10 @@ impl CircleCastUnitDetector {
 fn check_if_target_unit(
     target_unit: Entity, // to be replaced with a attackable wraper around the entity
     entity: Entity,
-    mut target_output: &mut Option<Entity>,
+    target_output: &mut Option<RTSUnitSoulID>,
 ) {
     if entity == target_unit {
-        target_output = &mut Some(entity);
+        *target_output = Some(RTSUnitSoulID::new(entity));
     }
 }
 
@@ -99,25 +102,17 @@ fn output_entity_distances(
 /// Closest Unit Results Processing
 fn closest_unit_from_detection_results(
     q: &Query<&RTSUnitSubEntity>,
-    rapier_context: &Res<RapierContext>,
-    collider_q: &Query<&Collider>,
-    position: Vec2,
     entity_distances: HashMap<Entity, f32>,
-) -> Option<RTSUnitID> {
-    let closest_entity = closest_entity_from_detection_results(rapier_context, collider_q, position, entity_distances);
+) -> Option<RTSUnitSoulID> {
+    let closest_entity = closest_entity_from_detection_results(entity_distances);
     if closest_entity.is_none() { return None }
     let closest_entity = closest_entity.unwrap();
 
-    let to_root = q.get(closest_entity);
-    let to_root = to_root.unwrap();
-    return Some(to_root.root());
+    return Some(RTSUnitSoulID::new(closest_entity));
 }
 
 /// Closest Unit Results Processing
 fn closest_entity_from_detection_results(
-    rapier_context: &Res<RapierContext>,
-    collider_q: &Query<&Collider>,
-    position: Vec2,
     entity_distances: HashMap<Entity, f32>,
 ) -> Option<Entity> {
     // If no detected
@@ -138,31 +133,6 @@ fn closest_entity_from_detection_results(
     return Some(output_entity)
 }
 
-fn detection_processes_with_target(
-    collider_q: &Query<&Collider>,
-    position: Vec2,
-    target_unit: Entity,
-    target_output: &mut Option<Entity>,
-    entity_distance_output: &mut HashMap<Entity, f32>,
-) -> Box<dyn FnMut(Entity) -> bool> {
-    return Box::new(|entity|{
-        check_if_target_unit(target_unit, entity, target_output);
-        output_entity_distances(&collider_q, entity, position, entity_distance_output);
-        return true;
-    });
-}
-
-fn detection_processes_without_target(
-    collider_q: &Query<&Collider>,
-    position: Vec2,
-    entity_distance_output: &mut HashMap<Entity, f32>,
-) -> Box<dyn FnMut(Entity) -> bool> {
-    return Box::new(|entity|{
-        output_entity_distances(&collider_q, entity, position, entity_distance_output);
-        return true;
-    });
-}
-
 fn detector_update(
     mut detector_q: Query<(
         &mut CircleCastUnitDetector, &Transform, // Detector relevant
@@ -173,32 +143,50 @@ fn detector_update(
     rapier_context: Res<RapierContext>,
 ){
     for (
-        detector, transform, // Detector relevant
-        closest_unit_detection, target_unit_detection, arbitrary_unit_detection // Detection output
+        // Detector relevant
+        detector, 
+        transform, 
+        // Detection output
+        mut closest_unit_detection, 
+        mut target_unit_detection, 
+        mut arbitrary_unit_detection 
     ) in detector_q.iter_mut() {
         let position = transform.translation.truncate();
 
         // During detection outputs
         let mut entity_distances = HashMap::new();
-        let mut target_output: Option<Entity> = None;
+        let mut target_output: Option<RTSUnitSoulID> = None;
 
         // During detection processses
         let target_unit = target_unit_detection.target();
-        let mut callback = detection_processes_without_target(&collider_q, position, &mut entity_distances);
         if target_unit.is_some() {
-            let target_unit = target_unit.unwrap().0;
-            callback = detection_processes_with_target(&collider_q, position, target_unit, &mut target_output, &mut entity_distances);
+            let target_unit = target_unit.unwrap().entity();
+            let callback = |entity|{
+                check_if_target_unit(target_unit, entity, &mut target_output);
+                output_entity_distances(&collider_q, entity, position, &mut entity_distances);
+                return true;
+            };
+
+            // Detect
+            detector.detect_at(&rapier_context, position, callback);   
+        }
+        else {
+            let callback = |entity|{
+                output_entity_distances(&collider_q, entity, position, &mut entity_distances);
+                return true;
+            };
+
+            // Detect
+            detector.detect_at(&rapier_context, position, callback);   
         }
 
-        detector.detect_at(&rapier_context, position, callback);
-
         // Post detection processes
-        let closest_output = closest_unit_from_detection_results(&sub_entity_q, &rapier_context, &collider_q, position, entity_distances);
+        let closest_output = closest_unit_from_detection_results(&sub_entity_q, entity_distances);
         let arbitrary_output = closest_output;
 
         // Post detection output
         closest_unit_detection.set_detection(closest_output);
-        //target_unit_detection.set_detection(target_output);
+        target_unit_detection.set_detection(target_output);
         arbitrary_unit_detection.set_detection(arbitrary_output);
     }
 }

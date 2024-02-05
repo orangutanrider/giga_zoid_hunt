@@ -14,7 +14,7 @@ impl Plugin for InitializePlugin{
 }
 
 #[derive(Component)]
-/// Attach to root entity, points to control component's entity
+/// Attach to root entity, points to control components' entity
 /// (Selectable, Commandable)
 pub struct RTSUnitControlEntity(Entity);
 impl RTSUnitControlEntity {
