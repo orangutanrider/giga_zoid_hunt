@@ -40,12 +40,12 @@ impl SingleResultDetection for TargetUnitDetection {
         &mut self,
         detection: Option<RTSUnitSoulID>,
     ) {
-        todo!()
+        self.target_detection = detection;
     }
 
     fn detection(
         &self
     ) -> Option<RTSUnitSoulID> {
-        todo!()
+        return self.target_detection
     }
 }
