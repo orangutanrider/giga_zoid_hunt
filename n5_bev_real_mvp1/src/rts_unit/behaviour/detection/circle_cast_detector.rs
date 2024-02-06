@@ -13,7 +13,6 @@ use super::single_result_types::{
     arbitrary_unit::ArbitraryUnitDetection,
 };
 use crate::rts_unit::{
-    *,
     unit_types::RtsTeam,
     soul::RTSUnitSoulID,
 };
@@ -21,7 +20,12 @@ use crate::rts_unit::{
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, detector_update);
+        app.add_systems(Update, (
+            detector_update,
+            stored_target_output_to_detection,
+            stored_closest_output_to_detection,
+            stored_arbitrary_output_to_detection,
+        ));
     }
 }
 
@@ -29,6 +33,11 @@ impl Plugin for InitializePlugin{
 pub struct CircleCastUnitDetector {
     radius: f32,
     team: RtsTeam,
+
+    target: Option<RTSUnitSoulID>, // Input
+    target_detection: Option<RTSUnitSoulID>, // Output
+    closest_detection: Option<RTSUnitSoulID>, // Output
+    arbitrary_detection: Option<RTSUnitSoulID>, // Output
 }
 impl CircleCastUnitDetector {
     pub fn new(
@@ -38,6 +47,11 @@ impl CircleCastUnitDetector {
         return Self { 
             radius,
             team,
+
+            target: None,
+            target_detection: None,
+            closest_detection: None,
+            arbitrary_detection: None,
         }
     }
 }
@@ -101,7 +115,6 @@ fn output_entity_distances(
 
 /// Closest Unit Results Processing
 fn closest_unit_from_detection_results(
-    q: &Query<&RTSUnitSubEntity>,
     entity_distances: HashMap<Entity, f32>,
 ) -> Option<RTSUnitSoulID> {
     let closest_entity = closest_entity_from_detection_results(entity_distances);
@@ -134,14 +147,11 @@ fn closest_entity_from_detection_results(
 }
 
 fn detector_update(
-    mut detector_q: Query<(
-        &CircleCastUnitDetector, &Transform, // Detector relevant
-    )>, 
+    mut detector_q: Query<(&mut CircleCastUnitDetector, &Transform)>, 
     collider_q: Query<&Collider>,
-    sub_entity_q: Query<&RTSUnitSubEntity>,
     rapier_context: Res<RapierContext>,
 ){
-    for (detector, transform, ) in detector_q.iter_mut() {
+    for (mut detector, transform, ) in detector_q.iter_mut() {
         let position = transform.translation.truncate();
 
         // During detection outputs
@@ -149,7 +159,7 @@ fn detector_update(
         let mut target_output: Option<RTSUnitSoulID> = None;
 
         // During detection processses
-        let target_unit = target_unit_detection.target();
+        let target_unit = detector.target;
         if target_unit.is_some() {
             let target_unit = target_unit.unwrap().entity();
             let callback = |entity|{
@@ -172,12 +182,39 @@ fn detector_update(
         }
 
         // Post detection processes
-        let closest_output = closest_unit_from_detection_results(&sub_entity_q, entity_distances);
+        let closest_output = closest_unit_from_detection_results(entity_distances);
         let arbitrary_output = closest_output;
 
         // Post detection output
-        closest_unit_detection.set_detection(closest_output);
-        target_unit_detection.set_detection(target_output);
-        arbitrary_unit_detection.set_detection(arbitrary_output);
+        detector.target_detection = target_output;
+        detector.closest_detection = closest_output;
+        detector.arbitrary_detection = arbitrary_output;
+    }
+}
+
+/// If detector has a target detection with it, it'll try to output to it
+fn stored_target_output_to_detection( 
+    mut detector_q: Query<(&CircleCastUnitDetector, &mut TargetUnitDetection)>, 
+) {
+    for (detector, mut detection) in detector_q.iter_mut() {
+        detection.set_detection(detector.target_detection);
+    }
+}
+
+/// If detector has a closest detection with it, it'll try to output to it
+fn stored_closest_output_to_detection(
+    mut detector_q: Query<(&CircleCastUnitDetector, &mut ClosestUnitDetection)>, 
+) {
+    for (detector, mut detection) in detector_q.iter_mut() {
+        detection.set_detection(detector.closest_detection);
+    }
+}
+
+/// If detector has a arbitrary detection with it, it'll try to output to it
+fn stored_arbitrary_output_to_detection(
+    mut detector_q: Query<(&CircleCastUnitDetector, &mut ArbitraryUnitDetection)>, 
+) {
+    for (detector, mut detection) in detector_q.iter_mut() {
+        detection.set_detection(detector.arbitrary_detection);
     }
 }
