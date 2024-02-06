@@ -34,9 +34,15 @@ fn behaviour_update (
         let root = to_root.root();
         let (mut mover, control_entity, transform) = root_q.get_mut(root.0).unwrap();
         let commandable = control_q.get(control_entity.entity()).unwrap();
+        let position = transform.translation.truncate();
 
         let order = commandable.current_order();
-        let position = transform.translation.truncate();
+        if order.is_none() {
+            mover.input(Vec2::ZERO); 
+            return;
+        }
+        let order = order.unwrap();
+
         match order.order_type {
             OrderType::Empty => {
                 mover.input(Vec2::ZERO);

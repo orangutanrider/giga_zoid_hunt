@@ -16,7 +16,7 @@ pub const RTS_PHYSICS_CGROUP: CollisionGroups = CollisionGroups::new(
 // Player team collsion groups
 pub const P_CONTROL_CGROUP: CollisionGroups = CollisionGroups::new(
     P_SELECTABLE,
-    Group::NONE, 
+P_SELECTABLE, 
 );
 
 pub const P_SOUL_CGROUP: CollisionGroups = CollisionGroups::new(
@@ -27,5 +27,5 @@ pub const P_SOUL_CGROUP: CollisionGroups = CollisionGroups::new(
 // Enemy team collision groups
 pub const E_ATTACKABLE_CGROUP: CollisionGroups = CollisionGroups::new(
     E_ATTACKABLE,
-    Group::NONE, 
+    E_ATTACKABLE, 
 );
