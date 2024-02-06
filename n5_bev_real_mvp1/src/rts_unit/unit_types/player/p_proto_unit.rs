@@ -63,6 +63,8 @@ struct RTSRoot{
 
 #[derive(Bundle)]
 struct Soul {
+    to_root: ToRTSUnitRoot,
+
     transform: Transform,
     collider: Collider, // Attackable, Detectable
     sensor: Sensor,
@@ -71,6 +73,8 @@ struct Soul {
 
 #[derive(Bundle)]
 struct Control {
+    to_root: ToRTSUnitRoot,
+
     commandable: Commandable,
     selectable: Selectable,
     move_order_completer: BasicMoveOrderCompleter,
@@ -83,6 +87,8 @@ struct Control {
 
 #[derive(Bundle)]
 struct Behaviour {
+    to_root: ToRTSUnitRoot,
+
     controlled_navigation: BasicControlled,
 
     transform: Transform,
@@ -90,6 +96,8 @@ struct Behaviour {
 
 #[derive(Bundle)]
 struct Detection {
+    to_root: ToRTSUnitRoot,
+    
     detector: CircleCastUnitDetector,
     arbitrary_detection: ArbitraryUnitDetection,
     closest_detection: ClosestUnitDetection,
@@ -127,6 +135,8 @@ fn spawn(
     });
 
     commands.entity(control).insert(Control{
+        to_root: ToRTSUnitRoot::new(root),
+
         commandable: Commandable::new(),
         selectable: Selectable::new(),
         move_order_completer: BasicMoveOrderCompleter,
@@ -138,6 +148,8 @@ fn spawn(
     });
 
     commands.entity(soul).insert(Soul{
+        to_root: ToRTSUnitRoot::new(root),
+
         transform: Transform::default(),
         collider: Collider::ball(ATTACKABLE_SIZE),
         sensor: Sensor,
@@ -145,12 +157,16 @@ fn spawn(
     });
 
     commands.entity(behaviour).insert(Behaviour{
+        to_root: ToRTSUnitRoot::new(root),
+
         controlled_navigation: BasicControlled,
 
         transform: Transform::default(),
     });
 
     commands.entity(detection).insert(Detection {
+        to_root: ToRTSUnitRoot::new(root),
+
         detector: CircleCastUnitDetector::new(RANGE, Player),
         arbitrary_detection: ArbitraryUnitDetection::new(),
         closest_detection: ClosestUnitDetection::new(),

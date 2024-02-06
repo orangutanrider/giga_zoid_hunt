@@ -4,6 +4,15 @@ pub mod arbitrary_unit;
 
 use crate::rts_unit::soul::RTSUnitSoulID;
 
+use bevy::prelude::*;
+
+pub struct InitializePlugin;
+impl Plugin for InitializePlugin{
+    fn build(&self, app: &mut App) {
+        app.add_plugins(target_unit::InitializePlugin);
+    }
+}
+
 pub trait SingleResultDetection {
     fn set_detection(
         &mut self,

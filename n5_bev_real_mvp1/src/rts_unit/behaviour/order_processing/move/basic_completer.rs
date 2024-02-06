@@ -26,11 +26,11 @@ impl BasicMoveOrderCompleter {
 }
 
 fn check_for_order_completion(
-    mut control_q: Query<(&mut Commandable, &RTSUnitSubEntity)>,
+    mut control_q: Query<(&mut Commandable, &ToRTSUnitRoot)>,
     transform_q: Query<&Transform>,
 ) {
-    for (commandable, sub_entity) in control_q.iter_mut() {
-        let root = sub_entity.root().0;
+    for (commandable, to_root) in control_q.iter_mut() {
+        let root = to_root.root().0;
         let position = transform_q.get(root);
         let position = position.unwrap().translation.truncate();
 

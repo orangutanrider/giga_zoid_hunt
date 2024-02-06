@@ -33,7 +33,6 @@ fn main() {
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
     fn build(&self, app: &mut App) {
-        println!("Initializing main");
         app
         .add_plugins((
             rts_unit::InitializePlugin,

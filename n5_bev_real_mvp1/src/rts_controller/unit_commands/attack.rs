@@ -3,10 +3,7 @@ use bevy::ecs::system::SystemParam;
 
 use super::RtsCommanderContext;
 use crate::rts_unit::soul::RTSUnitSoulID;
-use crate::rts_unit::{
-    control::prelude::*,
-    RTSUnitSubEntity,
-};
+use crate::rts_unit::control::prelude::*;
 use crate::rts_controller::rapier_queries::RtsControllerRapierQueries;
 
 pub struct InitializePlugin;
