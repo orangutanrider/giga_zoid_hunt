@@ -18,6 +18,13 @@ pub struct Mover {
     move_vec: Vec2,
     mover_power: f32,
 }
+impl Default for Mover {
+    fn default() -> Self {
+        Self { 
+            move_vec: Vec2::ZERO, 
+            mover_power: 0.0 }
+    }
+}
 impl Mover {
     pub fn new(mover_power:f32) -> Self {
         return Self { 

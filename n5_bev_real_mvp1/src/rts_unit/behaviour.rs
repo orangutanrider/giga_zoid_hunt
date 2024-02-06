@@ -6,18 +6,19 @@ pub mod order_processing;
 use bevy::prelude::*;
 
 #[derive(Component)]
-/// Attach to root entity, points to behaviour component's entity
-pub struct BehaviourComponents{
-    components_entity: Entity,
+/// Attach to root entity, points to behaviour components' entity
+pub struct RTSUnitBehaviourEntity(Entity);
+impl Default for RTSUnitBehaviourEntity {
+    fn default() -> Self {
+        Self(Entity::PLACEHOLDER)
+    }
 }
-impl BehaviourComponents {
-    pub fn new(components_entity: Entity) -> Self {
-        return Self{
-            components_entity,
-        }
+impl RTSUnitBehaviourEntity {
+    pub fn new(behaviour_entity: Entity) -> Self {
+        return Self(behaviour_entity)
     }
 
-    pub fn components_entity(&self) -> Entity {
-        return self.components_entity
+    pub fn entity(&self) -> Entity {
+        return self.0
     }
 }

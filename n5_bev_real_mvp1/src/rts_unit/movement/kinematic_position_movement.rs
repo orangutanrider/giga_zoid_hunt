@@ -10,10 +10,15 @@ impl Plugin for InitializePlugin {
 
 #[derive(Component)]
 pub struct KinematicPositionMovement;
+impl Default for KinematicPositionMovement {
+    fn default() -> Self {
+        Self
+    }
+}
 impl KinematicPositionMovement {
     const GLOBAL_POWER: f32 = 1.0;
     pub fn new () -> Self {
-        return Self { }
+        return Self 
     }
 }
 

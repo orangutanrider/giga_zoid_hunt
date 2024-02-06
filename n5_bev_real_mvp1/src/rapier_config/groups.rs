@@ -1,5 +1,7 @@
 use bevy_rapier2d::prelude::Group;
 
+pub const RTS_PHYSICS: Group = Group::GROUP_18;
+
 // Player team groups
 pub const P_SELECTABLE: Group = Group::GROUP_1; 
 pub const P_ATTACKABLE: Group = Group::GROUP_2; 

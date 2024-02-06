@@ -20,7 +20,7 @@ impl Default for BasicMoveOrderCompleter {
 impl BasicMoveOrderCompleter {
     const ORDER_COMPLETE_DISTANCE: f32 = 10.0;
 
-    fn new() -> Self{
+    pub fn new() -> Self{
         return Self {}
     }
 }
