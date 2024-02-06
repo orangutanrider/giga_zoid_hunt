@@ -11,8 +11,17 @@ use crate::rts_unit::{
 };
 use crate::rts_unit::control::prelude::*;
 
+pub struct InitializePlugin;
+impl Plugin for InitializePlugin{
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, (
+            behaviour_update,
+        ));
+    }
+}
+
 #[derive(Component)]
-struct BasicControlled;
+pub struct BasicControlled;
 
 fn behaviour_update (
     behaviour_q: Query<(&RTSUnitSubEntity, &ArbitraryUnitDetection, &TargetUnitDetection), With<BasicControlled>>,

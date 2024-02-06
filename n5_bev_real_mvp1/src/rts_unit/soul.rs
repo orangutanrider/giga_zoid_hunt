@@ -23,6 +23,11 @@ impl RTSUnitSoulID {
 /// Attach to root entity, points to soul components' entity
 /// (Attackable, Detectable)
 pub struct RTSUnitSoulEntity(RTSUnitSoulID);
+impl Default for RTSUnitSoulEntity {
+    fn default() -> Self {
+        Self(RTSUnitSoulID::PLACEHOLDER)
+    }
+}
 impl RTSUnitSoulEntity {
     pub fn new(soul_entity: Entity) -> Self {
         return Self(RTSUnitSoulID::new(soul_entity))

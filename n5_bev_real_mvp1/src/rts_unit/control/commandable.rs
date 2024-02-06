@@ -14,7 +14,7 @@ impl Default for Commandable {
     }
 }
 impl Commandable {
-    fn new() -> Self{
+    pub fn new() -> Self{
         return Self { orders: Vec::new() }
     }
 }

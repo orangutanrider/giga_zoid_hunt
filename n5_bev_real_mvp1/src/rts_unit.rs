@@ -12,6 +12,7 @@ impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
             control::InitializePlugin,
+            unit_types::InitializePlugin,
         ));
     }
 }

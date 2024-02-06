@@ -36,6 +36,11 @@ impl RTSUnitControlID {
 /// Attach to root entity, points to control components' entity
 /// (Selectable, Commandable)
 pub struct RTSUnitControlEntity(RTSUnitControlID);
+impl Default for RTSUnitControlEntity {
+    fn default() -> Self {
+        Self(RTSUnitControlID::PLACEHOLDER)
+    }
+}
 impl RTSUnitControlEntity {
     pub fn new(control_entity: Entity) -> Self {
         return Self(RTSUnitControlID::new(control_entity))

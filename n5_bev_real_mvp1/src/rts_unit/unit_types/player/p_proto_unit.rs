@@ -1,238 +1,161 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use crate::rts_unit::*;
-use crate::rts_unit::selectable::*;
-use crate::rts_unit::commandable::*;
-use crate::rts_unit::commandable::orders::*;
-use self::movement::BasicMover;
-use self::movement::KinematicPositionBasicMoverAugment;
 
-use super::*;
+use crate::rts_unit::{
+    *,
+    control::{
+        RTSUnitControlEntity,
+        selectable::Selectable,
+        commandable::Commandable,
+    },
+    behaviour::{
+        RTSUnitBehaviourEntity,
+        navigation::controlled::basic_controlled_navigation::BasicControlled,
+        order_processing::r#move::basic_completer::BasicMoveOrderCompleter, // This should maybe be in the control section
+        detection::{
+            circle_cast_detector::CircleCastUnitDetector,
+            single_result_types::arbitrary_unit::ArbitraryUnitDetection,
+            single_result_types::closest_unit::ClosestUnitDetection,
+            single_result_types::target_unit::TargetUnitDetection,
+        }
+    },
+    soul::RTSUnitSoulEntity,
+    unit_types::RtsTeam::Player,
+    movement::{
+        Mover,
+        kinematic_position_movement::KinematicPositionMovement,
+    }
+};
+
+use crate::rapier_config::prelude::{
+    P_CONTROL_CGROUP,
+    P_SOUL_CGROUP,
+    RTS_PHYSICS_CGROUP,
+};
 
 pub struct InitializePlugin;
-impl Plugin for InitializePlugin {
+impl Plugin for InitializePlugin{
     fn build(&self, app: &mut App) {
-        println!("Initializing unit::player_types::proto_unit");
-        app
-        .add_systems(Startup, startup)
-        .add_systems(Update, (
-            prnt_orders_debug,
-        ))
-        .add_plugins(ai::InitializePlugin);
+        app.add_systems(Startup, spawn);
     }
 }
 
-fn startup(
-    mut commands: Commands, 
-    asset_server: Res<AssetServer>, 
-){
-    spawn_proto_unit(&mut commands, &asset_server);
-}
+#[derive(Component)]
+struct PProtoUnit;
+const ATTACKABLE_SIZE: f32 = 10.0;
+const SELECTABLE_SIZE: f32 = 10.0;
+const RANGE: f32 = 100.0;
+const MOVE_SPEED: f32 = 10.0;
 
-fn prnt_orders_debug(
-    q: Query<& Commandable, With<ProtoUnit>>,
-    keys: Res<Input<KeyCode>>,
-){
-    if !keys.just_pressed(KeyCode::P) {
-        return;
-    }
+#[derive(Bundle)]
+struct RTSRoot{
+    rts_unit: RTSUnit,
+    control: RTSUnitControlEntity,
+    behaviour: RTSUnitBehaviourEntity,
+    soul: RTSUnitSoulEntity,
 
-    for commandable in q.iter(){
-        println!("proto unit {} has the following orders", commandable.unit.index());
-        commandable.println_order_data();
-    }
+    mover: Mover,
+    movement: KinematicPositionMovement,
+    transform: Transform,
+    rigidbody: RigidBody,
+    c_group: CollisionGroups,
 }
 
 #[derive(Bundle)]
-struct ProtoUnitBundle {
-    proto_unit: ProtoUnit,
-    player_team: PlayerTeam,
+struct Soul {
+    transform: Transform,
+    collider: Collider, // Attackable, Detectable
+    sensor: Sensor,
+    c_group: CollisionGroups,
+}
 
+#[derive(Bundle)]
+struct Control {
+    commandable: Commandable,
     selectable: Selectable,
+    move_order_completer: BasicMoveOrderCompleter,
 
-    // Eventually, I'd like the sprites to not be on the main body entity
-    sprite_bundle: SpriteBundle,
-
-    mover: BasicMover,
-    
-    rigid_body: RigidBody,
-    locked_axes: LockedAxes,
-    collider: Collider,
-}
-impl Default for ProtoUnitBundle {
-    fn default() -> Self {
-        Self { 
-            proto_unit: ProtoUnit{}, 
-            player_team: PlayerTeam{}, 
-
-            selectable: Default::default(), 
-
-            // Eventually, I'd like the sprites to not be on the main body entity
-            sprite_bundle: SpriteBundle{
-                sprite: Default::default(),
-                transform: Default::default(),
-                global_transform: Default::default(),
-                texture: Default::default(), //asset_server.load("sprite\\primitive\\64px_square.png"),
-                visibility: Default::default(),
-                computed_visibility: Default::default(),
-            },
-
-            mover: BasicMover::new(ProtoUnit::MOVE_SPEED),
-
-            rigid_body: RigidBody::KinematicPositionBased, 
-            locked_axes: LockedAxes::ROTATION_LOCKED, 
-            collider: Collider::ball(32.0),  
-        }
-    }
-}
-impl ProtoUnit {
-    const ATTACK_RANGE: f32 = 100.0;
-    const MOVE_SPEED: f32 = 1.0;
+    transform: Transform,
+    collider: Collider, // Selectable
+    sensor: Sensor,
+    c_group: CollisionGroups,
 }
 
-pub fn spawn_proto_unit(
-    commands: &mut Commands, 
-    asset_server: &Res<AssetServer>, 
+#[derive(Bundle)]
+struct Behaviour {
+    controlled_navigation: BasicControlled,
+
+    transform: Transform,
+}
+
+#[derive(Bundle)]
+struct Detection {
+    detector: CircleCastUnitDetector,
+    arbitrary_detection: ArbitraryUnitDetection,
+    closest_detection: ClosestUnitDetection,
+    target_detection: TargetUnitDetection,
+
+    transform: Transform,
+}
+
+fn spawn(
+    mut commands: Commands, 
+    asset_server: Res<AssetServer>, 
 ){
-    let mut spawn = commands.spawn(
-        ProtoUnitBundle {
-        sprite_bundle: SpriteBundle{
-            texture: asset_server.load("sprite\\primitive\\64px_square.png"), 
-            ..Default::default()
-        },
-        ..Default::default()
+    let root = commands.spawn_empty().id();
+
+    let control = commands.spawn_empty().id();
+    let soul = commands.spawn_empty().id();
+    let behaviour = commands.spawn_empty().id();
+    let detection = commands.spawn_empty().id();
+
+    // Create parent child heirarchy
+    commands.entity(root).push_children(&[control, soul, behaviour]);
+    commands.entity(behaviour).push_children(&[detection]); // Hmm, I have to ask myself "Should detection be associated with behaviour?" the answer is no, I don't think it should
+
+    commands.entity(root).insert(RTSRoot{
+        rts_unit: RTSUnit::new(root),
+        control: RTSUnitControlEntity::new(control),
+        behaviour: RTSUnitBehaviourEntity::new(behaviour),
+        soul: RTSUnitSoulEntity::new(soul),
+
+        mover: Mover::new(MOVE_SPEED),
+        movement: KinematicPositionMovement::new(),
+        transform: Transform::default(),
+        rigidbody: RigidBody::KinematicPositionBased,
+        c_group: RTS_PHYSICS_CGROUP,
     });
 
-    let id = spawn.id();
-    spawn.insert(Unit{id: UnitID(id)});
-    spawn.insert(KinematicPositionBasicMoverAugment::new(id));
-    spawn.insert(Commandable::new(id));
-}
+    commands.entity(control).insert(Control{
+        commandable: Commandable::new(),
+        selectable: Selectable::new(),
+        move_order_completer: BasicMoveOrderCompleter,
 
-use bevy::{ecs::system::SystemParam, prelude::*, transform};
-use bevy_rapier2d::{geometry::{Collider, Toi}, plugin::RapierContext, rapier::pipeline::QueryFilter};
+        transform: Transform::default(),
+        collider: Collider::cuboid(SELECTABLE_SIZE, SELECTABLE_SIZE),
+        sensor: Sensor,
+        c_group: P_CONTROL_CGROUP,
+    });
 
-use super::{commandable::{self, orders::{AttackMoveOrder, AttackTargetOrder, OrderType, PureMovementOrder}, Commandable}, movement::BasicMover, ProtoUnit, Unit};
+    commands.entity(soul).insert(Soul{
+        transform: Transform::default(),
+        collider: Collider::ball(ATTACKABLE_SIZE),
+        sensor: Sensor,
+        c_group: P_SOUL_CGROUP,
+    });
 
-pub struct InitializePlugin;
-impl Plugin for InitializePlugin {
-    fn build(&self, app: &mut App) {
-        println!("Initializing unit::player_units::proto_unit::ai");
-        app.add_systems(Update, ai_follow_current_order);
-    }
-}
+    commands.entity(behaviour).insert(Behaviour{
+        controlled_navigation: BasicControlled,
 
-// AI
-// Follow pure move waypoints via basic movement
-// For attack target, move towards target, stop when within attack range distance
-// For attack move, move towards waypoint, scan for units in range of an aggro distance, move towards units within that range, stop when within attack range of any unit
+        transform: Transform::default(),
+    });
 
-// For idle state, do not attack, I will add settings for modifying this behaviour later in development
-// The plan is to have those behaviour settings be able to changed during gameplay, and set before playing too, but these options will be hidden by default, as to not overwhelm
+    commands.entity(detection).insert(Detection {
+        detector: CircleCastUnitDetector::new(RANGE, Player),
+        arbitrary_detection: ArbitraryUnitDetection::new(),
+        closest_detection: ClosestUnitDetection::new(),
+        target_detection: TargetUnitDetection::new(),
 
-#[derive(SystemParam)]
-struct ProtoUnitAI<'w, 's> {
-    rapier_context: Res<'w, RapierContext>,
-
-    commandable_q: ParamSet<'w, 's, (
-        Query<'w, 's, &'static mut Commandable, With<ProtoUnit>>,
-        Query<'w, 's, &'static Commandable, With<ProtoUnit>>,
-    )>,
-    mover_q: Query<'w, 's, &'static mut BasicMover, With<ProtoUnit>>,
-    transform_q: Query<'w, 's, &'static Transform, With<ProtoUnit>>,
-}
-
-fn follow_pure_move(
-    mut mover: Mut<'_, BasicMover>,
-    position: Vec2,
-    order: & PureMovementOrder,
-) {
-    let move_vec = (order.waypoint - position).normalize_or_zero();
-    mover.input_move_vec(move_vec);
-}
-
-use crate::rapier_config::*;
-fn follow_attack_move(
-    rapier_context: & Res<RapierContext>,
-    mut mover: Mut<'_, BasicMover>,
-    position: Vec2,
-    order: & AttackMoveOrder,
-) {
-    let attack_range_cast = rapier_context.cast_shape(
-        position, 
-        0.0, 
-        Vec2::ZERO, 
-        &Collider::ball(ProtoUnit::ATTACK_RANGE), 
-        0.0, 
-        E_NON_SOLID_FILTER
-    );
-
-    if attack_range_cast.is_none() {
-        let move_vec = (order.waypoint - position).normalize_or_zero();
-        mover.input_move_vec(move_vec);
-    }
-    else {
-        mover.input_move_vec(Vec2::ZERO);
-    }
-}
-
-fn follow_attack_target(
-    transform_q: & Query<&Transform>,
-    collider_q: & Query<&Collider>,
-    mut mover: Mut<'_, BasicMover>,
-    position: Vec2,
-    order: & AttackTargetOrder,
-) {
-    let target = order.target_unit;
-    let collider = collider_q.get(target);
-    let collider = collider.unwrap();
-    let collider = collider.as_ball().unwrap();
-    let enemy_radius = collider.radius();
-
-    let transform = transform_q.get(target);
-    let transform = transform.unwrap();
-    let target_position = transform.translation.truncate();
-
-    let distance = position.distance(target_position) - enemy_radius;
-
-    if distance <= ProtoUnit::ATTACK_RANGE {
-        mover.input_move_vec(Vec2::ZERO);
-    }
-    else {
-        let move_vec = (target_position - position).normalize_or_zero();
-        mover.input_move_vec(move_vec);
-    }
-}
-
-fn ai_follow_current_order (
-    mut params: ProtoUnitAI,
-    transform_q: Query<&Transform>,
-    collider_q: Query<&Collider>,
-) {
-    for commandable in params.commandable_q.p1().iter() {
-        let mover = params.mover_q.get_mut(commandable.unit);
-        let mut mover = mover.unwrap();
-
-        let transform = params.transform_q.get(commandable.unit);
-        let transform = transform.unwrap();
-        let position = transform.translation.truncate();
-
-        let rapier_context = & params.rapier_context;
-
-        let current_order = commandable.current_order();
-        match current_order.order_type {
-            OrderType::Empty => {
-                mover.input_move_vec(Vec2::ZERO);
-            },
-            OrderType::PureMovement => {
-                follow_pure_move(mover, position, &commandable.current_order_as_pure_move());
-            },
-            OrderType::AttackMove => {
-                follow_attack_move(& rapier_context, mover, position, &commandable.current_order_as_attack_move());
-            },
-            OrderType::AttackTarget => {
-                follow_attack_target(&transform_q, &collider_q, mover, position, &commandable.current_order_as_attack_target());
-            },
-        }
-    }
+        transform: Transform::default(),
+    });
 }
