@@ -22,6 +22,7 @@ impl Plugin for InitializePlugin{
     fn build(&self, app: &mut App) {
         app.add_systems(Update, (
             detector_update,
+            store_detection_target,
             stored_target_output_to_detection,
             stored_closest_output_to_detection,
             stored_arbitrary_output_to_detection,
@@ -189,6 +190,15 @@ fn detector_update(
         detector.target_detection = target_output;
         detector.closest_detection = closest_output;
         detector.arbitrary_detection = arbitrary_output;
+    }
+}
+
+/// If detector has a target detection with it, it'll try to get the target from that 
+fn store_detection_target(
+    mut detector_q: Query<(&mut CircleCastUnitDetector, &TargetUnitDetection)>, 
+) {
+    for (mut detector, detection) in detector_q.iter_mut() {
+        detector.target = detection.target();
     }
 }
 

@@ -78,10 +78,16 @@ fn follow_attack_target_order(
     position: Vec2,
 ) {
     let detection = target_detect.detection();
-    let target = order.target.0; // This and the value above could theoretically become out of sync.
+    let target = order.target; // This and the value above could theoretically become out of sync.
+    
+    if target.is_none() {
+        mover.input(Vec2::ZERO);
+        return;
+    }
+    let target = target.unwrap();
 
     if detection.is_none() {
-        let waypoint = transform_q.get(target);
+        let waypoint = transform_q.get(target.entity());
         let waypoint = waypoint.unwrap().translation.truncate();
         let move_vec = (waypoint - position).normalize_or_zero();
         mover.input(move_vec);

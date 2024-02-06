@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy::ecs::system::SystemParam;
 
 use super::RtsCommanderContext;
+use crate::rts_unit::soul::RTSUnitSoulID;
 use crate::rts_unit::{
     control::prelude::*,
     RTSUnitSubEntity,
@@ -29,7 +30,6 @@ impl<'w> AttackInput<'w> {
 
 /// Update system
 fn command_attack (
-    sub_entity_q: Query<&RTSUnitSubEntity>,
     attack_input: AttackInput, 
     mut commander_context: RtsCommanderContext,
     rapier_queries: RtsControllerRapierQueries,
@@ -48,10 +48,9 @@ fn command_attack (
 
     let enemy_cast = rapier_queries.cast_for_e_attackable(mouse.position());
     if let Some(enemy_cast) = enemy_cast {
-        let target = sub_entity_q.get(enemy_cast.0);
-        let target = target.unwrap();
-        let target = target.root();
-        order = OrderType::AttackTarget(AttackTargetOrder::new(target));
+        let target = enemy_cast.0;
+        let target = AttackTargetOrder::new(RTSUnitSoulID::new(target));
+        order = OrderType::AttackTarget(target);
     }
 
     unit_commander.command_selection(add_mode, order)

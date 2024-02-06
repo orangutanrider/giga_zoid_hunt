@@ -1,7 +1,18 @@
+pub mod target_from_commandable;
+
 use bevy::prelude::*;
 
 use super::SingleResultDetection;
 use crate::rts_unit::soul::RTSUnitSoulID;
+
+pub struct InitializePlugin;
+impl Plugin for InitializePlugin{
+    fn build(&self, app: &mut App) {
+        app.add_plugins(
+            target_from_commandable::InitializePlugin
+        );
+    }
+}
 
 #[derive(Component)]
 pub struct TargetUnitDetection {

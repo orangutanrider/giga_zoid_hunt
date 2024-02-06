@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::rts_unit::RTSUnitID;
+use crate::rts_unit::{
+    soul::RTSUnitSoulID, 
+    RTSUnitID
+};
 
 pub const ORDER_COMPLETE_DISTANCE: f32 = 1.0;
 
@@ -34,22 +37,19 @@ impl RTSUnitOrder {
 // ATTACK TARGET
 #[derive(Clone, Copy)]
 pub struct AttackTargetOrder {
-    pub invalidated: bool,
-    pub target: RTSUnitID,
+    pub target: Option<RTSUnitSoulID>,
 }
 impl Default for AttackTargetOrder {
     fn default() -> Self {
         return Self {
-            invalidated: false, 
-            target: RTSUnitID::PLACEHOLDER, 
+            target: None, 
         }
     }
 }
 impl AttackTargetOrder {
-    pub fn new(target: RTSUnitID) -> Self {
+    pub fn new(target: RTSUnitSoulID) -> Self {
         return Self {
-            invalidated: false, 
-            target, 
+            target: Some(target), 
         }
     }
 }
