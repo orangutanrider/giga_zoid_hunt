@@ -35,6 +35,9 @@ fn check_for_order_completion(
         let position = position.unwrap().translation.truncate();
 
         let order = commandable.current_order();
+        if order.is_none() { return; }
+        let order = order.unwrap();
+
         match order.order_type {
             OrderType::PureMovement(pure_move_order) => {
                 process_pure_move(commandable, pure_move_order, position);

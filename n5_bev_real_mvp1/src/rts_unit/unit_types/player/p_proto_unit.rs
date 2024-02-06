@@ -5,6 +5,7 @@ use crate::rts_unit::{
     *,
     control::{
         RTSUnitControlEntity,
+        RTSUnitControlID,
         selectable::Selectable,
         commandable::Commandable,
     },
@@ -14,17 +15,22 @@ use crate::rts_unit::{
         order_processing::r#move::basic_completer::BasicMoveOrderCompleter, // This should maybe be in the control section
         detection::{
             circle_cast_detector::CircleCastUnitDetector,
-            single_result_types::arbitrary_unit::ArbitraryUnitDetection,
-            single_result_types::closest_unit::ClosestUnitDetection,
-            single_result_types::target_unit::TargetUnitDetection,
-        }
+            single_result_types::{
+                arbitrary_unit::ArbitraryUnitDetection,
+                closest_unit::ClosestUnitDetection,
+                target_unit::{
+                    TargetUnitDetection,
+                    target_from_commandable::TargetFromCommandable
+                },
+            },
+        },
     },
     soul::RTSUnitSoulEntity,
     unit_types::RtsTeam::Player,
     movement::{
         Mover,
         kinematic_position_movement::KinematicPositionMovement,
-    }
+    },
 };
 
 use crate::rapier_config::prelude::{
@@ -45,7 +51,7 @@ struct PProtoUnit;
 const ATTACKABLE_SIZE: f32 = 10.0;
 const SELECTABLE_SIZE: f32 = 10.0;
 const RANGE: f32 = 100.0;
-const MOVE_SPEED: f32 = 10.0;
+const MOVE_SPEED: f32 = 1.0;
 
 #[derive(Bundle)]
 struct RTSRoot{
@@ -56,8 +62,8 @@ struct RTSRoot{
 
     mover: Mover,
     movement: KinematicPositionMovement,
-    transform: Transform,
-    rigidbody: RigidBody,
+    transform: TransformBundle,
+    //rigidbody: RigidBody,
     c_group: CollisionGroups,
 }
 
@@ -65,7 +71,7 @@ struct RTSRoot{
 struct Soul {
     to_root: ToRTSUnitRoot,
 
-    transform: Transform,
+    transform: TransformBundle,
     collider: Collider, // Attackable, Detectable
     sensor: Sensor,
     c_group: CollisionGroups,
@@ -79,7 +85,7 @@ struct Control {
     selectable: Selectable,
     move_order_completer: BasicMoveOrderCompleter,
 
-    transform: Transform,
+    transform: TransformBundle,
     collider: Collider, // Selectable
     sensor: Sensor,
     c_group: CollisionGroups,
@@ -90,20 +96,13 @@ struct Behaviour {
     to_root: ToRTSUnitRoot,
 
     controlled_navigation: BasicControlled,
-
-    transform: Transform,
-}
-
-#[derive(Bundle)]
-struct Detection {
-    to_root: ToRTSUnitRoot,
-    
     detector: CircleCastUnitDetector,
     arbitrary_detection: ArbitraryUnitDetection,
     closest_detection: ClosestUnitDetection,
     target_detection: TargetUnitDetection,
+    target_from: TargetFromCommandable,
 
-    transform: Transform,
+    transform: TransformBundle,
 }
 
 fn spawn(
@@ -115,11 +114,6 @@ fn spawn(
     let control = commands.spawn_empty().id();
     let soul = commands.spawn_empty().id();
     let behaviour = commands.spawn_empty().id();
-    let detection = commands.spawn_empty().id();
-
-    // Create parent child heirarchy
-    commands.entity(root).push_children(&[control, soul, behaviour]);
-    commands.entity(behaviour).push_children(&[detection]); // Hmm, I have to ask myself "Should detection be associated with behaviour?" the answer is no, I don't think it should
 
     commands.entity(root).insert(RTSRoot{
         rts_unit: RTSUnit::new(root),
@@ -129,8 +123,8 @@ fn spawn(
 
         mover: Mover::new(MOVE_SPEED),
         movement: KinematicPositionMovement::new(),
-        transform: Transform::default(),
-        rigidbody: RigidBody::KinematicPositionBased,
+        transform: TransformBundle::default(),
+        //rigidbody: RigidBody::KinematicPositionBased,
         c_group: RTS_PHYSICS_CGROUP,
     });
 
@@ -141,7 +135,7 @@ fn spawn(
         selectable: Selectable::new(),
         move_order_completer: BasicMoveOrderCompleter,
 
-        transform: Transform::default(),
+        transform: TransformBundle::default(),
         collider: Collider::cuboid(SELECTABLE_SIZE, SELECTABLE_SIZE),
         sensor: Sensor,
         c_group: P_CONTROL_CGROUP,
@@ -150,7 +144,7 @@ fn spawn(
     commands.entity(soul).insert(Soul{
         to_root: ToRTSUnitRoot::new(root),
 
-        transform: Transform::default(),
+        transform: TransformBundle::default(),
         collider: Collider::ball(ATTACKABLE_SIZE),
         sensor: Sensor,
         c_group: P_SOUL_CGROUP,
@@ -160,18 +154,15 @@ fn spawn(
         to_root: ToRTSUnitRoot::new(root),
 
         controlled_navigation: BasicControlled,
-
-        transform: Transform::default(),
-    });
-
-    commands.entity(detection).insert(Detection {
-        to_root: ToRTSUnitRoot::new(root),
-
         detector: CircleCastUnitDetector::new(RANGE, Player),
         arbitrary_detection: ArbitraryUnitDetection::new(),
         closest_detection: ClosestUnitDetection::new(),
         target_detection: TargetUnitDetection::new(),
+        target_from: TargetFromCommandable::new(RTSUnitControlID::new(control)),
 
-        transform: Transform::default(),
+        transform: TransformBundle::default(),
     });
+
+    // Create parent child heirarchy
+    commands.entity(root).push_children(&[control, soul, behaviour]);
 }

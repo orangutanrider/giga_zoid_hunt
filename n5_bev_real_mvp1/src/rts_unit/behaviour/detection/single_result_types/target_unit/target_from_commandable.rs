@@ -43,9 +43,16 @@ fn target_from_commandable(
         let control_entity = from_commandable.control_entity.entity();
         let commandable = commandable_q.get(control_entity);
         let commandable = commandable.unwrap();
-    
-        let order = commandable.current_order();
+
         let mut target: Option<RTSUnitSoulID> = None;
+        
+        let order = commandable.current_order();
+        if order.is_none() {
+            detection.set_target(target);
+            return
+        }
+        let order = order.unwrap();
+
         match order.order_type {
             OrderType::PureMovement(_) => {},
             OrderType::AttackMove(_) => {},
