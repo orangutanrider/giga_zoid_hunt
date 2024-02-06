@@ -5,6 +5,17 @@ pub mod order_processing;
 
 use bevy::prelude::*;
 
+pub struct InitializePlugin;
+impl Plugin for InitializePlugin{
+    fn build(&self, app: &mut App) {
+        app.add_plugins((
+            navigation::InitializePlugin,
+            detection::InitializePlugin,
+            order_processing::InitializePlugin,
+        ));
+    }
+}
+
 #[derive(Component)]
 /// Attach to root entity, points to behaviour components' entity
 pub struct RTSUnitBehaviourEntity(Entity);

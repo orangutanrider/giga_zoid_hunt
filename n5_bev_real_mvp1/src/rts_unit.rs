@@ -13,6 +13,8 @@ impl Plugin for InitializePlugin {
         app.add_plugins((
             control::InitializePlugin,
             unit_types::InitializePlugin,
+            behaviour::InitializePlugin,
+            movement::InitializePlugin,
         ));
     }
 }
@@ -38,22 +40,19 @@ impl RTSUnit {
 
 #[derive(Component)]
 /// For entities attached to the root in the transform tree
-pub struct RTSUnitSubEntity {
-    root: RTSUnitID,
-}
-impl Default for RTSUnitSubEntity {
+pub struct ToRTSUnitRoot(Entity);
+impl Default for ToRTSUnitRoot {
     fn default() -> Self {
-        return Self{root: RTSUnitID::PLACEHOLDER}
+        return Self(Entity::PLACEHOLDER)
     }
 }
-impl RTSUnitSubEntity {
-    pub fn new(rts_unit: &RTSUnit) -> Self {
-        let root = rts_unit.id;
-        return Self { root }
+impl ToRTSUnitRoot {
+    pub fn new(root: Entity) -> Self {
+        return Self(root)
     }
     
     pub fn root(&self) -> RTSUnitID {
-        return self.root
+        return RTSUnitID(self.0)
     }
 }
 

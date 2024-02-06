@@ -1,11 +1,6 @@
 use bevy::prelude::*;
 
-use crate::rts_unit::{
-    soul::RTSUnitSoulID, 
-    RTSUnitID
-};
-
-pub const ORDER_COMPLETE_DISTANCE: f32 = 1.0;
+use crate::rts_unit::soul::RTSUnitSoulID;
 
 #[derive(Clone, Copy)]
 pub enum OrderType {

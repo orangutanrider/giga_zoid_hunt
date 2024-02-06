@@ -7,7 +7,7 @@ use crate::rts_unit::behaviour::detection::single_result_types::{
 };
 use crate::rts_unit::{
     movement::Mover,
-    RTSUnitSubEntity
+    ToRTSUnitRoot
 };
 use crate::rts_unit::control::prelude::*;
 
@@ -24,14 +24,14 @@ impl Plugin for InitializePlugin{
 pub struct BasicControlled;
 
 fn behaviour_update (
-    behaviour_q: Query<(&RTSUnitSubEntity, &ArbitraryUnitDetection, &TargetUnitDetection), With<BasicControlled>>,
+    behaviour_q: Query<(&ToRTSUnitRoot, &ArbitraryUnitDetection, &TargetUnitDetection), With<BasicControlled>>,
     control_q: Query<&Commandable>,
     mut root_q: Query<(&mut Mover, &RTSUnitControlEntity, &Transform)>,
 
     transform_q: Query<&Transform>,
 ) {
-    for (sub_entity, arb_detect, target_detect) in behaviour_q.iter() {
-        let root = sub_entity.root();
+    for (to_root, arb_detect, target_detect) in behaviour_q.iter() {
+        let root = to_root.root();
         let (mut mover, control_entity, transform) = root_q.get_mut(root.0).unwrap();
         let commandable = control_q.get(control_entity.entity()).unwrap();
 
