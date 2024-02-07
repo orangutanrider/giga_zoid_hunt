@@ -155,12 +155,12 @@ fn closest_entity_from_detection_results(
 }
 
 fn detector_update(
-    mut detector_q: Query<(&mut CircleCastUnitDetector, &Transform), Without<AdditionalDetectorFilter>>, 
+    mut detector_q: Query<(&mut CircleCastUnitDetector, &GlobalTransform), Without<AdditionalDetectorFilter>>, 
     collider_q: Query<&Collider>,
     rapier_context: Res<RapierContext>,
 ){
     for (mut detector, transform, ) in detector_q.iter_mut() {
-        let position = transform.translation.truncate();
+        let position = transform.translation().truncate();
 
         // During detection outputs
         let mut entity_distances = HashMap::new();
@@ -201,13 +201,13 @@ fn detector_update(
 }
 
 fn detector_update_filtered(
-    mut detector_q: Query<(&mut CircleCastUnitDetector, &Transform, &AdditionalDetectorFilter)>, 
+    mut detector_q: Query<(&mut CircleCastUnitDetector, &GlobalTransform, &AdditionalDetectorFilter)>, 
     collider_q: Query<&Collider>,
-    group_q: Query<&Group>,
+    group_q: Query<&CollisionGroups>,
     rapier_context: Res<RapierContext>,
 ){
     for (mut detector, transform, filter) in detector_q.iter_mut() {
-        let position = transform.translation.truncate();
+        let position = transform.translation().truncate();
         
         // During detection outputs
         let mut entity_distances = HashMap::new();
@@ -226,7 +226,7 @@ fn detector_update_filtered(
             };
 
             if target_unit_group.is_ok(){
-                let target_unit_group = target_unit_group.unwrap();
+                let target_unit_group = target_unit_group.unwrap().memberships;
                 if target_unit_group.contains(filter.group()){
                     // Detect
                     detector.detect_at(&rapier_context, position, callback);   
@@ -239,7 +239,7 @@ fn detector_update_filtered(
                 if entity_group.is_err(){
                     return false;
                 }
-                let entity_group = entity_group.unwrap();
+                let entity_group = entity_group.unwrap().memberships;
                 if !entity_group.contains(filter.group()){
                     return false;  // BAH, too much nesting. Will be re-organised in the refactor.
                 }
