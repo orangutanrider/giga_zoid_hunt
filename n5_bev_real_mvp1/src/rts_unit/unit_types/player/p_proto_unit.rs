@@ -1,5 +1,12 @@
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
+use bevy_rapier2d::{
+    prelude::*, 
+    rapier::dynamics::{
+        RigidBodyBuilder, 
+        RigidBodySet, 
+        RigidBodyType
+    },
+};
 
 use crate::rts_unit::{
     *,
@@ -62,8 +69,9 @@ struct RTSRoot{
 
     mover: Mover,
     movement: KinematicPositionMovement,
+    rb2d: RigidBody,
+    velocity: Velocity,
     transform: TransformBundle,
-    //rigidbody: RigidBody,
     c_group: CollisionGroups,
 }
 
@@ -123,8 +131,9 @@ fn spawn(
 
         mover: Mover::new(MOVE_SPEED),
         movement: KinematicPositionMovement::new(),
+        rb2d: RigidBody::KinematicPositionBased,
+        velocity: Velocity::default(),
         transform: TransformBundle::default(),
-        //rigidbody: RigidBody::KinematicPositionBased,
         c_group: RTS_PHYSICS_CGROUP,
     });
 
