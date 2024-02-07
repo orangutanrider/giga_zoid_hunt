@@ -24,8 +24,14 @@ pub const P_SOUL_CGROUP: CollisionGroups = CollisionGroups::new(
     P_SOUL, 
 );
 
+// Prince
+pub const PRINCE_SOUL_CGROUP: CollisionGroups = CollisionGroups::new(
+    P_SOUL.union(P_PRINCE),
+    P_SOUL.union(P_PRINCE), 
+);
+
 // Enemy team collision groups
-pub const E_ATTACKABLE_CGROUP: CollisionGroups = CollisionGroups::new(
+pub const E_SOUL_CGROUP: CollisionGroups = CollisionGroups::new(
     E_ATTACKABLE,
     E_ATTACKABLE, 
 );
