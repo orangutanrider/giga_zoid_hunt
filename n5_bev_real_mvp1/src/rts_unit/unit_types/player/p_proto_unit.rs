@@ -21,6 +21,7 @@ use crate::rts_unit::{
         navigation::controlled::basic_controlled_navigation::BasicControlled,
         order_processing::r#move::basic_completer::BasicMoveOrderCompleter, // This should maybe be in the control section
         detection::{
+            to_detection::attack_detection::*,
             circle_cast_detector::CircleCastUnitDetector,
             single_result_types::{
                 arbitrary_unit::ArbitraryUnitDetection,
@@ -104,6 +105,16 @@ struct Behaviour {
     to_root: ToRTSUnitRoot,
 
     controlled_navigation: BasicControlled,
+    to_attack_target: ToAttackTargetDetection,
+    to_attack_arbitrary: ToAttackArbitraryDetection,
+
+    transform: TransformBundle,
+}
+
+#[derive(Bundle)]
+struct AttackDetection {
+    to_root: ToRTSUnitRoot,
+
     detector: CircleCastUnitDetector,
     arbitrary_detection: ArbitraryUnitDetection,
     closest_detection: ClosestUnitDetection,
@@ -112,6 +123,7 @@ struct Behaviour {
 
     transform: TransformBundle,
 }
+
 
 fn spawn(
     mut commands: Commands, 
@@ -122,6 +134,7 @@ fn spawn(
     let control = commands.spawn_empty().id();
     let soul = commands.spawn_empty().id();
     let behaviour = commands.spawn_empty().id();
+    let attack_detection = commands.spawn_empty().id();
 
     commands.entity(root).insert(RTSRoot{
         rts_unit: RTSUnit::new(root),
@@ -163,6 +176,15 @@ fn spawn(
         to_root: ToRTSUnitRoot::new(root),
 
         controlled_navigation: BasicControlled,
+        to_attack_target: ToAttackTargetDetection::new(attack_detection),
+        to_attack_arbitrary: ToAttackArbitraryDetection::new(attack_detection),
+
+        transform: TransformBundle::default(),
+    });
+
+    commands.entity(attack_detection).insert(AttackDetection{
+        to_root: ToRTSUnitRoot::new(root),
+
         detector: CircleCastUnitDetector::new(RANGE, Player),
         arbitrary_detection: ArbitraryUnitDetection::new(),
         closest_detection: ClosestUnitDetection::new(),
@@ -174,4 +196,5 @@ fn spawn(
 
     // Create parent child heirarchy
     commands.entity(root).push_children(&[control, soul, behaviour]);
+    commands.entity(behaviour).push_children(&[attack_detection]);
 }
