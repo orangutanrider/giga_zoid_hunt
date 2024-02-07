@@ -1,10 +1,10 @@
-pub mod basic_controlled_navigation;
+pub mod basic;
 
 use bevy::prelude::*;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
     fn build(&self, app: &mut App) {
-        app.add_plugins(basic_controlled_navigation::InitializePlugin);
+        app.add_plugins(basic::InitializePlugin);
     }
 }
