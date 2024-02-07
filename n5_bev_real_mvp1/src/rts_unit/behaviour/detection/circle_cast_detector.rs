@@ -24,6 +24,7 @@ impl Plugin for InitializePlugin{
     fn build(&self, app: &mut App) {
         app.add_systems(Update, (
             detector_update,
+            detector_update_filtered,
             store_detection_target,
             stored_target_output_to_detection,
             stored_closest_output_to_detection,

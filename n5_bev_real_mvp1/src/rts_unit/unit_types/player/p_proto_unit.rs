@@ -1,51 +1,31 @@
 use bevy::prelude::*;
-use bevy_rapier2d::{
-    prelude::*, 
-    rapier::dynamics::{
-        RigidBodyBuilder, 
-        RigidBodySet, 
-        RigidBodyType
-    },
-};
+use bevy_rapier2d::prelude::*;
 
-use crate::rts_unit::{
-    *,
-    control::{
-        RTSUnitControlEntity,
-        RTSUnitControlID,
-        selectable::Selectable,
-        commandable::Commandable,
-    },
+use crate::{rapier_config::prelude::PRINCE_SOUL_CGROUP, rts_unit::{
     behaviour::{
-        RTSUnitBehaviourEntity,
-        navigation::controlled::basic::BasicControlled,
-        order_processing::r#move::basic_completer::BasicMoveOrderCompleter, // This should maybe be in the control section
         detection::{
-            to_detection::attack_detection::*,
-            circle_cast_detector::CircleCastUnitDetector,
-            single_result_types::{
+            circle_cast_detector::CircleCastUnitDetector, single_result_types::{
                 arbitrary_unit::ArbitraryUnitDetection,
                 closest_unit::ClosestUnitDetection,
                 target_unit::{
-                    TargetUnitDetection,
-                    target_from_commandable::TargetFromCommandable
+                    target_from_commandable::TargetFromCommandable, TargetUnitDetection
                 },
-            },
-        },
-    },
-    soul::RTSUnitSoulEntity,
-    unit_types::RTSTeam::Player,
-    movement::{
-        Mover,
-        kinematic_position_movement::KinematicPositionMovement,
-    },
-};
+            }, to_detection::attack_detection::*
+        }, navigation::controlled::basic::BasicControlled, order_processing::r#move::basic_completer::BasicMoveOrderCompleter, RTSUnitBehaviourEntity
+    }, control::{
+        commandable::Commandable, selectable::Selectable, RTSUnitControlEntity, RTSUnitControlID
+    }, movement::{
+        kinematic_position_movement::KinematicPositionMovement, Mover
+    }, soul::RTSUnitSoulEntity, unit_types::RTSTeam::Player, *
+}};
 
 use crate::rapier_config::prelude::{
     P_CONTROL_CGROUP,
     P_SOUL_CGROUP,
     RTS_PHYSICS_CGROUP,
 };
+
+use super::prince::Prince;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
@@ -63,6 +43,9 @@ const MOVE_SPEED: f32 = 1.0;
 
 #[derive(Bundle)]
 struct RTSRoot{
+    p_proto_unit: PProtoUnit,
+    prince: Prince,
+
     rts_unit: RTSUnit,
     control: RTSUnitControlEntity,
     behaviour: RTSUnitBehaviourEntity,
@@ -148,6 +131,8 @@ fn spawn(
         velocity: Velocity::default(),
         transform: TransformBundle::default(),
         c_group: RTS_PHYSICS_CGROUP,
+        p_proto_unit: PProtoUnit,
+        prince: Prince,
     });
 
     commands.entity(control).insert(Control{
@@ -169,7 +154,7 @@ fn spawn(
         transform: TransformBundle::default(),
         collider: Collider::ball(ATTACKABLE_SIZE),
         sensor: Sensor,
-        c_group: P_SOUL_CGROUP,
+        c_group: PRINCE_SOUL_CGROUP,
     });
 
     commands.entity(behaviour).insert(Behaviour{
@@ -185,7 +170,7 @@ fn spawn(
     commands.entity(attack_detection).insert(AttackDetection{
         to_root: ToRTSUnitRoot::new(root),
 
-        detector: CircleCastUnitDetector::new(RANGE, Player),
+        detector: CircleCastUnitDetector::new(RANGE, unit_types::RTSTeam::Enemy),
         arbitrary_detection: ArbitraryUnitDetection::new(),
         closest_detection: ClosestUnitDetection::new(),
         target_detection: TargetUnitDetection::new(),
