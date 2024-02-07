@@ -6,14 +6,16 @@ use crate::rapier_config::prelude::{
     E_DETECTABLE_FILTER,
     P_DETECTABLE_FILTER,
 };
-use super::single_result_types::{
-    SingleResultDetection,
-    closest_unit::ClosestUnitDetection,
-    target_unit::TargetUnitDetection,
-    arbitrary_unit::ArbitraryUnitDetection,
-};
+use super::{
+    detector_filter::AdditionalDetectorFilter, 
+    single_result_types::{
+    arbitrary_unit::ArbitraryUnitDetection, 
+    closest_unit::ClosestUnitDetection, 
+    target_unit::TargetUnitDetection, 
+    SingleResultDetection
+}};
 use crate::rts_unit::{
-    unit_types::RtsTeam,
+    unit_types::RTSTeam,
     soul::RTSUnitSoulID,
 };
 
@@ -33,7 +35,7 @@ impl Plugin for InitializePlugin{
 #[derive(Component)]
 pub struct CircleCastUnitDetector {
     radius: f32,
-    team: RtsTeam,
+    target_team: RTSTeam,
 
     target: Option<RTSUnitSoulID>, // Input
     target_detection: Option<RTSUnitSoulID>, // Output
@@ -43,11 +45,11 @@ pub struct CircleCastUnitDetector {
 impl CircleCastUnitDetector {
     pub fn new(
         radius: f32,
-        team: RtsTeam,
+        target_team: RTSTeam,
     ) -> Self {
         return Self { 
             radius,
-            team,
+            target_team,
 
             target: None,
             target_detection: None,
@@ -59,9 +61,13 @@ impl CircleCastUnitDetector {
 
 impl CircleCastUnitDetector {
     fn filter(&self) -> QueryFilter {
-        match self.team {
-            RtsTeam::Enemy => { return P_DETECTABLE_FILTER },
-            RtsTeam::Player => { return E_DETECTABLE_FILTER },
+        match self.target_team {
+            RTSTeam::Player => {
+                return P_DETECTABLE_FILTER;
+            },
+            RTSTeam::Enemy => {
+                return E_DETECTABLE_FILTER;
+            },
         }
     }
 
@@ -148,7 +154,7 @@ fn closest_entity_from_detection_results(
 }
 
 fn detector_update(
-    mut detector_q: Query<(&mut CircleCastUnitDetector, &Transform)>, 
+    mut detector_q: Query<(&mut CircleCastUnitDetector, &Transform), Without<AdditionalDetectorFilter>>, 
     collider_q: Query<&Collider>,
     rapier_context: Res<RapierContext>,
 ){
@@ -174,6 +180,69 @@ fn detector_update(
         }
         else {
             let callback = |entity|{
+                output_entity_distances(&collider_q, entity, position, &mut entity_distances);
+                return true;
+            };
+
+            // Detect
+            detector.detect_at(&rapier_context, position, callback);   
+        }
+
+        // Post detection processes
+        let closest_output = closest_unit_from_detection_results(entity_distances);
+        let arbitrary_output = closest_output;
+
+        // Post detection output
+        detector.target_detection = target_output;
+        detector.closest_detection = closest_output;
+        detector.arbitrary_detection = arbitrary_output;
+    }
+}
+
+fn detector_update_filtered(
+    mut detector_q: Query<(&mut CircleCastUnitDetector, &Transform, &AdditionalDetectorFilter)>, 
+    collider_q: Query<&Collider>,
+    group_q: Query<&Group>,
+    rapier_context: Res<RapierContext>,
+){
+    for (mut detector, transform, filter) in detector_q.iter_mut() {
+        let position = transform.translation.truncate();
+        
+        // During detection outputs
+        let mut entity_distances = HashMap::new();
+        let mut target_output: Option<RTSUnitSoulID> = None;
+
+        // During detection processses
+        let target_unit = detector.target;
+        if target_unit.is_some() {
+            let target_unit = target_unit.unwrap().entity();
+            let target_unit_group = group_q.get(target_unit);
+
+            let callback = |entity|{
+                check_if_target_unit(target_unit, entity, &mut target_output);
+                output_entity_distances(&collider_q, entity, position, &mut entity_distances);
+                return true;
+            };
+
+            if target_unit_group.is_ok(){
+                let target_unit_group = target_unit_group.unwrap();
+                if target_unit_group.contains(filter.group()){
+                    // Detect
+                    detector.detect_at(&rapier_context, position, callback);   
+                }
+            }
+        }
+        else {
+            let callback = |entity|{
+                let entity_group = group_q.get(entity);
+                if entity_group.is_err(){
+                    return false;
+                }
+                let entity_group = entity_group.unwrap();
+                if !entity_group.contains(filter.group()){
+                    return false;  // BAH, too much nesting. Will be re-organised in the refactor.
+                }
+
                 output_entity_distances(&collider_q, entity, position, &mut entity_distances);
                 return true;
             };

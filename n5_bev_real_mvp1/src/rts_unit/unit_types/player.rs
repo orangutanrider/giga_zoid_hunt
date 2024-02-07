@@ -1,4 +1,5 @@
 pub mod p_proto_unit;
+pub mod prince;
 pub mod prelude;
 
 use bevy::prelude::*;

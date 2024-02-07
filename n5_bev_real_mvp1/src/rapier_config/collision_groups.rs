@@ -21,7 +21,7 @@ P_SELECTABLE,
 
 pub const P_SOUL_CGROUP: CollisionGroups = CollisionGroups::new(
     P_SOUL,
-    Group::NONE, 
+    P_SOUL, 
 );
 
 // Enemy team collision groups

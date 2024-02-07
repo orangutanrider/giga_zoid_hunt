@@ -18,7 +18,7 @@ use crate::rts_unit::{
     },
     behaviour::{
         RTSUnitBehaviourEntity,
-        navigation::controlled::basic_controlled_navigation::BasicControlled,
+        navigation::controlled::basic::BasicControlled,
         order_processing::r#move::basic_completer::BasicMoveOrderCompleter, // This should maybe be in the control section
         detection::{
             to_detection::attack_detection::*,
@@ -34,7 +34,7 @@ use crate::rts_unit::{
         },
     },
     soul::RTSUnitSoulEntity,
-    unit_types::RtsTeam::Player,
+    unit_types::RTSTeam::Player,
     movement::{
         Mover,
         kinematic_position_movement::KinematicPositionMovement,
