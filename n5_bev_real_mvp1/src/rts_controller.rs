@@ -13,7 +13,6 @@ impl Plugin for InitializePlugin {
         app.add_plugins((
             unit_selection::InitializePlugin,
             unit_commands::InitializePlugin,
-            mouse::InitializePlugin,
         ));
     }
 }

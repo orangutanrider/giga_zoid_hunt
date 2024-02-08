@@ -8,25 +8,26 @@ use crate::rapier_config::prelude::{
 };
 
 #[derive(SystemParam)]
-pub struct RtsControllerRapierQueries<'w, 's>{
+pub struct RtsControllerRapierQueries<'w>{
     rapier: Res<'w, RapierContext>,
 }
 
 /// Methods
-impl<'w, 's> RtsControllerRapierQueries<'w, 's> {
+impl<'w> RtsControllerRapierQueries<'w> {
     /// e_attackable = an attackable enemy
     pub fn cast_for_e_attackable(
         &self,
         location: Vec2,
     ) -> Option<(Entity, Toi)> {
-        const SHAPE: Collider = Collider::ball(10.0);
+        const RADIUS: f32 = 10.0;
+        let shape = Collider::ball(RADIUS);
 
-        let rapier = self.rapier;
+        let rapier = &self.rapier;
         return rapier.cast_shape(
             location, 
             0.0, 
             Vec2::ZERO, 
-            &SHAPE, 
+            &shape, 
             0.0,
             E_ATTACKABLE_FILTER,
         )
@@ -45,7 +46,7 @@ impl<'w, 's> RtsControllerRapierQueries<'w, 's> {
         
         let location = (origin + release) * 0.5;
 
-        let rapier = self.rapier;
+        let rapier = &self.rapier;
         return rapier.intersections_with_shape( // Only detects shapes that share its shape
             location, 
             0.0, 

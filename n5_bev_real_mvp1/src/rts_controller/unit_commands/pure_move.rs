@@ -7,7 +7,7 @@ use crate::rts_unit::control::prelude::*;
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, command_pure_move)
+        app.add_systems(Update, command_pure_move);
     }
 }
 
