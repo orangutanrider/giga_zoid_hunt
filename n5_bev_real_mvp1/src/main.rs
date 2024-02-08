@@ -1,7 +1,5 @@
 mod rts_unit;
 mod rts_controller;
-mod player_units;
-mod enemy_units;
 mod rapier_config;
 
 use bevy::prelude::*;
@@ -35,13 +33,10 @@ fn main() {
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
     fn build(&self, app: &mut App) {
-        println!("Initializing main");
         app
         .add_plugins((
             rts_unit::InitializePlugin,
             rts_controller::InitializePlugin,
-            player_units::InitializePlugin,
-            enemy_units::InitializePlugin,
         ))
         .add_systems(Startup, (
             spawn_main_camera,

@@ -1,12 +1,8 @@
-/// Data structures for commandable units
-
 use bevy::prelude::*;
 
-pub const ORDER_COMPLETE_DISTANCE: f32 = 1.0;
+use crate::rts_unit::soul::RTSUnitSoulID;
 
-#[derive(std::fmt::Debug)]
 #[derive(Clone, Copy)]
-#[derive(PartialEq, Eq)]
 pub enum OrderType {
     PureMovement(PureMovementOrder),
     AttackMove(AttackMoveOrder),
@@ -36,22 +32,19 @@ impl RTSUnitOrder {
 // ATTACK TARGET
 #[derive(Clone, Copy)]
 pub struct AttackTargetOrder {
-    pub invalidated: bool,
-    pub target_unit: Entity,
+    pub target: Option<RTSUnitSoulID>,
 }
 impl Default for AttackTargetOrder {
     fn default() -> Self {
         return Self {
-            invalidated: false, 
-            target_unit: Entity::PLACEHOLDER, 
+            target: None, 
         }
     }
 }
 impl AttackTargetOrder {
-    pub fn new(target_unit: Entity) -> Self {
+    pub fn new(target: RTSUnitSoulID) -> Self {
         return Self {
-            invalidated: false, 
-            target_unit, 
+            target: Some(target), 
         }
     }
 }
@@ -73,8 +66,8 @@ impl AttackMoveOrder {
         return Self { waypoint }
     }
 
-    pub fn check_for_order_complete(&self, position: Vec2) -> bool {
-        if self.waypoint.distance(position) <= ORDER_COMPLETE_DISTANCE {
+    pub fn is_within_distance_of(&self, distance: f32, position: Vec2) -> bool {
+        if self.waypoint.distance(position) <= distance {
             return true;
         }
         return false;
@@ -98,8 +91,8 @@ impl PureMovementOrder {
         return Self { waypoint }
     }
 
-    pub fn check_for_order_complete(&self, position: Vec2) -> bool {
-        if self.waypoint.distance(position) <= ORDER_COMPLETE_DISTANCE {
+    pub fn is_within_distance_of(&self, distance: f32, position: Vec2) -> bool {
+        if self.waypoint.distance(position) <= distance {
             return true;
         }
         return false;

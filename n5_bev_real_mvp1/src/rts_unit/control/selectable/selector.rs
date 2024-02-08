@@ -1,10 +1,11 @@
-pub mod selectable;
-
 use bevy::prelude::*;
 use bevy::ecs::system::SystemParam;
 
-use crate::rts_unit::*;
-use selectable::Selectable;
+use crate::rts_unit::{
+    *,
+    control::RTSUnitControlID,
+};
+use super::Selectable;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
@@ -16,10 +17,10 @@ impl Plugin for InitializePlugin {
 #[derive(Resource, Default)]
 /// Resource that stores the selected units, publicly it can be read but not edited, to edit use unit selector
 pub struct SelectedUnits {
-    selected: Vec<RTSUnitID>,
+    selected: Vec<RTSUnitControlID>,
 }
 impl SelectedUnits {
-    pub fn iter(&self) -> std::slice::Iter<'_, RTSUnitID> {
+    pub fn iter(&self) -> std::slice::Iter<'_, RTSUnitControlID> {
         return self.selected.iter();
     }
 
@@ -52,17 +53,17 @@ impl<'w, 's> UnitSelector<'w, 's> {
     pub fn select_unit(
         &mut self, 
         add_mode: bool,
-        unit_id: RTSUnitID
+        control_entity: RTSUnitControlID
     ) {
-        let selected = &mut self.selected;
+        let selected = &mut self.unit_selection;
 
         if !add_mode {
             selected.clear();
         }
         
         // Get selectable
-        let q = &mut self.selectable.p0();
-        let selectable = q.get_mut(unit_id.0);
+        let q = &mut self.selectable_q.p0();
+        let selectable = q.get_mut(control_entity.0);
         let mut selectable = selectable.unwrap();
 
         // Don't add already selected units to selection
@@ -73,19 +74,19 @@ impl<'w, 's> UnitSelector<'w, 's> {
         // Add to selection
         let selectable = selectable.as_mut();
         selectable.is_selected = true;
-        selected.selected.push(unit_id);
+        selected.selected.push(control_entity);
     }
 
     pub fn clear_selection(&mut self) {
         // Clear flags
-        let q = &mut self.selectable.p0();
-        for unit_id in self.selected.iter() {
+        let q = &mut self.selectable_q.p0();
+        for unit_id in self.unit_selection.iter() {
             let selectable = q.get_mut(unit_id.0);
             let mut selectable = selectable.unwrap();
             selectable.is_selected = false;
         }
 
         // Remove from selection
-        self.selected.clear();
+        self.unit_selection.clear();
     }
 }

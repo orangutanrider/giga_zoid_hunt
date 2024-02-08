@@ -2,13 +2,14 @@ use bevy::prelude::*;
 use bevy::ecs::system::SystemParam;
 
 use super::RtsCommanderContext;
+use crate::rts_unit::soul::RTSUnitSoulID;
 use crate::rts_unit::control::prelude::*;
 use crate::rts_controller::rapier_queries::RtsControllerRapierQueries;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, command_attack)
+        app.add_systems(Update, command_attack);
     }
 }
 
@@ -44,7 +45,9 @@ fn command_attack (
 
     let enemy_cast = rapier_queries.cast_for_e_attackable(mouse.position());
     if let Some(enemy_cast) = enemy_cast {
-        order = OrderType::AttackTarget(AttackTargetOrder::new(enemy_cast.0))
+        let target = enemy_cast.0;
+        let target = AttackTargetOrder::new(RTSUnitSoulID::new(target));
+        order = OrderType::AttackTarget(target);
     }
 
     unit_commander.command_selection(add_mode, order)

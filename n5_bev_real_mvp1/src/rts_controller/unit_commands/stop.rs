@@ -6,7 +6,7 @@ use super::RtsCommanderContext;
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, command_stop)
+        app.add_systems(Update, command_stop);
     }
 }
 

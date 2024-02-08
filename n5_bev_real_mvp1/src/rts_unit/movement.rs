@@ -11,22 +11,36 @@ impl Plugin for InitializePlugin {
     }
 }
 
-pub trait Mover {
-    fn read_move_vec(&self) -> Vec2;
-    fn input_move_vec(&mut self, move_vec: Vec2);
-}
-
-#[derive(Clone, Copy)]
-struct MoverInternal {
+#[derive(Component)]
+/// Responsible for recieving move input from behaviour scripts
+/// And providing it for the different mover components
+pub struct Mover {
     move_vec: Vec2,
     mover_power: f32,
 }
-impl MoverInternal {
-    fn new(mover_power:f32) -> Self {
-        return Self 
-        { 
+impl Default for Mover {
+    fn default() -> Self {
+        Self { 
+            move_vec: Vec2::ZERO, 
+            mover_power: 0.0 }
+    }
+}
+impl Mover {
+    pub fn new(mover_power:f32) -> Self {
+        return Self { 
             move_vec: Vec2::ZERO, 
             mover_power,
         }
+    }
+}
+
+impl Mover {
+    pub fn read(&self) -> Vec2{
+        return self.move_vec * self.mover_power
+    }
+    
+    /// Intended for values between -1 and 1
+    pub fn input(&mut self, move_vec: Vec2) {
+        self.move_vec = move_vec;
     }
 }
