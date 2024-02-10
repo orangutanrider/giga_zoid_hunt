@@ -21,3 +21,12 @@ where B: Bundle {
 
     fn new_complete_bundle(params: Params, entity_references: EntityReferences) -> B;
 }
+
+pub trait IntegratedBlockSpawn<B, Params, EntityReferences>
+where B: Bundle {
+    fn spawn_complete(
+        commands: &mut Commands,
+        params: Params,
+        entity_references: EntityReferences,
+    ) -> Entity ;
+}
