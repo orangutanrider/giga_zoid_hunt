@@ -1,7 +1,8 @@
-pub mod single_result_types;
-pub mod circle_cast_detector;
-pub mod to_detection;
-pub mod detector_filter;
+mod single_result_types;
+mod detectors;
+
+pub mod blocks;
+pub mod parts;
 
 use bevy::prelude::*;
 
@@ -9,7 +10,7 @@ pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
     fn build(&self, app: &mut App) {
         app.add_plugins((
-            circle_cast_detector::InitializePlugin,
+            detectors::InitializePlugin,
             single_result_types::InitializePlugin,
         ));
     }

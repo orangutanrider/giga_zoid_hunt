@@ -1,8 +1,12 @@
-pub mod commandable;
-pub mod selectable;
-pub mod prelude;
+mod commandable;
+mod selectable;
+
+pub mod blocks;
+pub mod parts;
 
 use bevy::prelude::*;
+use super::rts_entity_impls;
+
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
@@ -14,39 +18,13 @@ impl Plugin for InitializePlugin{
 }
 
 #[derive(Clone, Copy)]
-pub struct RTSUnitControlID(Entity);
-impl Default for RTSUnitControlID {
-    fn default() -> Self {
-        return Self::PLACEHOLDER
-    }
-}
-impl RTSUnitControlID {
-    pub const PLACEHOLDER: Self = Self(Entity::PLACEHOLDER);
-
-    pub fn new(entity: Entity) -> Self {
-        return Self(entity)
-    }
-
-    pub fn entity(&self) -> Entity {
-        return self.0
-    }
-}
+#[derive(Component)]
+/// Attach to the control entity
+/// An entity that is expected to be a control sub-entity of an RTS unit, attached to the root of that unit in the transform
+pub struct RTSUnitControl(Entity);
+rts_entity_impls!(RTSUnitControl);
 
 #[derive(Component)]
-/// Attach to root entity, points to control components' entity
-/// (Selectable, Commandable)
-pub struct RTSUnitControlEntity(RTSUnitControlID);
-impl Default for RTSUnitControlEntity {
-    fn default() -> Self {
-        Self(RTSUnitControlID::PLACEHOLDER)
-    }
-}
-impl RTSUnitControlEntity {
-    pub fn new(control_entity: Entity) -> Self {
-        return Self(RTSUnitControlID::new(control_entity))
-    }
-
-    pub fn entity(&self) -> Entity {
-        return self.0.0
-    }
-}
+/// Attach to the root, points to the rts unit's control entity
+pub struct ToRTSUnitControl(Entity);
+rts_entity_impls!(ToRTSUnitControl);

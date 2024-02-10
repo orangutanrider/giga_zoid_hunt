@@ -9,7 +9,7 @@ use crate::rts_unit::behaviour::detection::to_detection::attack_detection::{
     ToAttackArbitraryDetection,
     ToAttackTargetDetection,
 };
-use crate::rts_unit::unit_types::player::prince::Prince;
+use crate::rts_unit::unit_type::player::prince::Prince;
 use crate::rts_unit::{
     movement::Mover,
     ToRTSUnitRoot

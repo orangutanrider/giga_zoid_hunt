@@ -12,29 +12,29 @@ impl Plugin for InitializePlugin {
 }
 
 #[derive(Component)]
+/// Mover Terminal
 /// Responsible for recieving move input from behaviour scripts
-/// And providing it for the different mover components
-pub struct Mover {
+/// And providing it for the different movement components (which create the movement)
+pub struct TMover {
     move_vec: Vec2,
     mover_power: f32,
 }
-impl Default for Mover {
+impl Default for TMover {
     fn default() -> Self {
         Self { 
             move_vec: Vec2::ZERO, 
-            mover_power: 0.0 }
-    }
+            mover_power: 0.0 
+    }}
 }
-impl Mover {
+impl TMover {
     pub fn new(mover_power:f32) -> Self {
         return Self { 
             move_vec: Vec2::ZERO, 
             mover_power,
-        }
-    }
+    }}
 }
 
-impl Mover {
+impl TMover {
     pub fn read(&self) -> Vec2{
         return self.move_vec * self.mover_power
     }

@@ -6,18 +6,9 @@ use crate::rapier_config::prelude::{
     E_DETECTABLE_FILTER,
     P_DETECTABLE_FILTER,
 };
-use super::{
-    detector_filter::AdditionalDetectorFilter, 
-    single_result_types::{
-    arbitrary_unit::ArbitraryUnitDetection, 
-    closest_unit::ClosestUnitDetection, 
-    target_unit::TargetUnitDetection, 
-    SingleResultDetection
-}};
-use crate::rts_unit::{
-    unit_types::RTSTeam,
-    soul::RTSUnitSoulID,
-};
+use crate::rts_unit::detection::parts::*;
+use crate::rts_unit::soul::*;
+use crate::rts_unit::unit_type::RTSTeam;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
@@ -34,7 +25,7 @@ impl Plugin for InitializePlugin{
 }
 
 #[derive(Component)]
-pub struct CircleCastUnitDetector {
+pub struct CircleIntersectUnitDetector {
     radius: f32,
     target_team: RTSTeam,
 
@@ -43,7 +34,7 @@ pub struct CircleCastUnitDetector {
     closest_detection: Option<RTSUnitSoulID>, // Output
     arbitrary_detection: Option<RTSUnitSoulID>, // Output
 }
-impl CircleCastUnitDetector {
+impl CircleIntersectUnitDetector {
     pub fn new(
         radius: f32,
         target_team: RTSTeam,
@@ -60,7 +51,7 @@ impl CircleCastUnitDetector {
     }
 }
 
-impl CircleCastUnitDetector {
+impl CircleIntersectUnitDetector {
     fn filter(&self) -> QueryFilter {
         match self.target_team {
             RTSTeam::Player => {
@@ -155,7 +146,7 @@ fn closest_entity_from_detection_results(
 }
 
 fn detector_update(
-    mut detector_q: Query<(&mut CircleCastUnitDetector, &GlobalTransform), Without<AdditionalDetectorFilter>>, 
+    mut detector_q: Query<(&mut CircleIntersectUnitDetector, &GlobalTransform), Without<AdditionalDetectorFilter>>, 
     collider_q: Query<&Collider>,
     rapier_context: Res<RapierContext>,
 ){
@@ -201,7 +192,7 @@ fn detector_update(
 }
 
 fn detector_update_filtered(
-    mut detector_q: Query<(&mut CircleCastUnitDetector, &GlobalTransform, &AdditionalDetectorFilter)>, 
+    mut detector_q: Query<(&mut CircleIntersectUnitDetector, &GlobalTransform, &AdditionalDetectorFilter)>, 
     collider_q: Query<&Collider>,
     group_q: Query<&CollisionGroups>,
     rapier_context: Res<RapierContext>,
@@ -265,7 +256,7 @@ fn detector_update_filtered(
 
 /// If detector has a target detection with it, it'll try to get the target from that 
 fn store_detection_target(
-    mut detector_q: Query<(&mut CircleCastUnitDetector, &TargetUnitDetection)>, 
+    mut detector_q: Query<(&mut CircleIntersectUnitDetector, &TargetUnitDetection)>, 
 ) {
     for (mut detector, detection) in detector_q.iter_mut() {
         detector.target = detection.target();
@@ -274,7 +265,7 @@ fn store_detection_target(
 
 /// If detector has a target detection with it, it'll try to output to it
 fn stored_target_output_to_detection( 
-    mut detector_q: Query<(&CircleCastUnitDetector, &mut TargetUnitDetection)>, 
+    mut detector_q: Query<(&CircleIntersectUnitDetector, &mut TargetUnitDetection)>, 
 ) {
     for (detector, mut detection) in detector_q.iter_mut() {
         detection.set_detection(detector.target_detection);
@@ -283,7 +274,7 @@ fn stored_target_output_to_detection(
 
 /// If detector has a closest detection with it, it'll try to output to it
 fn stored_closest_output_to_detection(
-    mut detector_q: Query<(&CircleCastUnitDetector, &mut ClosestUnitDetection)>, 
+    mut detector_q: Query<(&CircleIntersectUnitDetector, &mut ClosestUnitDetection)>, 
 ) {
     for (detector, mut detection) in detector_q.iter_mut() {
         detection.set_detection(detector.closest_detection);
@@ -292,7 +283,7 @@ fn stored_closest_output_to_detection(
 
 /// If detector has a arbitrary detection with it, it'll try to output to it
 fn stored_arbitrary_output_to_detection(
-    mut detector_q: Query<(&CircleCastUnitDetector, &mut ArbitraryUnitDetection)>, 
+    mut detector_q: Query<(&CircleIntersectUnitDetector, &mut ArbitraryUnitDetection)>, 
 ) {
     for (detector, mut detection) in detector_q.iter_mut() {
         detection.set_detection(detector.arbitrary_detection);

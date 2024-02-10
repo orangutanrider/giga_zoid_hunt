@@ -1,9 +1,7 @@
 pub mod enemy;
 pub mod player;
-//pub mod prelude;
 
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::Group;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
@@ -15,6 +13,7 @@ impl Plugin for InitializePlugin{
     }
 }
 
+#[derive(Clone, Copy)]
 #[derive(Component)]
 pub enum RTSTeam{
     Player,

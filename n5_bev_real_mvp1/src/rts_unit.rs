@@ -1,9 +1,17 @@
-pub mod control;
-pub mod movement;
-pub mod unit_types;
-pub mod unit_components;
-pub mod behaviour;
-pub mod soul;
+#[macro_use]
+mod control;
+#[macro_use]
+mod behaviour;
+#[macro_use]
+mod soul;
+#[macro_use]
+mod detection;
+
+mod movement;
+mod unit_type;
+
+pub mod parts;
+pub mod blocks;
 
 use bevy::prelude::*;
 
@@ -12,62 +20,43 @@ impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
             control::InitializePlugin,
-            unit_types::InitializePlugin,
+            unit_type::InitializePlugin,
             behaviour::InitializePlugin,
             movement::InitializePlugin,
         ));
     }
 }
 
-#[derive(Component)]
-pub struct RTSUnit {
-    id: RTSUnitID,
-}
-impl Default for RTSUnit {
-    fn default() -> Self {
-        return Self{id: RTSUnitID::PLACEHOLDER}
-    }
-}
-impl RTSUnit {
-    pub fn new(entity: Entity) -> Self {
-        return Self { id: RTSUnitID(entity) }
+#[macro_export]
+macro_rules! rts_entity_impls { ($t:ty) => {
+    impl $t {
+        pub const PLACEHOLDER: Self = Self(Entity::PLACEHOLDER);
+
+        pub fn new(entity: Entity) -> Self {
+            return Self(entity)
+        }
+
+        pub fn entity(&self) -> Entity {
+            return self.0
+        }
     }
 
-    pub fn entity(&self) -> Entity {
-        return self.id.0
+    impl Default for $t {
+        fn default() -> Self {
+            return Self::PLACEHOLDER
+        }
     }
-}
+};}
+pub(crate) use rts_entity_impls;
+
+#[derive(Clone, Copy)]
+#[derive(Component)]
+/// Attach to the root entity
+/// An entity that is expected to be a the root entity of an RTS unit
+pub struct RTSUnit(Entity);
+rts_entity_impls!(RTSUnit);
 
 #[derive(Component)]
 /// For entities attached to the root in the transform tree
 pub struct ToRTSUnitRoot(Entity);
-impl Default for ToRTSUnitRoot {
-    fn default() -> Self {
-        return Self(Entity::PLACEHOLDER)
-    }
-}
-impl ToRTSUnitRoot {
-    pub fn new(root: Entity) -> Self {
-        return Self(root)
-    }
-    
-    pub fn root(&self) -> RTSUnitID {
-        return RTSUnitID(self.0)
-    }
-}
-
-#[derive(Clone, Copy)]
-/// The root entity
-pub struct RTSUnitID(Entity);
-impl Default for RTSUnitID {
-    fn default() -> Self {
-        return Self::PLACEHOLDER
-    }
-}
-impl RTSUnitID {
-    pub const PLACEHOLDER: Self = Self(Entity::PLACEHOLDER);
-
-    pub fn new(entity: Entity) -> Self {
-        return RTSUnitID(entity)
-    }
-}
+rts_entity_impls!(ToRTSUnitRoot);
