@@ -16,7 +16,7 @@ use crate::{rapier_config::prelude::PRINCE_SOUL_CGROUP, rts_unit::{
         commandable::Commandable, selectable::Selectable, RTSUnitControlEntity, RTSUnitControlID
     }, movement::{
         kinematic_position_movement::KinematicPositionMovement, Mover
-    }, soul::RTSUnitSoulEntity, unit_types::RTSTeam::Player, *
+    }, soul::RTSUnitSoulEntity, unit_type::RTSTeam::Player, *
 }};
 
 use crate::rapier_config::prelude::{
@@ -170,7 +170,7 @@ fn spawn(
     commands.entity(attack_detection).insert(AttackDetection{
         to_root: ToRTSUnitRoot::new(root),
 
-        detector: CircleCastUnitDetector::new(RANGE, unit_types::RTSTeam::Enemy),
+        detector: CircleCastUnitDetector::new(RANGE, unit_type::RTSTeam::Enemy),
         arbitrary_detection: ArbitraryUnitDetection::new(),
         closest_detection: ClosestUnitDetection::new(),
         target_detection: TargetUnitDetection::new(),

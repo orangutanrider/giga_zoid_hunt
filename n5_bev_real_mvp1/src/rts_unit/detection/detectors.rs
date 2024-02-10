@@ -1,3 +1,5 @@
+pub mod circle_intersections;
+
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 

@@ -16,7 +16,7 @@ use crate::{rapier_config::prelude::P_PRINCE, rts_unit::{
     }, control::{
     }, movement::{
         kinematic_position_movement::KinematicPositionMovement, Mover
-    }, soul::RTSUnitSoulEntity, unit_types::RTSTeam::Player, *
+    }, soul::RTSUnitSoulEntity, unit_type::RTSTeam::Player, *
 }};
 
 use crate::rapier_config::prelude::{

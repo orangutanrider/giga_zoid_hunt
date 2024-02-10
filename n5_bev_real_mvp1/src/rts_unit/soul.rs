@@ -1,39 +1,14 @@
 use bevy::prelude::*;
+use super::rts_entity_impls;
 
 #[derive(Clone, Copy)]
-pub struct RTSUnitSoulID(Entity);
-impl Default for RTSUnitSoulID {
-    fn default() -> Self {
-        return Self::PLACEHOLDER
-    }
-}
-impl RTSUnitSoulID {
-    pub const PLACEHOLDER: Self = Self(Entity::PLACEHOLDER);
-
-    pub fn new(entity: Entity) -> Self {
-        return RTSUnitSoulID(entity)
-    }
-
-    pub fn entity(&self) -> Entity {
-        return self.0
-    }
-}
+#[derive(Component)]
+/// Attach to the control entity
+/// An entity that is expected to be a soul sub-entity of an RTS unit, attached to the root of that unit in the transform
+pub struct RTSUnitSoul(Entity);
+rts_entity_impls!(RTSUnitSoul);
 
 #[derive(Component)]
-/// Attach to root entity, points to soul components' entity
-/// (Attackable, Detectable)
-pub struct RTSUnitSoulEntity(RTSUnitSoulID);
-impl Default for RTSUnitSoulEntity {
-    fn default() -> Self {
-        Self(RTSUnitSoulID::PLACEHOLDER)
-    }
-}
-impl RTSUnitSoulEntity {
-    pub fn new(soul_entity: Entity) -> Self {
-        return Self(RTSUnitSoulID::new(soul_entity))
-    }
-
-    pub fn entity(&self) -> Entity {
-        return self.0.0
-    }
-}
+/// Attach to the root, points to the rts unit's soul entity
+pub struct ToRTSUnitSoul(Entity);
+rts_entity_impls!(ToRTSUnitSoul);

@@ -1,9 +1,13 @@
-pub mod attack;
-pub mod navigation;
-pub mod detection;
-pub mod order_processing;
+mod attack;
+mod navigation;
+mod get;
+mod order_processing;
+
+pub mod blocks;
+pub mod parts;
 
 use bevy::prelude::*;
+use super::rts_entity_impls;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
@@ -16,20 +20,14 @@ impl Plugin for InitializePlugin{
     }
 }
 
+#[derive(Clone, Copy)]
 #[derive(Component)]
-/// Attach to root entity, points to behaviour components' entity
-pub struct RTSUnitBehaviourEntity(Entity);
-impl Default for RTSUnitBehaviourEntity {
-    fn default() -> Self {
-        Self(Entity::PLACEHOLDER)
-    }
-}
-impl RTSUnitBehaviourEntity {
-    pub fn new(behaviour_entity: Entity) -> Self {
-        return Self(behaviour_entity)
-    }
+/// Attach to the control entity
+/// An entity that is expected to be a behaviour sub-entity of an RTS unit, attached to the root of that unit in the transform
+pub struct RTSUnitBehaviour(Entity);
+rts_entity_impls!(RTSUnitBehaviour);
 
-    pub fn entity(&self) -> Entity {
-        return self.0
-    }
-}
+#[derive(Component)]
+/// Attach to the root, points to the rts unit's behaviour entity
+pub struct ToRTSUnitBehaviour(Entity);
+rts_entity_impls!(ToRTSUnitBehaviour);
