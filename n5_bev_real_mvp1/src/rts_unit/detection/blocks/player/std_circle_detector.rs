@@ -2,15 +2,14 @@ use bevy::prelude::*;
 
 use crate::rts_unit::{
     *,
-    blocks::Block,
-    control::RTSUnitControl,
+    block::IntegratedBlock,
     unit_type::RTSTeam,
     detection::parts::*,
 };
 
 #[derive(Bundle)]
 pub struct PlayerCircleDetectorBlock {
-    pub to_root: ToRTSUnitRoot,
+    pub to_root: ToRoot,
     pub transform: TransformBundle,
 
     pub detector: CircleIntersectUnitDetector,
@@ -27,17 +26,15 @@ pub struct Parameters {
     pub range: f32,
 }
 
-
 #[derive(Clone, Copy)]
 pub struct EntityReferences {
-    pub root: RTSUnit,
-    pub control: RTSUnitControl, // Target is recieved from commandable
+    pub root: RTSUnitRoot, // root -> control (target is recieved via commandable)
 }
 
-impl Block<PlayerCircleDetectorBlock, Parameters, EntityReferences> for PlayerCircleDetectorBlock {
-    fn new_complete_bundle(params: Parameters, entity_references: EntityReferences) -> PlayerCircleDetectorBlock {
+impl IntegratedBlock<PlayerCircleDetectorBlock, Parameters, EntityReferences> for PlayerCircleDetectorBlock {
+    fn new_bundle(params: Parameters, entity_references: EntityReferences) -> PlayerCircleDetectorBlock {
         return Self {
-            to_root: entity_references.root,
+            to_root: ToRoot::new(entity_references.root.entity()),
             transform: TransformBundle{
                 local: Transform{
                     translation: params.position,
@@ -47,7 +44,17 @@ impl Block<PlayerCircleDetectorBlock, Parameters, EntityReferences> for PlayerCi
             arbitrary_detection: ArbitraryUnitDetection::new(),
             closest_detection: ClosestUnitDetection::new(),
             target_detection: TargetUnitDetection::new(),
-            target_from: TargetFromCommandable::new(entity_references.control),
+            target_from: TargetFromCommandable,
         }
+    }
+
+    fn spawn_complete(
+        commands: &mut Commands,
+        params: Parameters,
+        entity_references: EntityReferences,
+    ) -> Entity  {
+        let entity = commands.spawn( Self::new_bundle(params, entity_references)).id();
+        commands.entity(entity_references.root.entity()).push_children(&[entity]);
+        return entity
     }
 }

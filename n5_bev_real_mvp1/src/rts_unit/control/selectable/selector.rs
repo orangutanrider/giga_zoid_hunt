@@ -1,10 +1,7 @@
 use bevy::prelude::*;
 use bevy::ecs::system::SystemParam;
 
-use crate::rts_unit::{
-    *,
-    control::RTSUnitControlID,
-};
+use crate::rts_unit::control::RTSUnitControl;
 use super::Selectable;
 
 pub struct InitializePlugin;
@@ -17,10 +14,10 @@ impl Plugin for InitializePlugin {
 #[derive(Resource, Default)]
 /// Resource that stores the selected units, publicly it can be read but not edited, to edit use unit selector
 pub struct SelectedUnits {
-    selected: Vec<RTSUnitControlID>,
+    selected: Vec<RTSUnitControl>,
 }
 impl SelectedUnits {
-    pub fn iter(&self) -> std::slice::Iter<'_, RTSUnitControlID> {
+    pub fn iter(&self) -> std::slice::Iter<'_, RTSUnitControl> {
         return self.selected.iter();
     }
 
@@ -53,7 +50,7 @@ impl<'w, 's> UnitSelector<'w, 's> {
     pub fn select_unit(
         &mut self, 
         add_mode: bool,
-        control_entity: RTSUnitControlID
+        control_entity: RTSUnitControl
     ) {
         let selected = &mut self.unit_selection;
 

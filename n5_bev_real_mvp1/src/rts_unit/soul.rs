@@ -1,14 +1,17 @@
 use bevy::prelude::*;
-use super::rts_entity_impls;
+
+use crate::rts_unit::*;
+use crate::entity_ref_impls;
 
 #[derive(Clone, Copy)]
 #[derive(Component)]
-/// Attach to the control entity
-/// An entity that is expected to be a soul sub-entity of an RTS unit, attached to the root of that unit in the transform
 pub struct RTSUnitSoul(Entity);
-rts_entity_impls!(RTSUnitSoul);
+entity_ref_impls!(RTSUnitSoul, SelfEntity);
 
 #[derive(Component)]
-/// Attach to the root, points to the rts unit's soul entity
-pub struct ToRTSUnitSoul(Entity);
-rts_entity_impls!(ToRTSUnitSoul);
+pub struct RootToSoul(Entity);
+entity_ref_impls!(RootToSoul, ChildEntity);
+
+#[derive(Component)]
+pub struct ChildToSoul(Entity);
+entity_ref_impls!(ChildToSoul, ParentEntity);
