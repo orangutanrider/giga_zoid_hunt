@@ -29,10 +29,10 @@ pub struct CircleIntersectUnitDetector {
     radius: f32,
     target_team: RTSTeam,
 
-    target: Option<RTSUnitSoulID>, // Input
-    target_detection: Option<RTSUnitSoulID>, // Output
-    closest_detection: Option<RTSUnitSoulID>, // Output
-    arbitrary_detection: Option<RTSUnitSoulID>, // Output
+    target: Option<RTSUnitSoul>, // Input
+    target_detection: Option<RTSUnitSoul>, // Output
+    closest_detection: Option<RTSUnitSoul>, // Output
+    arbitrary_detection: Option<RTSUnitSoul>, // Output
 }
 impl CircleIntersectUnitDetector {
     pub fn new(
@@ -84,10 +84,10 @@ impl CircleIntersectUnitDetector {
 fn check_if_target_unit(
     target_unit: Entity, // to be replaced with a attackable wraper around the entity
     entity: Entity,
-    target_output: &mut Option<RTSUnitSoulID>,
+    target_output: &mut Option<RTSUnitSoul>,
 ) {
     if entity == target_unit {
-        *target_output = Some(RTSUnitSoulID::new(entity));
+        *target_output = Some(RTSUnitSoul::new(entity));
     }
 }
 
@@ -115,12 +115,12 @@ fn output_entity_distances(
 /// Closest Unit Results Processing
 fn closest_unit_from_detection_results(
     entity_distances: HashMap<Entity, f32>,
-) -> Option<RTSUnitSoulID> {
+) -> Option<RTSUnitSoul> {
     let closest_entity = closest_entity_from_detection_results(entity_distances);
     if closest_entity.is_none() { return None }
     let closest_entity = closest_entity.unwrap();
 
-    return Some(RTSUnitSoulID::new(closest_entity));
+    return Some(RTSUnitSoul::new(closest_entity));
 }
 
 /// Closest Unit Results Processing
@@ -155,7 +155,7 @@ fn detector_update(
 
         // During detection outputs
         let mut entity_distances = HashMap::new();
-        let mut target_output: Option<RTSUnitSoulID> = None;
+        let mut target_output: Option<RTSUnitSoul> = None;
 
         // During detection processses
         let target_unit = detector.target;
@@ -202,7 +202,7 @@ fn detector_update_filtered(
         
         // During detection outputs
         let mut entity_distances = HashMap::new();
-        let mut target_output: Option<RTSUnitSoulID> = None;
+        let mut target_output: Option<RTSUnitSoul> = None;
 
         // During detection processses
         let target_unit = detector.target;

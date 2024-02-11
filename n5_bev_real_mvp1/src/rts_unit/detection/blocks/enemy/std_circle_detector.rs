@@ -1,15 +1,13 @@
 use bevy::prelude::*;
 
 use crate::rts_unit::{
-    *,
-    blocks::Block,
+    block::SimpleBlock,
     unit_type::RTSTeam,
     detection::parts::*,
 };
 
 #[derive(Bundle)]
 pub struct EnemyCircleDetectorBlock {
-    pub to_root: ToRTSUnitRoot,
     pub transform: TransformBundle,
 
     pub detector: CircleIntersectUnitDetector,
@@ -23,16 +21,9 @@ pub struct Parameters {
     pub range: f32,
 }
 
-
-#[derive(Clone, Copy)]
-pub struct EntityReferences {
-    pub root: RTSUnit,
-}
-
-impl Block<EnemyCircleDetectorBlock, Parameters, EntityReferences> for EnemyCircleDetectorBlock {
-    fn new_complete_bundle(params: Parameters, entity_references: EntityReferences) -> EnemyCircleDetectorBlock {
+impl SimpleBlock<EnemyCircleDetectorBlock, Parameters> for EnemyCircleDetectorBlock {
+    fn new_bundle(params: Parameters) -> EnemyCircleDetectorBlock {
         return Self {
-            to_root: entity_references.root,
             transform: TransformBundle{
                 local: Transform{
                     translation: params.position,

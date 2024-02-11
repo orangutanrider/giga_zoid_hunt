@@ -2,7 +2,7 @@ pub mod closest_unit;
 pub mod target_unit;
 pub mod arbitrary_unit;
 
-use crate::rts_unit::soul::RTSUnitSoulID;
+use crate::rts_unit::soul::RTSUnitSoul;
 
 use bevy::prelude::*;
 
@@ -16,10 +16,10 @@ impl Plugin for InitializePlugin{
 pub trait SingleResultDetection {
     fn set_detection(
         &mut self,
-        detection: Option<RTSUnitSoulID>,
+        detection: Option<RTSUnitSoul>,
     );
     
     fn detection(
         &self
-    ) -> Option<RTSUnitSoulID>;
+    ) -> Option<RTSUnitSoul>;
 }

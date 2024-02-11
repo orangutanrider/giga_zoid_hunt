@@ -23,7 +23,7 @@ impl KinematicPositionMovement {
 }
 
 fn move_update(
-    mut q: Query<(&mut Transform, &Mover), With<KinematicPositionMovement>>,
+    mut q: Query<(&mut Transform, &TMover), With<KinematicPositionMovement>>,
 ) {
     for (transform, input) in q.iter_mut() {
         movement(transform, input.read());

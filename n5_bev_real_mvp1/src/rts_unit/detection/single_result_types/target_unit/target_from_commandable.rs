@@ -1,10 +1,13 @@
 use bevy::prelude::*;
 
-use crate::rts_unit::soul::RTSUnitSoulID;
-use crate::rts_unit::control::{
-    prelude::*, 
-    RTSUnitControlID
-};
+use crate::rts_unit::{
+    *,
+    soul::RTSUnitSoul,
+    control::{
+        parts::*,
+        RootToControl,
+} };
+
 use super::TargetUnitDetection;
 
 pub struct InitializePlugin;
@@ -17,34 +20,27 @@ impl Plugin for InitializePlugin{
 }
 
 #[derive(Component)]
-pub struct TargetFromCommandable{
-    control_entity: RTSUnitControlID,
-}
-impl Default for TargetFromCommandable {
-    fn default() -> Self {
-        return Self {
-            control_entity: RTSUnitControlID::PLACEHOLDER,
-        }
-    }
-}
-impl TargetFromCommandable {
-    pub fn new(control_entity: RTSUnitControlID) -> Self {
-        return Self {
-            control_entity,
-        }
+pub struct TargetFromCommandable;
+impl ReferenceFlag<(RootToControl, Commandable), Commandable> for TargetFromCommandable {
+    fn e (p: (RootToControl, Commandable), o: Commandable) {
+        todo!()
     }
 }
 
 fn target_from_commandable(
-    mut detector_q: Query<(&mut TargetUnitDetection, &TargetFromCommandable)>,
-    commandable_q: Query<&Commandable>,
+    mut detector_q: Query<(&mut TargetUnitDetection, &ToRoot), With<TargetFromCommandable>>,
+    root_q: Query<&RootToControl>,
+    control_q: Query<&Commandable>,
 ) {
-    for (mut detection, from_commandable) in detector_q.iter_mut() {
-        let control_entity = from_commandable.control_entity.entity();
-        let commandable = commandable_q.get(control_entity);
+    for (mut detection, to_root) in detector_q.iter_mut() {
+        let root = to_root.entity();
+        let to_control = root_q.get(root);
+        let to_control = to_control.unwrap();
+        let control = to_control.entity();
+        let commandable = control_q.get(control);
         let commandable = commandable.unwrap();
 
-        let mut target: Option<RTSUnitSoulID> = None;
+        let mut target: Option<RTSUnitSoul> = None;
         
         let order = commandable.current_order();
         if order.is_none() {

@@ -3,7 +3,7 @@ pub mod target_from_commandable;
 use bevy::prelude::*;
 
 use super::SingleResultDetection;
-use crate::rts_unit::soul::RTSUnitSoulID;
+use crate::rts_unit::soul::RTSUnitSoul;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
@@ -16,8 +16,8 @@ impl Plugin for InitializePlugin{
 
 #[derive(Component)]
 pub struct TargetUnitDetection {
-    target: Option<RTSUnitSoulID>,
-    target_detection: Option<RTSUnitSoulID>,
+    target: Option<RTSUnitSoul>,
+    target_detection: Option<RTSUnitSoul>,
 }
 impl Default for TargetUnitDetection {
     fn default() -> Self {
@@ -37,11 +37,11 @@ impl TargetUnitDetection {
 }
 
 impl TargetUnitDetection {
-    fn set_target(&mut self, target: Option<RTSUnitSoulID>) {
+    fn set_target(&mut self, target: Option<RTSUnitSoul>) {
         self.target = target;
     }
 
-    pub fn target(&self) -> Option<RTSUnitSoulID> {
+    pub fn target(&self) -> Option<RTSUnitSoul> {
         return self.target
     }
 }
@@ -49,14 +49,14 @@ impl TargetUnitDetection {
 impl SingleResultDetection for TargetUnitDetection {
     fn set_detection(
         &mut self,
-        detection: Option<RTSUnitSoulID>,
+        detection: Option<RTSUnitSoul>,
     ) {
         self.target_detection = detection;
     }
 
     fn detection(
         &self
-    ) -> Option<RTSUnitSoulID> {
+    ) -> Option<RTSUnitSoul> {
         return self.target_detection
     }
 }

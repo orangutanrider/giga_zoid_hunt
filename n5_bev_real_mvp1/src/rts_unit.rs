@@ -9,11 +9,13 @@ mod detection;
 
 mod movement;
 mod unit_type;
+mod block;
 
 pub mod parts;
 pub mod blocks;
 
 use bevy::prelude::*;
+use bevy::ecs::query::*;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
@@ -27,17 +29,62 @@ impl Plugin for InitializePlugin {
     }
 }
 
+pub trait ReferenceFlag<Output: Component> {
+    fn reference_path() -> ;
+    fn query_stack() -> ;
+}
+
+pub struct ReferencePath<Ref: GetEntityRef, const N: usize> ([Ref; N]);
+
+pub struct QueryStack<Q: WorldQuery, F: ReadOnlyWorldQuery, const N: usize> ([(Q, F); N]);
+
+pub trait InternalEntityRef {
+    fn ref_type() -> EntityRefType;
+}
+
+pub trait GetEntityRef: InternalEntityRef {
+    fn entity(&self) -> Entity;
+}
+
+enum EntityRefType {
+    SelfEntity(SelfEntity),
+    ParentEntity(ParentEntity),
+    ChildEntity(ChildEntity),
+    RootEntity(RootEntity)
+}
+
+struct SelfEntity;
+impl InternalEntityRef for SelfEntity {
+    fn ref_type() -> EntityRefType {
+        return EntityRefType::SelfEntity(SelfEntity)
+    }
+}
+struct ParentEntity;
+impl InternalEntityRef for ParentEntity {
+    fn ref_type() -> EntityRefType {
+        return EntityRefType::ParentEntity(ParentEntity)
+    }
+}
+struct ChildEntity;
+impl InternalEntityRef for ChildEntity {
+    fn ref_type() -> EntityRefType {
+        return EntityRefType::ChildEntity(ChildEntity)
+    }
+}
+struct RootEntity;
+impl InternalEntityRef for RootEntity {
+    fn ref_type() -> EntityRefType {
+        return EntityRefType::RootEntity(RootEntity)
+    }
+}
+
 #[macro_export]
-macro_rules! rts_entity_impls { ($t:ty) => {
+macro_rules! entity_ref_impls { ($t:ty, $ref_type:ident) => {
     impl $t {
         pub const PLACEHOLDER: Self = Self(Entity::PLACEHOLDER);
 
         pub fn new(entity: Entity) -> Self {
             return Self(entity)
-        }
-
-        pub fn entity(&self) -> Entity {
-            return self.0
         }
     }
 
@@ -46,17 +93,30 @@ macro_rules! rts_entity_impls { ($t:ty) => {
             return Self::PLACEHOLDER
         }
     }
+
+    impl InternalEntityRef for $t {
+        fn ref_type() -> EntityRefType {
+            return $ref_type::ref_type()
+        }
+    }
+
+    impl GetEntityRef for $t {
+        fn entity(&self) -> Entity {
+            return self.0
+        }
+    }
 };}
-pub(crate) use rts_entity_impls;
+pub(crate) use entity_ref_impls;
+
 
 #[derive(Clone, Copy)]
 #[derive(Component)]
 /// Attach to the root entity
 /// An entity that is expected to be a the root entity of an RTS unit
-pub struct RTSUnit(Entity);
-rts_entity_impls!(RTSUnit);
+pub struct RTSUnitRoot(Entity);
+entity_ref_impls!(RTSUnitRoot, SelfEntity);
 
 #[derive(Component)]
-/// For entities attached to the root in the transform tree
-pub struct ToRTSUnitRoot(Entity);
-rts_entity_impls!(ToRTSUnitRoot);
+/// For any entity attached to the unit in the tree
+pub struct ToRoot(Entity);
+entity_ref_impls!(ToRoot, RootEntity);

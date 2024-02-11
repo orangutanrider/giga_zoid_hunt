@@ -3,15 +3,13 @@ use bevy::prelude::*;
 use crate::rapier_config::groups::P_PRINCE;
 
 use crate::rts_unit::{
-    *,
-    blocks::Block,
+    block::SimpleBlock,
     unit_type::RTSTeam,
     detection::parts::*,
 };
 
 #[derive(Bundle)]
 pub struct EnemyPrinceFilterCircleDetectorBlock {
-    pub to_root: ToRTSUnitRoot,
     pub transform: TransformBundle,
 
     pub detector: CircleIntersectUnitDetector,
@@ -25,15 +23,9 @@ pub struct Parameters {
     pub range: f32,
 }
 
-#[derive(Clone, Copy)]
-pub struct EntityReferences {
-    pub root: RTSUnit,
-}
-
-impl Block<EnemyPrinceFilterCircleDetectorBlock, Parameters, EntityReferences> for EnemyPrinceFilterCircleDetectorBlock {
-    fn new_complete_bundle(params: Parameters, entity_references: EntityReferences) -> EnemyPrinceFilterCircleDetectorBlock {
+impl SimpleBlock<EnemyPrinceFilterCircleDetectorBlock, Parameters> for EnemyPrinceFilterCircleDetectorBlock {
+    fn new_bundle(params: Parameters) -> EnemyPrinceFilterCircleDetectorBlock {
         return Self {
-            to_root: entity_references.root,
             transform: TransformBundle{
                 local: Transform{
                     translation: params.position,

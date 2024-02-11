@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::rts_unit::soul::RTSUnitSoulID;
+use crate::rts_unit::soul::RTSUnitSoul;
 
 #[derive(Clone, Copy)]
 pub enum OrderType {
@@ -32,7 +32,7 @@ impl RTSUnitOrder {
 // ATTACK TARGET
 #[derive(Clone, Copy)]
 pub struct AttackTargetOrder {
-    pub target: Option<RTSUnitSoulID>,
+    pub target: Option<RTSUnitSoul>,
 }
 impl Default for AttackTargetOrder {
     fn default() -> Self {
@@ -42,7 +42,7 @@ impl Default for AttackTargetOrder {
     }
 }
 impl AttackTargetOrder {
-    pub fn new(target: RTSUnitSoulID) -> Self {
+    pub fn new(target: RTSUnitSoul) -> Self {
         return Self {
             target: Some(target), 
         }
