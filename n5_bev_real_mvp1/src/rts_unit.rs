@@ -14,8 +14,8 @@ mod block;
 pub mod parts;
 pub mod blocks;
 
+use std::any::TypeId;
 use bevy::prelude::*;
-use bevy::ecs::query::*;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
@@ -29,14 +29,9 @@ impl Plugin for InitializePlugin {
     }
 }
 
-pub trait ReferenceFlag<Output: Component> {
-    fn reference_path() -> ;
-    fn query_stack() -> ;
+pub trait EntityReferenceFlag<const N: usize, Output: InternalEntityRef> {
+    const REFERENCE_PATH: [TypeId; N];
 }
-
-pub struct ReferencePath<Ref: GetEntityRef, const N: usize> ([Ref; N]);
-
-pub struct QueryStack<Q: WorldQuery, F: ReadOnlyWorldQuery, const N: usize> ([(Q, F); N]);
 
 pub trait InternalEntityRef {
     fn ref_type() -> EntityRefType;
@@ -82,6 +77,7 @@ impl InternalEntityRef for RootEntity {
 macro_rules! entity_ref_impls { ($t:ty, $ref_type:ident) => {
     impl $t {
         pub const PLACEHOLDER: Self = Self(Entity::PLACEHOLDER);
+        pub const TYPE_ID: TypeId = TypeId::of::<$t>();
 
         pub fn new(entity: Entity) -> Self {
             return Self(entity)
