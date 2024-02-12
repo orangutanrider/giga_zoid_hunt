@@ -6,6 +6,7 @@ use crate::rts_unit::{
     control::{
         parts::*,
         RootToControl,
+        RTSUnitControl,
 } };
 
 use super::TargetUnitDetection;
@@ -21,10 +22,8 @@ impl Plugin for InitializePlugin{
 
 #[derive(Component)]
 pub struct TargetFromCommandable;
-impl ReferenceFlag<(RootToControl, Commandable), Commandable> for TargetFromCommandable {
-    fn e (p: (RootToControl, Commandable), o: Commandable) {
-        todo!()
-    }
+impl EntityReferenceFlag<2, RTSUnitControl> for TargetFromCommandable {
+    const REFERENCE_PATH: [TypeId; 2] = [ToRoot::TYPE_ID, RootToControl::TYPE_ID];
 }
 
 fn target_from_commandable(
