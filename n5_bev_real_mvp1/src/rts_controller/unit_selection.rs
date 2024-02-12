@@ -5,7 +5,7 @@ use bevy::ecs::system::SystemParam;
 
 use super::mouse::RtsMouse;
 use super::add_mode::AddModeInput;
-use crate::rts_unit::control::prelude::*;
+use crate::rts_unit::parts::*;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {

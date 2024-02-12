@@ -1,10 +1,10 @@
 pub use super::{
     result_types::single::{
         SingleResultDetection,
-        arbitrary::ArbitrarySoulDetection,
-        closest::ClosestSoulDetection,
+        arbitrary::TArbitrarySoulDetection,
+        closest::TClosestSoulDetection,
         target::{
-            TargetSoulDetection,
+            TTargetSoulDetection,
             target_from_commandable::TargetFromCommandable,
         },
     },

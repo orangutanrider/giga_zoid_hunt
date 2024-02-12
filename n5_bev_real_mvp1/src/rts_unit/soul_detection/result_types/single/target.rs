@@ -31,28 +31,29 @@ pub struct ChildToTargetDetector(Entity);
 entity_ref_impls!(ChildToTargetDetector, ParentEntity);
 
 #[derive(Component)]
-pub struct TargetSoulDetection {
+/// Target RTSUnitSoul Detection Terminal
+pub struct TTargetSoulDetection {
     target: Option<RTSUnitSoul>,
-    target_detection: Option<RTSUnitSoul>,
+    detection: Option<RTSUnitSoul>,
 }
-impl Default for TargetSoulDetection {
+impl Default for TTargetSoulDetection {
     fn default() -> Self {
         return Self { 
             target: None,
-            target_detection: None, 
+            detection: None, 
         }
     }
 }
-impl TargetSoulDetection {
+impl TTargetSoulDetection {
     pub fn new() -> Self {
         return Self {
             target: None,
-            target_detection: None, 
+            detection: None, 
         }
     }
 }
 
-impl TargetSoulDetection {
+impl TTargetSoulDetection {
     fn set_target(&mut self, target: Option<RTSUnitSoul>) {
         self.target = target;
     }
@@ -62,17 +63,17 @@ impl TargetSoulDetection {
     }
 }
 
-impl SingleResultDetection for TargetSoulDetection {
+impl SingleResultDetection for TTargetSoulDetection {
     fn set_detection(
         &mut self,
         detection: Option<RTSUnitSoul>,
     ) {
-        self.target_detection = detection;
+        self.detection = detection;
     }
 
     fn detection(
         &self
     ) -> Option<RTSUnitSoul> {
-        return self.target_detection
+        return self.detection
     }
 }

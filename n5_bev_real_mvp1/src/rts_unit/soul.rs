@@ -1,3 +1,5 @@
+pub mod parts;
+
 use bevy::prelude::*;
 
 use crate::rts_unit::*;

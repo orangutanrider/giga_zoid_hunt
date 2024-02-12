@@ -152,7 +152,7 @@ fn closest_entity_from_detection_results(
 
 /// If detector has a target detection with it, it'll try to get the target from that 
 fn store_detection_target(
-    mut detector_q: Query<(&mut CircleIntersectSoulDetector, &TargetSoulDetection)>, 
+    mut detector_q: Query<(&mut CircleIntersectSoulDetector, &TTargetSoulDetection)>, 
 ) {
     for (mut detector, detection) in detector_q.iter_mut() {
         detector.target = detection.target();
@@ -161,7 +161,7 @@ fn store_detection_target(
 
 /// If detector has a target detection with it, it'll try to output to it
 fn stored_target_output_to_detection( 
-    mut detector_q: Query<(&CircleIntersectSoulDetector, &mut TargetSoulDetection)>, 
+    mut detector_q: Query<(&CircleIntersectSoulDetector, &mut TTargetSoulDetection)>, 
 ) {
     for (detector, mut detection) in detector_q.iter_mut() {
         detection.set_detection(detector.target_detection);
@@ -170,7 +170,7 @@ fn stored_target_output_to_detection(
 
 /// If detector has a closest detection with it, it'll try to output to it
 fn stored_closest_output_to_detection(
-    mut detector_q: Query<(&CircleIntersectSoulDetector, &mut ClosestSoulDetection)>, 
+    mut detector_q: Query<(&CircleIntersectSoulDetector, &mut TClosestSoulDetection)>, 
 ) {
     for (detector, mut detection) in detector_q.iter_mut() {
         detection.set_detection(detector.closest_detection);
@@ -179,7 +179,7 @@ fn stored_closest_output_to_detection(
 
 /// If detector has a arbitrary detection with it, it'll try to output to it
 fn stored_arbitrary_output_to_detection(
-    mut detector_q: Query<(&CircleIntersectSoulDetector, &mut ArbitrarySoulDetection)>, 
+    mut detector_q: Query<(&CircleIntersectSoulDetector, &mut TArbitrarySoulDetection)>, 
 ) {
     for (detector, mut detection) in detector_q.iter_mut() {
         detection.set_detection(detector.arbitrary_detection);

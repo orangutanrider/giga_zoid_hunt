@@ -20,33 +20,34 @@ pub struct ChildToClosestDetector(Entity);
 entity_ref_impls!(ChildToClosestDetector, ParentEntity);
 
 #[derive(Component)]
-pub struct ClosestSoulDetection {
-    closest_unit: Option<RTSUnitSoul>,
+/// Closest RTSUnitSoul Detection Terminal
+pub struct TClosestSoulDetection {
+    detection: Option<RTSUnitSoul>,
 }
-impl Default for ClosestSoulDetection {
+impl Default for TClosestSoulDetection {
     fn default() -> Self {
-        return Self { closest_unit: None }
+        return Self { detection: None }
     }
 }
-impl ClosestSoulDetection {
+impl TClosestSoulDetection {
     pub fn new() -> Self {
         return Self {
-            closest_unit: None
+            detection: None
         }
     }
 }
 
-impl SingleResultDetection for ClosestSoulDetection {
+impl SingleResultDetection for TClosestSoulDetection {
     fn set_detection(
         &mut self,
         detection: Option<RTSUnitSoul>,
     ) {
-        self.closest_unit = detection;
+        self.detection = detection;
     }
 
     fn detection(
         &self
     ) -> Option<RTSUnitSoul> {
-        return self.closest_unit;
+        return self.detection;
     }
 }

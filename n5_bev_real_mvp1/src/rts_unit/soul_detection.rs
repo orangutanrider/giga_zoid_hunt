@@ -1,7 +1,7 @@
 mod result_types;
 mod detectors;
 
-pub mod blocks;
+//pub mod blocks;
 pub mod parts;
 
 use bevy::prelude::*;
