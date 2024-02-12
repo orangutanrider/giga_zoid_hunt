@@ -5,7 +5,7 @@ mod stop;
 use bevy::prelude::*;
 use bevy::ecs::system::SystemParam;
 
-use crate::rts_unit::control::prelude::*;
+use crate::rts_unit::parts::*;
 use super::mouse::RtsMouse;
 use super::add_mode::AddModeInput;
 

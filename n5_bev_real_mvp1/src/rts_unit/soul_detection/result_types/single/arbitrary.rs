@@ -20,33 +20,34 @@ pub struct ChildToArbitraryDetector(Entity);
 entity_ref_impls!(ChildToArbitraryDetector, ParentEntity);
 
 #[derive(Component)]
-pub struct ArbitrarySoulDetection {
-    unit: Option<RTSUnitSoul>,
+/// Arbitrary RTSUnitSoul Detection Terminal
+pub struct TArbitrarySoulDetection {
+    detection: Option<RTSUnitSoul>,
 }
-impl Default for ArbitrarySoulDetection {
+impl Default for TArbitrarySoulDetection {
     fn default() -> Self {
-        return Self { unit: None }
+        return Self { detection: None }
     }
 }
-impl ArbitrarySoulDetection {
+impl TArbitrarySoulDetection {
     pub fn new() -> Self {
         return Self {
-            unit: None
+            detection: None
         }
     }
 }
 
-impl SingleResultDetection for ArbitrarySoulDetection {
+impl SingleResultDetection for TArbitrarySoulDetection {
     fn set_detection(
         &mut self,
         detection: Option<RTSUnitSoul>,
     ) {
-        self.unit = detection;
+        self.detection = detection;
     }
 
     fn detection(
         &self
     ) -> Option<RTSUnitSoul> {
-        return self.unit;
+        return self.detection;
     }
 }

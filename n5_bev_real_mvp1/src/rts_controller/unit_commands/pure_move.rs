@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy::ecs::system::SystemParam;
 
 use super::RtsCommanderContext;
-use crate::rts_unit::control::prelude::*;
+use crate::rts_unit::parts::*;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {

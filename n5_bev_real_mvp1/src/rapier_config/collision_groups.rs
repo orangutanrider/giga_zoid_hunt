@@ -1,7 +1,4 @@
-use bevy_rapier2d::prelude::{
-    Group,
-    CollisionGroups,
-};
+use bevy_rapier2d::prelude::CollisionGroups;
 
 use super::groups::*;
 

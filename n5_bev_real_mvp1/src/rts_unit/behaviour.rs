@@ -1,9 +1,8 @@
 mod attack;
 mod navigation;
 mod get;
-mod order_processing;
 
-pub mod blocks;
+//pub mod blocks;
 pub mod parts;
 
 use bevy::prelude::*;
@@ -14,11 +13,13 @@ use crate::entity_ref_impls;
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
     fn build(&self, app: &mut App) {
+        /* 
         app.add_plugins((
             navigation::InitializePlugin,
             detection::InitializePlugin,
             order_processing::InitializePlugin,
         ));
+        */
     }
 }
 
