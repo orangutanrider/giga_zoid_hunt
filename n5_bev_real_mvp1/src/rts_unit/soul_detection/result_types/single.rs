@@ -1,6 +1,6 @@
-pub mod closest_unit;
-pub mod target_unit;
-pub mod arbitrary_unit;
+pub mod closest;
+pub mod target;
+pub mod arbitrary;
 
 use crate::rts_unit::soul::RTSUnitSoul;
 
@@ -9,7 +9,7 @@ use bevy::prelude::*;
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
     fn build(&self, app: &mut App) {
-        app.add_plugins(target_unit::InitializePlugin);
+        app.add_plugins(target::InitializePlugin);
     }
 }
 

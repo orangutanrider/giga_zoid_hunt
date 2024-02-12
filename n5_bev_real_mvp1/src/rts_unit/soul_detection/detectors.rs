@@ -12,7 +12,6 @@ impl Plugin for InitializePlugin{
     }
 }
 
-
 #[derive(Component)]
 pub struct AdditionalDetectorFilter(Group);
 impl Default for AdditionalDetectorFilter {

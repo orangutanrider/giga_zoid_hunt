@@ -5,7 +5,7 @@ mod behaviour;
 #[macro_use]
 mod soul;
 #[macro_use]
-mod detection;
+mod soul_detection;
 
 mod movement;
 mod unit_type;
@@ -29,6 +29,12 @@ impl Plugin for InitializePlugin {
     }
 }
 
+/// This would be editor only information
+/// See this commit: 27474abb3e03d8ff9436123ca3dc3d21a17c64d7
+/// I do worry that this makes less sense than just doing an entity field
+/// With the component that uses this though, all the information about what entity it needs is already implicit to the type
+/// So it does make sense in that way
+/// I suppose it depends on whether or not that is the case that it should be done this way?
 pub trait EntityReferenceFlag<const N: usize, Output: InternalEntityRef> {
     const REFERENCE_PATH: [TypeId; N];
 }
