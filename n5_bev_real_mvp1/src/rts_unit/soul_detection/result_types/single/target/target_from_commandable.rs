@@ -9,7 +9,7 @@ use crate::rts_unit::{
         RTSUnitControl,
 } };
 
-use super::TargetUnitDetection;
+use super::TargetSoulDetection;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
@@ -27,7 +27,7 @@ impl EntityReferenceFlag<2, RTSUnitControl> for TargetFromCommandable {
 }
 
 fn target_from_commandable(
-    mut detector_q: Query<(&mut TargetUnitDetection, &ToRoot), With<TargetFromCommandable>>,
+    mut detector_q: Query<(&mut TargetSoulDetection, &ToRoot), With<TargetFromCommandable>>,
     root_q: Query<&RootToControl>,
     control_q: Query<&Commandable>,
 ) {

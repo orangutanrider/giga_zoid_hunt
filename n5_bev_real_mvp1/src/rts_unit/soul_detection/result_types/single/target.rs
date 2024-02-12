@@ -2,8 +2,11 @@ pub mod target_from_commandable;
 
 use bevy::prelude::*;
 
+use crate::rts_unit::{
+    *,
+    soul::RTSUnitSoul,
+};
 use super::SingleResultDetection;
-use crate::rts_unit::soul::RTSUnitSoul;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
@@ -14,12 +17,25 @@ impl Plugin for InitializePlugin{
     }
 }
 
+#[derive(Clone, Copy)]
 #[derive(Component)]
-pub struct TargetUnitDetection {
+pub struct TargetDetector(Entity);
+entity_ref_impls!(TargetDetector, SelfEntity);
+
+#[derive(Component)]
+pub struct RootToTargetDetector(Entity);
+entity_ref_impls!(RootToTargetDetector, ChildEntity);
+
+#[derive(Component)]
+pub struct ChildToTargetDetector(Entity);
+entity_ref_impls!(ChildToTargetDetector, ParentEntity);
+
+#[derive(Component)]
+pub struct TargetSoulDetection {
     target: Option<RTSUnitSoul>,
     target_detection: Option<RTSUnitSoul>,
 }
-impl Default for TargetUnitDetection {
+impl Default for TargetSoulDetection {
     fn default() -> Self {
         return Self { 
             target: None,
@@ -27,7 +43,7 @@ impl Default for TargetUnitDetection {
         }
     }
 }
-impl TargetUnitDetection {
+impl TargetSoulDetection {
     pub fn new() -> Self {
         return Self {
             target: None,
@@ -36,7 +52,7 @@ impl TargetUnitDetection {
     }
 }
 
-impl TargetUnitDetection {
+impl TargetSoulDetection {
     fn set_target(&mut self, target: Option<RTSUnitSoul>) {
         self.target = target;
     }
@@ -46,7 +62,7 @@ impl TargetUnitDetection {
     }
 }
 
-impl SingleResultDetection for TargetUnitDetection {
+impl SingleResultDetection for TargetSoulDetection {
     fn set_detection(
         &mut self,
         detection: Option<RTSUnitSoul>,
