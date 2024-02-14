@@ -22,8 +22,10 @@ impl Plugin for InitializePlugin{
 
 #[derive(Component)]
 pub struct TargetFromCommandable;
+impl TypeIdGet for TargetFromCommandable { }
 impl EntityReferenceFlag<3, RTSUnitControl> for TargetFromCommandable {
     const REFERENCE_PATH: [TypeId; 3] = [ToRoot::TYPE_ID, RootToControl::TYPE_ID, RTSUnitControl::TYPE_ID];
+    const REF_TYPE: EntityRefFlagRefType = EntityRefFlagRefType::Immutable;
 }
 
 fn target_from_commandable_update(
@@ -66,7 +68,6 @@ fn target_from_commandable(
 
     // Set target to some, if the order is there
     match order.order_type {
-        OrderType::Empty => {},
         OrderType::PureMovement(_) => {},
         OrderType::AttackMove(_) => {},
         OrderType::AttackTarget(attack_target) => {
