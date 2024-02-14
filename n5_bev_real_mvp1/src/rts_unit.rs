@@ -29,22 +29,30 @@ impl Plugin for InitializePlugin {
     }
 }
 
-/// This would be editor only information
+pub trait TypeIdGet{
+    const TYPE_ID: TypeId = TypeId::of::<Self>();
+}
+
+/// This would be editor only or debug mode information
 /// See this commit: 27474abb3e03d8ff9436123ca3dc3d21a17c64d7
-/// I do worry that this makes less sense than just doing an entity field
-/// With the component that uses this though, all the information about what entity it needs is already implicit to the type
-/// So it does make sense in that way
-/// I suppose it depends on whether or not that is the case, that it should be done this way?
-pub trait EntityReferenceFlag<const N: usize, Output: InternalEntityRef> {
-    const REFERENCE_PATH: [TypeId; N];
+pub trait EntityReferenceFlag<const N: usize, Output: InternalEntityRef>: TypeIdGet {
+    const REFERENCE_PATH: [TypeId; N]; 
+    const REF_TYPE: EntityRefFlagRefType;
 
     fn print_err(step: usize) {
-        println!("Entity reference error, fail at step {}, for type {:?}.", step, Self::REFERENCE_PATH[step]);
+        println!("{:?}, Entity reference error, fail at step {}, for type {:?}.", Self::TYPE_ID, step, Self::REFERENCE_PATH[step]);
     }
 
     fn print_err_descript(step: usize, msg: &str) {
-        println!("Entity reference error, fail at step {}, for type {:?}. Msg: {}", step, Self::REFERENCE_PATH[step], msg);
+        println!("{:?}, Entity reference error, fail at step {}, for type {:?}. Msg: {}", Self::TYPE_ID, step, Self::REFERENCE_PATH[step], msg);
     }
+}
+
+#[derive(Clone, Copy)]
+#[derive(PartialEq, Eq)]
+pub enum EntityRefFlagRefType {
+    Immutable,
+    Mutable,
 }
 
 pub trait InternalEntityRef {
@@ -91,12 +99,13 @@ impl InternalEntityRef for RootEntity {
 macro_rules! entity_ref_impls { ($t:ty, $ref_type:ident) => {
     impl $t {
         pub const PLACEHOLDER: Self = Self(Entity::PLACEHOLDER);
-        pub const TYPE_ID: TypeId = TypeId::of::<$t>();
 
         pub fn new(entity: Entity) -> Self {
             return Self(entity)
         }
     }
+
+    impl TypeIdGet for $t { }
 
     impl Default for $t {
         fn default() -> Self {

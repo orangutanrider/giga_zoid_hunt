@@ -2,6 +2,8 @@ pub mod kinematic_position_movement;
 
 use bevy::prelude::*;
 
+use crate::rts_unit::*;
+
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {

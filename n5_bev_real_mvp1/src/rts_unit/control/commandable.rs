@@ -36,9 +36,9 @@ impl Commandable {
 
 /// Get methods
 impl Commandable {
-    pub fn current_order(&self) -> Option<&RTSUnitOrder> {
+    pub fn current_order(&self) -> Option<RTSUnitOrder> {
         let index = self.orders.len().wrapping_sub(1);
-        return self.orders.get(index)
+        return self.orders.get(index).copied()
     }
 
     pub fn number_of_orders(&self) -> usize {

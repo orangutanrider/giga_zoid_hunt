@@ -7,19 +7,11 @@ pub enum OrderType {
     PureMovement(PureMovementOrder),
     AttackMove(AttackMoveOrder),
     AttackTarget(AttackTargetOrder),
-    Empty,
 }
 
 #[derive(Clone, Copy)]
 pub struct RTSUnitOrder {
     pub order_type: OrderType,
-}
-impl Default for RTSUnitOrder {
-    fn default() -> Self {
-        Self { 
-            order_type: OrderType::Empty, 
-        }
-    }
 }
 impl RTSUnitOrder {
     pub fn new(order_type: OrderType) -> Self {
