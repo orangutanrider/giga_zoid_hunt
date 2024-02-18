@@ -127,7 +127,6 @@ macro_rules! entity_ref_impls { ($t:ty, $ref_type:ident) => {
 };}
 pub(crate) use entity_ref_impls;
 
-
 #[derive(Clone, Copy)]
 #[derive(Component)]
 /// Attach to the root entity
