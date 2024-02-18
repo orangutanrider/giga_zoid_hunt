@@ -1,6 +1,6 @@
 mod attack;
 mod navigation;
-mod get;
+mod state;
 
 //pub mod blocks;
 pub mod parts;
@@ -23,6 +23,18 @@ impl Plugin for InitializePlugin{
     }
 }
 
+// Node definitions
+#[derive(Clone, Copy)]
+#[derive(Component)]
+pub struct BehaviourTreeNode(Entity);
+entity_ref_impls!(BehaviourTreeNode, SelfEntity);
+
+#[derive(Component)]
+pub struct ToParentNode(Entity);
+entity_ref_impls!(ToParentNode, ChildEntity);
+
+
+// Root definitions
 #[derive(Clone, Copy)]
 #[derive(Component)]
 pub struct RTSUnitBehaviour(Entity);
