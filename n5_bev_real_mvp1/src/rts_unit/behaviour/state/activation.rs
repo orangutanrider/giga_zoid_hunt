@@ -2,6 +2,8 @@ use bevy_rapier2d::prelude::Group as State;
 use bevy::prelude::*;
 
 use crate::rts_unit::*;
+use self::behaviour::bang::*;
+
 use super::*;
 
 macro_rules! active_on_parent_state_impls { ($t:ty) => {
@@ -53,8 +55,9 @@ pub enum StateComparisonMethod {
 }
 
 #[derive(Component)]
+/// Has prioirity over ActiveOnParentState
 pub struct NotActiveOnParentState{
-    state: State, // If detected, will not be active, overwrites active
+    state: State, 
     method: StateComparisonMethod,
 }
 active_on_parent_state_impls!(NotActiveOnParentState);
@@ -68,7 +71,10 @@ active_on_parent_state_impls!(ActiveOnParentState);
 
 fn update_bangs_on_change(
     parent_q: Query<(&Children, &TBehaviourState), Changed<TBehaviourState>>,
-    child_q: Query<(Option<&mut ActiveOnParentState>, Option<&mut NotActiveOnParentState>), Or<(With<ActiveOnParentState>, With<NotActiveOnParentState>)>>,
+    mut child_q: Query<(
+        &mut TBehaviourBang, Option<&mut ActiveOnParentState>, Option<&mut NotActiveOnParentState>), 
+        Or<(With<ActiveOnParentState>, With<NotActiveOnParentState>
+    )>>,
 ) {
     for (children, node_state) in parent_q.iter() {
         match node_state.change_flag() {
@@ -77,7 +83,7 @@ fn update_bangs_on_change(
         }
 
         for child in children.iter() {
-            update_bang(node_state, *child, child_q);
+            update_bang(node_state, *child, &mut child_q);
         }
     }
 }
@@ -85,18 +91,21 @@ fn update_bangs_on_change(
 fn update_bang(
     parent: &TBehaviourState,
     child: Entity,
-    child_q: Query<(Option<&mut ActiveOnParentState>, Option<&mut NotActiveOnParentState>), Or<(With<ActiveOnParentState>, With<NotActiveOnParentState>)>>
+    child_q: &mut Query<(
+        &mut TBehaviourBang, Option<&mut ActiveOnParentState>, Option<&mut NotActiveOnParentState>), 
+        Or<(With<ActiveOnParentState>, With<NotActiveOnParentState>
+    )>>,
 ) {
-    let results = child_q.get(child);
-    let Ok((state_active, state_not_active)) = results else {
+    let results = child_q.get_mut(child);
+    let Ok((mut bang, state_active, state_not_active)) = results else {
         return;
     };
 
     let parent_state = parent.state();
 
-    let mut active_not = false;
+    let mut not_active = false;
     if let Some(state_not_active) = state_not_active {
-        active_not = state_not_active.check(parent_state)
+        not_active = state_not_active.check(parent_state)
     }
 
     let mut active = false;
@@ -104,11 +113,12 @@ fn update_bang(
         active = state_active.check(parent_state)
     }
 
-    if !active || active_not { // If child node not active
-        todo!() // Update Bang
+    if !active || not_active { // If child node not active
+        bang.set_active(true);
     }
     else { // If child node is active
-        todo!() // Update Bang
+        bang.set_active(true);
     }
-}
 
+    bang.set_active(false);
+}
