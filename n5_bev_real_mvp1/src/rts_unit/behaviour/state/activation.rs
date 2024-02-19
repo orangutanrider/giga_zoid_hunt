@@ -67,10 +67,15 @@ pub struct ActiveOnParentState{
 active_on_parent_state_impls!(ActiveOnParentState);
 
 fn update_bangs_on_change(
-    parent_q: Query<(&Children, &TNodeBehaviourState), Changed<TNodeBehaviourState>>,
+    parent_q: Query<(&Children, &TBehaviourState), Changed<TBehaviourState>>,
     child_q: Query<(Option<&mut ActiveOnParentState>, Option<&mut NotActiveOnParentState>), Or<(With<ActiveOnParentState>, With<NotActiveOnParentState>)>>,
 ) {
     for (children, node_state) in parent_q.iter() {
+        match node_state.change_flag() {
+            ChangeFlag::HasChanged => { },
+            ChangeFlag::Lowered => { continue; }, // If no change, skip
+        }
+
         for child in children.iter() {
             update_bang(node_state, *child, child_q);
         }
@@ -78,7 +83,7 @@ fn update_bangs_on_change(
 }
 
 fn update_bang(
-    parent: &TNodeBehaviourState,
+    parent: &TBehaviourState,
     child: Entity,
     child_q: Query<(Option<&mut ActiveOnParentState>, Option<&mut NotActiveOnParentState>), Or<(With<ActiveOnParentState>, With<NotActiveOnParentState>)>>
 ) {
@@ -106,3 +111,4 @@ fn update_bang(
         todo!() // Update Bang
     }
 }
+

@@ -1,6 +1,7 @@
 pub mod activation;
+#[macro_use]
+pub mod output;
 
-use bevy::core_pipeline::core_3d::graph::node;
 use bevy_rapier2d::prelude::Group as State;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
@@ -8,13 +9,30 @@ use bevy::utils::HashMap;
 use crate::rts_unit::*;
 use super::*;
 
-macro_rules! behaviour_state_node_impls { ($t:ty) => {
+#[derive(Hash)]
+#[derive(PartialEq, Eq)]
+#[derive(Clone, Copy)]
+pub enum ChangeKey {
+    Entity(Entity),
+    Component(TypeId),
+}
+
+#[derive(Clone, Copy)]
+pub enum ChangeFlag {
+    HasChanged,
+    Lowered, // Has not changed
+}
+
+#[macro_export]
+macro_rules! t_behaviour_state_impls { ($t: ty) => {
     impl Default for $t {
         fn default() -> Self {
             Self { 
+                change_flag: ChangeFlag::Lowered,
                 held_state: State::NONE,
-                registered_state_input: HashMap::new(), 
-                new_state_input: HashMap::new(),
+                registered_state: HashMap::new(), 
+                insert: HashMap::new(),
+                remove: Vec::new(),
             }
         }
     }
@@ -26,12 +44,15 @@ macro_rules! behaviour_state_node_impls { ($t:ty) => {
     
     /// Set Methods
     impl $t {
-        pub fn add_or_update_state(&mut self, id: TypeId, state: State) {
-            self.new_state_input.insert(id, state);
+        /// Add new, or update existing, state
+        /// Key should identify the source that is inserting this state, so that insertions are not duplicated
+        pub fn insert_state(&mut self, key: ChangeKey, state: State) {
+            self.insert.insert(key, state);
         }
     
-        pub fn remove_registered_state(&mut self, id: TypeId) {
-            self.registered_state_input.remove(&id);
+        /// Explicitlly remove a registered state entry, via its key
+        pub fn remove_state(&mut self, key: ChangeKey) {
+            self.remove.push(key);
         }
     }
     
@@ -40,17 +61,29 @@ macro_rules! behaviour_state_node_impls { ($t:ty) => {
         pub fn state(&self) -> State {
             return self.held_state
         }
+    
+        pub fn change_flag(&self) -> ChangeFlag {
+            return self.change_flag
+        }
     }
     
     /// Internal
     impl $t {
-        fn new_to_registered(&mut self) -> HeldStateChange {
-            let registered = &mut self.registered_state_input;
-            let new = &mut self.new_state_input;
-            for (k, v) in new.iter() {
+        fn insertion(&self) -> bool {
+            return self.insert.len() != 0;
+        }
+    
+        fn removal(&self) -> bool {
+            return self.remove.len() != 0;
+        }
+    
+        fn insertion_to_registered(&mut self) {
+            let registered = &mut self.registered_state;
+            let insert = &mut self.insert;
+            for (k, v) in insert.iter() {
                 registered.insert(*k, *v);
             }
-            new.clear();
+            insert.clear();
     
             let state = State::NONE;
             for (k, v) in registered.iter() {
@@ -58,71 +91,64 @@ macro_rules! behaviour_state_node_impls { ($t:ty) => {
             }
     
             if state == self.held_state {
-                return HeldStateChange::HasNotChanged // If state has not changed
+                self.change_flag = ChangeFlag::Lowered; // If state has not changed
             }
     
             self.held_state = state;
-            return HeldStateChange::HasChanged
+            self.change_flag = ChangeFlag::HasChanged;
+        }
+    
+        fn removal_to_registered(&mut self) {
+            let registered = &mut self.registered_state;
+            let remove = &mut self.remove;
+            for k in remove.iter() {
+                registered.remove(k);
+            }
+            remove.clear();
+    
+            let state = State::NONE;
+            for (k, v) in registered.iter() {
+                state.union(*v);
+            }
+    
+            if state == self.held_state {
+                self.change_flag = ChangeFlag::Lowered; // If state has not changed
+            }
+    
+            self.held_state = state;
+            self.change_flag = ChangeFlag::HasChanged;
         }
     }
 };}
-
-#[derive(Clone, Copy)]
-enum HeldStateChange {
-    HasChanged,
-    HasNotChanged,
-}
-
-#[derive(Component)]
-/// Node's behaviour state output terminal
-/// Outputs to the parent node
-pub struct TNodeBehaviourStateOutput {
-    held_state: State,
-    registered_state_input: HashMap<TypeId, State>,
-    new_state_input: HashMap<TypeId, State>,
-}
-behaviour_state_node_impls!(TNodeBehaviourStateOutput);
-
-impl TypeIdGet for TNodeBehaviourStateOutput { } 
-impl EntityReferenceFlag<2, BehaviourTreeNode> for TNodeBehaviourStateOutput {
-    const REFERENCE_PATH: [TypeId; 2] = [ToParentNode::TYPE_ID, BehaviourTreeNode::TYPE_ID];
-    const REF_TYPE: EntityRefFlagRefType = EntityRefFlagRefType::Mutable;
-}
+pub(crate) use t_behaviour_state_impls;
 
 #[derive(Component)]
 /// Node's behaviour state terminal
-pub struct TNodeBehaviourState {
+pub struct TBehaviourState {
+    change_flag: ChangeFlag,
     held_state: State,
-    registered_state_input: HashMap<TypeId, State>,
-    new_state_input: HashMap<TypeId, State>,
+    registered_state: HashMap<ChangeKey, State>,
+    insert: HashMap<ChangeKey, State>, // Insert into registered
+    remove: Vec<ChangeKey>, // Remove from registered
 }
-behaviour_state_node_impls!(TNodeBehaviourState);
+t_behaviour_state_impls!(TBehaviourState);
 
-fn behaviour_node_state_updates(
-    mut node_q: Query<&mut TNodeBehaviourState, Changed<TNodeBehaviourState>>,
+fn state_updates(
+    mut node_q: Query<&mut TBehaviourState, Changed<TBehaviourState>>,
 ) {
-    for node_state in node_q.iter_mut() {
-        behaviour_node_state_update(node_state);
+    for state in node_q.iter_mut() {
+        state_update(state);
     }
 }
 
-fn behaviour_node_state_update(
-    mut node_state: Mut<TNodeBehaviourState>
+fn state_update(
+    mut state: Mut<TBehaviourState>
 ) {
-    let new_states = node_state.new_state_input;
-    if new_states.is_empty() {
-        return;
+    if state.insertion() {
+        state.insertion_to_registered();
     }
 
-    let change = node_state.new_to_registered();
-
-    match change {
-        HeldStateChange::HasChanged => {
-            
-        },
-        HeldStateChange::HasNotChanged => {
-            
-        },
+    if state.removal() {
+        state.removal_to_registered();
     }
 }
-
