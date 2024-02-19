@@ -1,6 +1,7 @@
 mod attack;
 mod navigation;
 mod state;
+mod bang;
 
 //pub mod blocks;
 pub mod parts;
@@ -29,9 +30,14 @@ impl Plugin for InitializePlugin{
 pub struct BehaviourTreeNode(Entity);
 entity_ref_impls!(BehaviourTreeNode, SelfEntity);
 
+#[derive(Clone, Copy)]
+#[derive(Component)]
+pub struct ToBehaviourTreeRoot(Entity);
+entity_ref_impls!(ToBehaviourTreeRoot, ParentEntity);
+
 #[derive(Component)]
 pub struct ToParentNode(Entity);
-entity_ref_impls!(ToParentNode, ChildEntity);
+entity_ref_impls!(ToParentNode, ParentEntity);
 
 
 // Root definitions

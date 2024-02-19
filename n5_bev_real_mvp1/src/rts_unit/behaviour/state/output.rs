@@ -29,15 +29,15 @@ impl EntityReferenceFlag<2, BehaviourTreeNode> for TBehaviourStateOutput {
 
 fn state_output_updates(
     mut node_q: Query<(&mut TBehaviourStateOutput, &ToParentNode, Entity), Changed<TBehaviourStateOutput>>,
-    parent_q: Query<&mut TBehaviourState>,
+    mut parent_q: Query<&mut TBehaviourState>,
 ) {
     for (state_output, to_parent, node) in node_q.iter_mut() {
-        state_output_update(parent_q, state_output, to_parent.entity(), node);
+        state_output_update(&mut parent_q, state_output, to_parent.entity(), node);
     }
 }
 
 fn state_output_update(
-    mut parent_q: Query<&mut TBehaviourState>,
+    parent_q: &mut Query<&mut TBehaviourState>,
     mut state_output: Mut<TBehaviourStateOutput>,
     parent: Entity,
     node: Entity
