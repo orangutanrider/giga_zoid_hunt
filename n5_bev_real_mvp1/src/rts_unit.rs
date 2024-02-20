@@ -29,7 +29,7 @@ impl Plugin for InitializePlugin {
     }
 }
 
-pub trait TypeIdGet{
+pub trait TypeIdGet where Self: 'static{
     const TYPE_ID: TypeId = TypeId::of::<Self>();
 }
 

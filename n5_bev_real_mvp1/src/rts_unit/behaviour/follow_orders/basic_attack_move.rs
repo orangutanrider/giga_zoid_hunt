@@ -38,17 +38,17 @@ fn basic_attack_move_update(
         (&TFollowedOrder, &ToRoot, &GlobalTransform), 
         (With<BasicAttackMoveOrderBehaviour>, With<AttackMoveToMover>, With<AttackMoveGetArbDetection>)
     >,
-    root_q: Query<(&TMover, &RootToArbitraryDetector)>,
+    mut root_q: Query<(&mut TMover, &RootToArbitraryDetector)>,
     detector_q: Query<&TArbitrarySoulDetection>,
 ) {
     for (terminal, to_root, transform) in behaviour_q.iter() {
-        basic_attack_move(root_q, detector_q, terminal, to_root, transform);
+        basic_attack_move(&mut root_q, &detector_q, terminal, to_root, transform);
     }
 }
 
 fn basic_attack_move(
-    root_q: Query<(&TMover, &RootToArbitraryDetector)>,
-    detector_q: Query<&TArbitrarySoulDetection>,
+    root_q: &mut Query<(&mut TMover, &RootToArbitraryDetector)>,
+    detector_q: &Query<&TArbitrarySoulDetection>,
     terminal: &TFollowedOrder, 
     to_root: &ToRoot, 
     transform: &GlobalTransform,
@@ -69,16 +69,16 @@ fn basic_attack_move(
 }
 
 fn follow_attack_move_order(
-    root_q: Query<(&TMover, &RootToArbitraryDetector)>,
-    detector_q: Query<&TArbitrarySoulDetection>,
+    root_q: &mut Query<(&mut TMover, &RootToArbitraryDetector)>,
+    detector_q: &Query<&TArbitrarySoulDetection>,
     to_root: &ToRoot,
     move_order: AttackMoveOrder,
     position: Vec2,
 ) {    
     // Follow reference path
     let root = to_root.entity();
-    let result = root_q.get(root);
-    let Ok((mover, detector)) = result else {
+    let result = root_q.get_mut(root);
+    let Ok((mut mover, detector)) = result else {
         AttackMoveToMover::print_err_descript(1, "failed at getting either TMover or RootToArbitraryDetector from the entity.");
         return;
     };

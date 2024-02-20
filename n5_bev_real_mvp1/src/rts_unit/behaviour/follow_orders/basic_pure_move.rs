@@ -26,15 +26,15 @@ pub struct BasicPureMoveOrderBehaviour;
 
 fn basic_pure_move_update(
     behaviour_q: Query<(&TFollowedOrder, &ToRoot, &GlobalTransform), (With<BasicPureMoveOrderBehaviour>, With<PureMoveToMover>)>,
-    root_q: Query<&TMover>,
+    mut root_q: Query<&mut TMover>,
 ) {
     for (terminal, to_root, transform) in behaviour_q.iter() {
-        basic_pure_move(root_q, terminal, to_root, transform);
+        basic_pure_move(&mut root_q, terminal, to_root, transform);
     }
 }
 
 fn basic_pure_move(
-    root_q: Query<&TMover>,
+    root_q: &mut Query<&mut TMover>,
     terminal: &TFollowedOrder, 
     to_root: &ToRoot, 
     transform: &GlobalTransform,
@@ -55,15 +55,15 @@ fn basic_pure_move(
 }
 
 fn follow_move_order(
-    root_q: Query<&TMover>,
+    root_q: &mut Query<&mut TMover>,
     to_root: &ToRoot,
     move_order: PureMovementOrder,
     position: Vec2,
 ) {    
     // Follow reference path
     let root = to_root.entity();
-    let mover = root_q.get(root);
-    let Ok(mover) = mover else {
+    let mover = root_q.get_mut(root);
+    let Ok(mut mover) = mover else {
         PureMoveToMover::print_err_descript(1, "failed at getting TMover from the entity.");
         return;
     };

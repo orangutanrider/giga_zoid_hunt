@@ -14,10 +14,10 @@ impl Plugin for InitializePlugin {
 
 #[derive(SystemParam)]
 struct AttackInput<'w> {
-    keys: Res<'w, Input<KeyCode>>,
+    keys: Res<'w, ButtonInput<KeyCode>>,
 }
 impl<'w> AttackInput<'w> {
-    const KEYS: [KeyCode; 1] = [KeyCode::A];
+    const KEYS: [KeyCode; 1] = [KeyCode::KeyA];
 
     fn just_pressed(&self) -> bool {
         return self.keys.any_just_pressed(Self::KEYS);

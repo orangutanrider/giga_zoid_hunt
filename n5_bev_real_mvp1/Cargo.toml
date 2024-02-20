@@ -8,8 +8,9 @@ authors = ["Dominic_Rooney"]
 
 [dependencies]
 bevy = "0.13.0"
-bevy_rapier2d =  {version ="0.25.0", features = ["debug-render-2d"]}
-mouse_tracking = { package = "bevy_mouse_tracking_plugin", version = "0.7.0" }
+bevy_rapier2d =  {version = "0.25.0", features = ["debug-render-2d"]}
+# mouse_tracking = { package = "bevy_mouse_tracking_plugin", version = "0.7.0" }
+bevy_cursor = {version = "0.3.0", features = ["2d"] }
 
 [profile.dev]
 opt-level = 1

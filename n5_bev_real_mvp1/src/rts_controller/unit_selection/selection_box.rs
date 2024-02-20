@@ -19,7 +19,7 @@ impl Plugin for InitializePlugin {
 
 #[derive(SystemParam)]
 pub struct SelectionBoxInput<'w> {
-    mouse_buttons: Res<'w, Input<MouseButton>>,
+    mouse_buttons: Res<'w, ButtonInput<MouseButton>>,
 }
 impl<'w> SelectionBoxInput<'w> {
     const BUTTONS: [MouseButton; 1] = [MouseButton::Left];

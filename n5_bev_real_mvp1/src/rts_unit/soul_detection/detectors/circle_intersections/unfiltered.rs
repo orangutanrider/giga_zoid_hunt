@@ -16,15 +16,15 @@ pub fn detector_update(
     rapier_context: Res<RapierContext>,
 ){
     for (mut detector, transform, ) in detector_q.iter_mut() {
-        detector_detect(detector, transform, collider_q, rapier_context);
+        detector_detect(detector, transform, &collider_q, &rapier_context);
     }
 }
 
 fn detector_detect(
     mut detector: Mut<CircleIntersectSoulDetector>,
     transform: &GlobalTransform,
-    collider_q: Query<&Collider>,
-    rapier_context: Res<RapierContext>,
+    collider_q: &Query<&Collider>,
+    rapier_context: &Res<RapierContext>,
 ) {
     let position = transform.translation().truncate();
 
@@ -36,10 +36,10 @@ fn detector_detect(
     let target = detector.target;
     if target.is_some() {
         let target = target.unwrap().entity();
-        target_detect(detector, &rapier_context, &collider_q, position, target, &mut target_output, &mut entity_distances);
+        target_detect(&mut detector, &rapier_context, &collider_q, position, target, &mut target_output, &mut entity_distances);
     }
     else {
-        detect(detector, &rapier_context, &collider_q, position, &mut entity_distances);
+        detect(&mut detector, &rapier_context, &collider_q, position, &mut entity_distances);
     }
 
     // Post detection processes
@@ -53,7 +53,7 @@ fn detector_detect(
 }
 
 fn target_detect(
-    mut detector: Mut<CircleIntersectSoulDetector>,
+    detector: &mut Mut<CircleIntersectSoulDetector>,
     rapier_context: &Res<RapierContext>,
     collider_q: &Query<&Collider>,
     position: Vec2,
@@ -72,7 +72,7 @@ fn target_detect(
 }
 
 fn detect(
-    mut detector: Mut<CircleIntersectSoulDetector>,
+    detector: &mut Mut<CircleIntersectSoulDetector>,
     rapier_context: &Res<RapierContext>,
     collider_q: &Query<&Collider>,
     position: Vec2,

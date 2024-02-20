@@ -12,10 +12,10 @@ impl Plugin for InitializePlugin {
 
 #[derive(SystemParam)]
 struct StopInput<'w> {
-    keys: Res<'w, Input<KeyCode>>,
+    keys: Res<'w, ButtonInput<KeyCode>>,
 }
 impl<'w> StopInput<'w> {
-    const KEYS: [KeyCode; 1] = [KeyCode::S];
+    const KEYS: [KeyCode; 1] = [KeyCode::KeyS];
 
     fn just_pressed(&self) -> bool {
         return self.keys.any_just_pressed(Self::KEYS);
