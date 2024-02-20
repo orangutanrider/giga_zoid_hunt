@@ -1,6 +1,11 @@
 use bevy::prelude::*;
 
+use crate::rts_unit::*;
+
+use super::ToBehaviourTreeRoot;
+
 #[derive(Component)]
+/// Behaviour bang terminal
 pub struct TBehaviourBang(bool);
 impl Default for TBehaviourBang {
     fn default() -> Self {
@@ -27,7 +32,75 @@ impl TBehaviourBang {
     }
 }
 
+#[derive(PartialEq, Eq)]
+#[derive(Clone, Copy)]
+pub enum PropagationState {
+    Send,
+    Dormant,
+}
+
+#[derive(Component)]
+pub struct RefBangPropagator(PropagationState);
+
+/// Methods
+impl RefBangPropagator {
+    fn set(&mut self, state: PropagationState) {
+        self.0 = state;
+    }
+
+    fn is_propagating(&self) -> bool {
+        match self.0 {
+            PropagationState::Send => {
+                return true
+            },
+            PropagationState::Dormant => {
+                return false
+            },
+        }
+    }
+}
+
+/// Pre Update
+fn ref_bang_propagation(
+    mut node_q: Query<(&mut RefBangPropagator, &Children), Changed<RefBangPropagator>>,
+    mut child_q: Query<(&mut RefBangPropagator, &TBehaviourBang)>,
+) {
+    for (mut propagator, children) in node_q.iter_mut() {
+        if !propagator.is_propagating() {
+            continue;
+        }
+        propagator.set(PropagationState::Dormant);
+        
+        for child in children.iter() {
+            let result = child_q.get_mut(*child);
+            let Ok((mut child_propagator, terminal)) = result else {
+                println!("err"); // will rework in refactor
+                continue;
+            };
+
+            if !terminal.is_active() {
+                continue;
+            }
+
+            child_propagator.set(PropagationState::Send);
+        }
+    }
+}
+
+fn ref_bang_propagation_end(
+    mut node_q: Query<&mut RefBangPropagator, (Changed<RefBangPropagator>, Without<Children>)>,
+) {
+    for mut propagator in node_q.iter_mut() {
+        if !propagator.is_propagating() {
+            continue;
+        }
+
+        propagator.set(PropagationState::Dormant);
+    }
+}
+
 // Hmm... This many generics and trait bounds? Seems bad. I've done this here though, cause I plan to refactor some of the stuff, and make this better.
+// Maybe procedural macros fix this?
 pub trait BangToRootRefBang<T, RootBang, Export, const N: usize, PathwayOutput> where 
 PathwayOutput: InternalEntityRef,
 Self: EntityReferenceFlag<N, PathwayOutput>,
@@ -39,11 +112,15 @@ Export: BehaviourInterfacedComponent {
         root.ref_bang()
     }
 
-    fn bang_to_root_system( // Hmm... Is it better to do this, or to do a system that has generic parameters?
-        node_q: Query<(&TBehaviourBang, &ToBehaviourTreeRoot), (With<T>, Changed<TBehaviourBang>)>,
+    fn ref_bang_system(
+        node_q: Query<(&RefBangPropagator, &ToBehaviourTreeRoot), (Changed<RefBangPropagator>, With<T>)>,
         mut root_q: Query<&mut RootBang>,
     ) {
-        for (terminal, to_root) in node_q.iter() {
+        for (propagator, to_root) in node_q.iter() {
+            if !propagator.is_propagating(){
+                continue;
+            }
+
             let root = to_root.entity();
             let root_bang = root_q.get_mut(root);
             let Ok(mut root_bang) = root_bang else {
@@ -51,9 +128,6 @@ Export: BehaviourInterfacedComponent {
                 return;
             };
 
-            if !terminal.is_active() {
-                return;
-            }
             root_bang.ref_bang();
         }
     }
@@ -73,33 +147,3 @@ where Export: BehaviourInterfacedComponent {
 pub trait BehaviourInterfacedComponent: Component {
     fn set_active(&mut self, v: bool);
 }
-
-#[macro_export]
-macro_rules! ref_bang_export_impls { ($t:ty, $export:ty) => {
-    impl RefBangExport<$export> for $t {
-        fn ref_bang(&mut self) {
-            self.bang = true;
-        }
-
-        fn reset(&mut self) {
-            self.bang = true;
-        }
-
-        fn bang_val(&self) -> bool {
-            return self.bang
-        }
-    }
-};}
-pub (crate) use ref_bang_export_impls;
-
-#[macro_export]
-macro_rules! bang_to_root_ref_bang_impls { ($t:ty) => {
-    impl $t {
-        fn bang_to_root_system() {
-            
-        }
-    }
-};}
-pub (crate) use bang_to_root_ref_bang_impls;
-
-use super::{EntityReferenceFlag, GetEntityRef, InternalEntityRef, ToBehaviourTreeRoot};
