@@ -26,15 +26,15 @@ fn order_from_commandable_update(
     control_q: Query<&Commandable>,
 ) {
     for (mut terminal, to_root) in behaviour_q.iter_mut() {
-        order_from_commandable(terminal, to_root, root_q, control_q);
+        order_from_commandable(terminal, to_root, &root_q, &control_q);
     }
 }
 
 fn order_from_commandable(
     mut terminal: Mut<TFollowedOrder>, 
     to_root: &ToRoot,
-    root_q: Query<&RootToControl>,
-    control_q: Query<&Commandable>,
+    root_q: &Query<&RootToControl>,
+    control_q: &Query<&Commandable>,
 ) {
     // Follow reference path
     let root = to_root.entity();

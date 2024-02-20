@@ -1,7 +1,8 @@
 mod attack;
-mod navigation;
+//mod navigation;
 mod state;
 mod bang;
+mod follow_orders;
 
 //pub mod blocks;
 pub mod parts;

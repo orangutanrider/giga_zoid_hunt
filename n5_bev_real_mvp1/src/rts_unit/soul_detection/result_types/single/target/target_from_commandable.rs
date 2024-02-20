@@ -34,15 +34,15 @@ fn target_from_commandable_update(
     control_q: Query<&Commandable>,
 ) {
     for (mut detection, to_root) in detector_q.iter_mut() {
-        target_from_commandable(detection, to_root, root_q, control_q);
+        target_from_commandable(detection, to_root, &root_q, &control_q);
     }
 }
 
 fn target_from_commandable(
     mut detection: Mut<TTargetSoulDetection>, 
     to_root: &ToRoot,
-    root_q: Query<&RootToControl>,
-    control_q: Query<&Commandable>,
+    root_q: &Query<&RootToControl>,
+    control_q: &Query<&Commandable>,
 ) {
     // Follow reference path
     let root = to_root.entity();

@@ -1,13 +1,13 @@
+#![feature(const_type_id)]
+
 mod rts_unit;
 mod rts_controller;
 mod rapier_config;
 
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use mouse_tracking::prelude::*;
-
-use bevy::DefaultPlugins;
-use mouse_tracking::prelude::MousePosPlugin;
+//use mouse_tracking::prelude::*;
+use bevy_cursor::prelude::*;
 
 fn main() {
     println!("Hello, bevy.");
@@ -16,7 +16,7 @@ fn main() {
     app.add_plugins((
         DefaultPlugins,
         RapierPhysicsPlugin::<()>::default(),
-        MousePosPlugin,
+        TrackCursorPlugin,
         InitializePlugin,
     ));
 
@@ -38,12 +38,14 @@ impl Plugin for InitializePlugin{
             rts_unit::InitializePlugin,
             rts_controller::InitializePlugin,
         ))
-        .add_systems(Startup, (
-            spawn_main_camera,
-        ));
+        //.add_systems(Startup, (
+        //    spawn_main_camera,
+        //))
+        ;
     }
 }
 
+/* 
 #[derive(Component)]
 pub struct MainCamera;
 fn spawn_main_camera(mut commands: Commands) {
@@ -56,3 +58,4 @@ fn spawn_main_camera(mut commands: Commands) {
     .add(InitWorldTracking)
     .insert(mouse_tracking::MainCamera);
 }
+*/

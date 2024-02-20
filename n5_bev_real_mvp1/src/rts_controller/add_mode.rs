@@ -3,7 +3,7 @@ use bevy::ecs::system::SystemParam;
 
 #[derive(SystemParam)]
 pub struct AddModeInput<'w> {
-    keys: Res<'w, Input<KeyCode>>,
+    keys: Res<'w, ButtonInput<KeyCode>>,
 }
 impl<'w> AddModeInput<'w> {
     const KEYS: [KeyCode; 2] = [KeyCode::ShiftLeft, KeyCode::ShiftRight];

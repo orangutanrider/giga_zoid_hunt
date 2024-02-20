@@ -13,10 +13,10 @@ impl Plugin for InitializePlugin {
 
 #[derive(SystemParam)]
 struct PureMoveInput<'w> {
-    keys: Res<'w, Input<KeyCode>>,
+    keys: Res<'w, ButtonInput<KeyCode>>,
 }
 impl<'w> PureMoveInput<'w> {
-    const KEYS: [KeyCode; 1] = [KeyCode::D];
+    const KEYS: [KeyCode; 1] = [KeyCode::KeyD];
 
     fn just_pressed(&self) -> bool {
         return self.keys.any_just_pressed(Self::KEYS);
