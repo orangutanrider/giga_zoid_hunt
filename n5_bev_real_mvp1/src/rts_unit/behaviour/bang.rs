@@ -113,11 +113,14 @@ Export: BehaviourInterfacedComponent {
     }
 
     fn ref_bang_system(
-        node_q: Query<(&RefBangPropagator, &ToBehaviourTreeRoot), (Changed<RefBangPropagator>, With<T>)>,
+        node_q: Query<(&RefBangPropagator, &ToBehaviourTreeRoot, &TBehaviourBang), (Changed<RefBangPropagator>, With<T>)>,
         mut root_q: Query<&mut RootBang>,
     ) {
-        for (propagator, to_root) in node_q.iter() {
+        for (propagator, to_root, terminal) in node_q.iter() {
             if !propagator.is_propagating(){
+                continue;
+            }
+            if !terminal.is_active() {
                 continue;
             }
 
