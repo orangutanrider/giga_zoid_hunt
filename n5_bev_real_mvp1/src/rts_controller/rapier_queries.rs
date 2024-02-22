@@ -29,6 +29,7 @@ impl<'w> RtsControllerRapierQueries<'w> {
             Vec2::ZERO, 
             &shape, 
             0.0,
+            true,
             E_ATTACKABLE_FILTER,
         )
     }

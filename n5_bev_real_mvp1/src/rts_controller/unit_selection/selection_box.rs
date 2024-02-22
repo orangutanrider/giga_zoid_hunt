@@ -4,8 +4,7 @@ use bevy::ecs::system::SystemParam;
 use super::RtsSelectorContext;
 use crate::rts_controller::mouse::RtsMouse;
 use crate::rts_controller::rapier_queries::RtsControllerRapierQueries;
-use crate::rts_unit::control::RTSUnitControlID;
-use crate::rts_unit::ToRTSUnitRoot;
+use crate::rts_unit::parts::*;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin {
@@ -20,7 +19,7 @@ impl Plugin for InitializePlugin {
 
 #[derive(SystemParam)]
 pub struct SelectionBoxInput<'w> {
-    mouse_buttons: Res<'w, Input<MouseButton>>,
+    mouse_buttons: Res<'w, ButtonInput<MouseButton>>,
 }
 impl<'w> SelectionBoxInput<'w> {
     const BUTTONS: [MouseButton; 1] = [MouseButton::Left];
@@ -68,7 +67,7 @@ fn selection_box(
     let release = selector_context.mouse.position();
 
     let callback = |entity: Entity| -> bool {
-        selector.select_unit(add_mode, RTSUnitControlID::new(entity));
+        selector.select_unit(add_mode, RTSUnitControl::new(entity));
         return true;
     };
     rapier_queries.cast_for_p_selectable(origin, release, callback);

@@ -1,10 +1,20 @@
-pub mod control;
-pub mod movement;
-pub mod unit_types;
-pub mod unit_components;
-pub mod behaviour;
-pub mod soul;
+#[macro_use]
+mod control;
+#[macro_use]
+mod behaviour;
+#[macro_use]
+mod soul;
+#[macro_use]
+mod soul_detection;
 
+mod movement;
+mod unit_type;
+mod block;
+
+pub mod parts;
+pub mod blocks;
+
+use std::any::TypeId;
 use bevy::prelude::*;
 
 pub struct InitializePlugin;
@@ -12,62 +22,119 @@ impl Plugin for InitializePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
             control::InitializePlugin,
-            unit_types::InitializePlugin,
+            unit_type::InitializePlugin,
             behaviour::InitializePlugin,
             movement::InitializePlugin,
         ));
     }
 }
 
-#[derive(Component)]
-pub struct RTSUnit {
-    id: RTSUnitID,
-}
-impl Default for RTSUnit {
-    fn default() -> Self {
-        return Self{id: RTSUnitID::PLACEHOLDER}
-    }
-}
-impl RTSUnit {
-    pub fn new(entity: Entity) -> Self {
-        return Self { id: RTSUnitID(entity) }
-    }
-
-    pub fn entity(&self) -> Entity {
-        return self.id.0
-    }
+pub trait TypeIdGet where Self: 'static{
+    const TYPE_ID: TypeId = TypeId::of::<Self>();
 }
 
-#[derive(Component)]
-/// For entities attached to the root in the transform tree
-pub struct ToRTSUnitRoot(Entity);
-impl Default for ToRTSUnitRoot {
-    fn default() -> Self {
-        return Self(Entity::PLACEHOLDER)
+/// This would be editor only or debug mode information
+/// See this commit: 27474abb3e03d8ff9436123ca3dc3d21a17c64d7
+pub trait EntityReferenceFlag<const N: usize, Output: InternalEntityRef>: TypeIdGet {
+    const REFERENCE_PATH: [TypeId; N]; 
+    const REF_TYPE: EntityRefFlagRefType;
+
+    fn print_err(step: usize) {
+        println!("{:?}, Entity reference error, fail at step {}, for type {:?}.", Self::TYPE_ID, step, Self::REFERENCE_PATH[step]);
     }
-}
-impl ToRTSUnitRoot {
-    pub fn new(root: Entity) -> Self {
-        return Self(root)
-    }
-    
-    pub fn root(&self) -> RTSUnitID {
-        return RTSUnitID(self.0)
+
+    fn print_err_descript(step: usize, msg: &str) {
+        println!("{:?}, Entity reference error, fail at step {}, for type {:?}. Msg: {}", Self::TYPE_ID, step, Self::REFERENCE_PATH[step], msg);
     }
 }
 
 #[derive(Clone, Copy)]
-/// The root entity
-pub struct RTSUnitID(Entity);
-impl Default for RTSUnitID {
-    fn default() -> Self {
-        return Self::PLACEHOLDER
-    }
+#[derive(PartialEq, Eq)]
+pub enum EntityRefFlagRefType {
+    Immutable,
+    Mutable,
 }
-impl RTSUnitID {
-    pub const PLACEHOLDER: Self = Self(Entity::PLACEHOLDER);
 
-    pub fn new(entity: Entity) -> Self {
-        return RTSUnitID(entity)
+pub trait InternalEntityRef {
+    fn ref_type() -> EntityRefType;
+}
+
+pub trait GetEntityRef: InternalEntityRef {
+    fn entity(&self) -> Entity;
+}
+
+enum EntityRefType {
+    SelfEntity(SelfEntity),
+    ParentEntity(ParentEntity),
+    ChildEntity(ChildEntity),
+    RootEntity(RootEntity)
+}
+
+struct SelfEntity;
+impl InternalEntityRef for SelfEntity {
+    fn ref_type() -> EntityRefType {
+        return EntityRefType::SelfEntity(SelfEntity)
     }
 }
+struct ParentEntity;
+impl InternalEntityRef for ParentEntity {
+    fn ref_type() -> EntityRefType {
+        return EntityRefType::ParentEntity(ParentEntity)
+    }
+}
+struct ChildEntity;
+impl InternalEntityRef for ChildEntity {
+    fn ref_type() -> EntityRefType {
+        return EntityRefType::ChildEntity(ChildEntity)
+    }
+}
+struct RootEntity;
+impl InternalEntityRef for RootEntity {
+    fn ref_type() -> EntityRefType {
+        return EntityRefType::RootEntity(RootEntity)
+    }
+}
+
+#[macro_export]
+macro_rules! entity_ref_impls { ($t:ty, $ref_type:ident) => {
+    impl $t {
+        pub const PLACEHOLDER: Self = Self(Entity::PLACEHOLDER);
+
+        pub fn new(entity: Entity) -> Self {
+            return Self(entity)
+        }
+    }
+
+    impl TypeIdGet for $t { }
+
+    impl Default for $t {
+        fn default() -> Self {
+            return Self::PLACEHOLDER
+        }
+    }
+
+    impl InternalEntityRef for $t {
+        fn ref_type() -> EntityRefType {
+            return $ref_type::ref_type()
+        }
+    }
+
+    impl GetEntityRef for $t {
+        fn entity(&self) -> Entity {
+            return self.0
+        }
+    }
+};}
+pub(crate) use entity_ref_impls;
+
+#[derive(Clone, Copy)]
+#[derive(Component)]
+/// Attach to the root entity
+/// An entity that is expected to be a the root entity of an RTS unit
+pub struct RTSUnitRoot(Entity);
+entity_ref_impls!(RTSUnitRoot, SelfEntity);
+
+#[derive(Component)]
+/// For any entity attached to the unit in the tree
+pub struct ToRoot(Entity);
+entity_ref_impls!(ToRoot, RootEntity);
