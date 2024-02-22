@@ -2,8 +2,7 @@ use bevy::prelude::*;
 use bevy::ecs::system::SystemParam;
 
 use super::RtsCommanderContext;
-use crate::rts_unit::soul::RTSUnitSoulID;
-use crate::rts_unit::control::prelude::*;
+use crate::rts_unit::parts::*;
 use crate::rts_controller::rapier_queries::RtsControllerRapierQueries;
 
 pub struct InitializePlugin;
@@ -15,10 +14,10 @@ impl Plugin for InitializePlugin {
 
 #[derive(SystemParam)]
 struct AttackInput<'w> {
-    keys: Res<'w, Input<KeyCode>>,
+    keys: Res<'w, ButtonInput<KeyCode>>,
 }
 impl<'w> AttackInput<'w> {
-    const KEYS: [KeyCode; 1] = [KeyCode::A];
+    const KEYS: [KeyCode; 1] = [KeyCode::KeyA];
 
     fn just_pressed(&self) -> bool {
         return self.keys.any_just_pressed(Self::KEYS);
@@ -46,7 +45,7 @@ fn command_attack (
     let enemy_cast = rapier_queries.cast_for_e_attackable(mouse.position());
     if let Some(enemy_cast) = enemy_cast {
         let target = enemy_cast.0;
-        let target = AttackTargetOrder::new(RTSUnitSoulID::new(target));
+        let target = AttackTargetOrder::new(RTSUnitSoul::new(target));
         order = OrderType::AttackTarget(target);
     }
 

@@ -1,8 +1,13 @@
-pub mod commandable;
-pub mod selectable;
-pub mod prelude;
+mod commandable;
+mod selectable;
+
+pub mod blocks;
+pub mod parts;
 
 use bevy::prelude::*;
+
+use crate::rts_unit::*;
+use crate::entity_ref_impls;
 
 pub struct InitializePlugin;
 impl Plugin for InitializePlugin{
@@ -14,39 +19,14 @@ impl Plugin for InitializePlugin{
 }
 
 #[derive(Clone, Copy)]
-pub struct RTSUnitControlID(Entity);
-impl Default for RTSUnitControlID {
-    fn default() -> Self {
-        return Self::PLACEHOLDER
-    }
-}
-impl RTSUnitControlID {
-    pub const PLACEHOLDER: Self = Self(Entity::PLACEHOLDER);
-
-    pub fn new(entity: Entity) -> Self {
-        return Self(entity)
-    }
-
-    pub fn entity(&self) -> Entity {
-        return self.0
-    }
-}
+#[derive(Component)]
+pub struct RTSUnitControl(Entity);
+entity_ref_impls!(RTSUnitControl, SelfEntity);
 
 #[derive(Component)]
-/// Attach to root entity, points to control components' entity
-/// (Selectable, Commandable)
-pub struct RTSUnitControlEntity(RTSUnitControlID);
-impl Default for RTSUnitControlEntity {
-    fn default() -> Self {
-        Self(RTSUnitControlID::PLACEHOLDER)
-    }
-}
-impl RTSUnitControlEntity {
-    pub fn new(control_entity: Entity) -> Self {
-        return Self(RTSUnitControlID::new(control_entity))
-    }
+pub struct RootToControl(Entity);
+entity_ref_impls!(RootToControl, ChildEntity);
 
-    pub fn entity(&self) -> Entity {
-        return self.0.0
-    }
-}
+#[derive(Component)]
+pub struct ChildToControl(Entity);
+entity_ref_impls!(ChildToControl, ParentEntity);
