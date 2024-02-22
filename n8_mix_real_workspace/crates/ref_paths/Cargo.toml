@@ -1,0 +1,8 @@
+[package]
+name = "ref_paths"
+
+version.workspace = true
+authors.workspace = true
+
+[dependencies]
+bevy.workspace = true

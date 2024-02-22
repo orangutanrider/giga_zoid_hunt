@@ -1,0 +1,8 @@
+[package]
+name = "behaviour_tree"
+
+version.workspace = true
+authors.workspace = true
+
+[dependencies]
+bevy.workspace = true

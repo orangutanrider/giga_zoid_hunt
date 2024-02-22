@@ -1,0 +1,8 @@
+[package]
+name = "rts_controller"
+
+version.workspace = true
+authors.workspace = true
+
+[dependencies]
+bevy.workspace = true
