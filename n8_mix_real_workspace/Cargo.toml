@@ -1,0 +1,33 @@
+[package]
+name = "n8_mix_real_workspace"
+
+[[bin]]
+name = "n8_mix_real_workspace"
+path = "src/main.rs"
+
+[dependencies]
+bevy.workspace = true
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+
+[workspace]
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.0.1"
+authors = ["Dominic Rooney"]
+
+[workspace.dependencies]
+project_settings = { path = "crates/project_settings", version = "*" }
+ref_paths = { path = "crates/ref_paths", version = "*" }
+behaviour = { path = "crates/behaviour", version = "*" }
+
+bevy_rapier2d = { version = "0.25.0" }
+
+[workspace.dependencies.bevy]
+version = "0.13.0"
