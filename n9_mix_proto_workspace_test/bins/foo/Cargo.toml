@@ -8,3 +8,4 @@ authors.workspace = true
 [dependencies]
 bargo.workspace = true
 bevy.workspace = true
+bevy_rapier2d.workspace = true
