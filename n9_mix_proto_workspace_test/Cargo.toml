@@ -3,6 +3,7 @@ resolver = "2"
 members = ["bins/*", "libs/*"]
 
 [workspace.dependencies]
+foo = { path = "bins/foo"}
 bargo = { path = "libs/bargo" }
 bevy = { version = "0.13.0" }
 bevy_rapier2d = { version = "0.25.0", features = ["serde-serialize"] }
