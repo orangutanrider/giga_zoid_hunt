@@ -1,0 +1,5 @@
+[workspace]
+members = ["bins/*", "libs/*"]
+
+[workspace.dependencies]
+bargo = { path = "libs/bargo" }
