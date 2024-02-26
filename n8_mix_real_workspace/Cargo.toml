@@ -1,3 +1,18 @@
+# ================================
+# CARGO SETUP REFERENCES
+# https://github.com/NiklasEi/bevy_game_template
+# https://github.com/DigitalExtinction/Game
+# https://bevyengine.org/
+
+# ================================
+# RELEVANT COMMANDS
+# rustup default nightly
+# rustup update
+# cargo install -f cargo-binutils
+# rustup component add llvm-tools-preview
+
+# ================================
+# PACKAGE
 [package]
 name = "n8_mix_real_workspace"
 
@@ -8,14 +23,34 @@ path = "src/main.rs"
 [dependencies]
 bevy.workspace = true
 
+# ================================
+# PROFILES
 [profile.dev]
 opt-level = 1
 
 [profile.dev.package."*"]
 opt-level = 3
 
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = true
 
+[profile.dist] # distribution
+inherits = "release"
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+
+[features]
+dev = ["bevy/dynamic_linking",]
+
+# ================================
+# WORKSPACE
 [workspace]
+resolver = "2"
 members = ["crates/*"]
 
 [workspace.package]
@@ -23,11 +58,11 @@ version = "0.0.1"
 authors = ["Dominic Rooney"]
 
 [workspace.dependencies]
+bevy = { version = "0.13.0" }  
+# Remove dynamic_linking, in releases
+bevy_rapier2d = { version = "0.25.0", features = ["serde-serialize"] }
+# --features -f debug-render-2d simd-nightly
+
 project_settings = { path = "crates/project_settings", version = "*" }
 ref_paths = { path = "crates/ref_paths", version = "*" }
 behaviour = { path = "crates/behaviour", version = "*" }
-
-bevy_rapier2d = { version = "0.25.0" }
-
-[workspace.dependencies.bevy]
-version = "0.13.0"
