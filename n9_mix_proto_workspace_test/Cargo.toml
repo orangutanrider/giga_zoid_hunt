@@ -1,5 +1,9 @@
 [workspace]
+resolver = "2"
 members = ["bins/*", "libs/*"]
 
 [workspace.dependencies]
 bargo = { path = "libs/bargo" }
+
+[workspace.package]
+authors = ["Dominic Rooney"]
