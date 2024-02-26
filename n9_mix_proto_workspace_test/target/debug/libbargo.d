@@ -1,0 +1,1 @@
+C:\Users\Dominic\ Rooney\OneDrive\Desktop\active_projects\ART410\repo\GDPAbertayUndergrad-Honours\n9_mix_proto_workspace_test\target\debug\libbargo.rlib: C:\Users\Dominic\ Rooney\OneDrive\Desktop\active_projects\ART410\repo\GDPAbertayUndergrad-Honours\n9_mix_proto_workspace_test\libs\bargo\src\lib.rs
