@@ -5,6 +5,7 @@ members = ["bins/*", "libs/*"]
 [workspace.dependencies]
 bargo = { path = "libs/bargo" }
 bevy = { version = "0.13.0" }
+bevy_rapier2d = { version = "0.25.0", features = ["serde-serialize"] }
 
 [workspace.package]
 version = "0.0.1"
