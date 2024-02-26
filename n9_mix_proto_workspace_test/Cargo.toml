@@ -4,6 +4,7 @@ members = ["bins/*", "libs/*"]
 
 [workspace.dependencies]
 bargo = { path = "libs/bargo" }
+bevy = { version = "0.13.0" }
 
 [workspace.package]
 authors = ["Dominic Rooney"]
