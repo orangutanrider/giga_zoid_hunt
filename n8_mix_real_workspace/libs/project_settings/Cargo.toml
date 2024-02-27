@@ -5,5 +5,4 @@ version.workspace = true
 authors.workspace = true
 
 [dependencies]
-bevy_rapier2d.workspace = true
 bevy.workspace = true
