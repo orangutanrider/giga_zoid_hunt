@@ -1,10 +1,133 @@
+use std::any::TypeId;
+
 use bevy::prelude::*;
+use bevy::utils::HashMap;
+
+#[derive(Component)]
+/// Behaviour State Terminal
+/// Collects and stores key'd behaviour state.
+pub struct TState {
+    changed: bool, 
+
+    held: State,
+    registered: HashMap<Key, State>,
+    insert: HashMap<Key, State>,
+    remove: Vec<Key>, 
+}
+impl TState {
+    pub fn new() -> Self {
+        return Self {
+            changed: false,
+
+            held: State::NONE,
+            registered: HashMap::new(),
+            insert: HashMap::new(),
+            remove: Vec::new(),
+        }
+    }
+}
+impl Default for TState {
+    fn default() -> Self {
+        return Self::new()
+    }
+}
+impl TState { //! Set
+    /// Adds a new entry or updates an existing entry
+    pub fn insert(&mut self, key: Key, state: State) {
+        self.insert.insert(key, state);
+    }
+
+    /// Explicitlly remove an entry
+    pub fn remove(&mut self, key: Key) {
+        self.remove.push(key);
+    }
+}
+impl TState { //! Get
+    pub fn state(&self) -> State {
+        return self.held
+    }
+
+    pub fn changed(&self) -> bool {
+        return self.changed
+    }
+}
+impl TState { //! Internal
+    fn insertion(&self) -> bool {
+        return self.insert.len() != 0
+    }
+
+    fn removal(&self) -> bool {
+        return self.remove.len() != 0;
+    }
+
+    fn insert_into_registered(&mut self) {
+        // To registered
+        let registered = &mut self.registered;
+        let insert = &mut self.insert;
+        for (k, v) in insert.iter() {
+            registered.insert(*k, *v);
+        }
+        insert.clear();
+
+        // Re-calculate held
+        let mut new_held = State::NONE;
+        for v in registered.iter() {
+            new_held = new_held.union(*v.1);
+        }
+        
+        // Check if held has changed
+        if new_held == self.held {
+            self.changed = false;
+            return;
+        }
+
+        // Change held
+        self.held = new_held;
+        self.changed = true;
+    }
+
+    fn remove_from_registered(&mut self) {
+        // To registered
+        let registered = &mut self.registered;
+        let remove = &mut self.remove;
+        for k in remove.iter() {
+            registered.remove(k);
+        }
+        remove.clear();
+
+        // Re-calculate held
+        let mut new_held = State::NONE;
+        for v in registered.iter() {
+            new_held = new_held.union(*v.1);
+        }
+        
+        // Check if held has changed
+        if new_held == self.held {
+            self.changed = false;
+            return;
+        }
+
+        // Change held
+        self.held = new_held;
+        self.changed = true;
+    }
+}
+
+/// Identification types for anything trying to input state into a state terminal.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub enum Key{
+    ExternalEntity(Entity),
+    LocalComponent(TypeId)
+}
 
 /// A bit mask identifying behaviour state flags.
-#[derive(Component, Reflect, Copy, Clone, Debug, PartialEq, Eq, Hash)]
-#[reflect(Component, Hash, PartialEq)]
-#[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub struct State(u32);
+impl Default for State {
+    fn default() -> Self {
+        State::ALL
+    }
+}
 
 bitflags::bitflags! {
     impl State: u32 {
@@ -46,8 +169,23 @@ bitflags::bitflags! {
     }
 }
 
-impl Default for State {
-    fn default() -> Self {
-        State::ALL
+/// TState (Behaviour State Terminal) System
+fn terminal_updates( 
+    mut node_q: Query<&mut TState, Changed<TState>>,
+) {
+    for terminal in node_q.iter_mut() {
+        terminal_update(terminal);
+    }
+}
+
+fn terminal_update(
+    mut terminal: Mut<TState>,
+) {
+    if terminal.insertion() {
+        terminal.insert_into_registered();
+    }
+
+    if terminal.removal() {
+        terminal.remove_from_registered();
     }
 }
