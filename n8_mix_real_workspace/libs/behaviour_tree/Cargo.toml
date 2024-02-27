@@ -3,6 +3,8 @@ name = "behaviour_tree"
 
 version.workspace = true
 authors.workspace = true
+edition.workspace = true
 
 [dependencies]
 bevy.workspace = true
+bitflags.workspace = true
