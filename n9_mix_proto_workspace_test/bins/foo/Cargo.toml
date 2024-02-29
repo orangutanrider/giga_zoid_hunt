@@ -1,0 +1,13 @@
+[package]
+name = "foo"
+
+version.workspace = true
+authors.workspace = true
+
+[dependencies]
+bargo.workspace = true
+bevy.workspace = true
+bevy_rapier2d.workspace = true
+
+[features]
+dev = ["bevy/dynamic_linking",]

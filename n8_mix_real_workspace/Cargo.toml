@@ -1,0 +1,60 @@
+# ================================
+# CARGO SETUP REFERENCES
+# https://github.com/NiklasEi/bevy_game_template
+# https://github.com/DigitalExtinction/Game
+# https://bevyengine.org/learn/quick-start/getting-started/setup/
+# https://stackoverflow.com/questions/64623568/why-sometimes-extern-crate-is-needed 
+
+# ================================
+# RELEVANT COMMANDS
+# rustup default nightly
+# rustup update
+# cargo install -f cargo-binutils
+# rustup component add llvm-tools-preview
+
+# ================================
+# WORKSPACE
+[workspace]
+resolver = "2"
+members = ["libs/*", "bins/*"]
+
+[workspace.package]
+version = "0.0.1"
+authors = ["Dominic Rooney"]
+edition = "2021"
+
+[workspace.dependencies]
+# external
+bevy = { version = "0.13.0" }  
+bevy_rapier2d = { version = "0.25.0", features = ["serde-serialize"] }
+bitflags = { version = "2.4.2" }
+# bevy_rapier2d: --features -f debug-render-2d simd-nightly
+
+# bins
+main = { path = "bins/main"}
+
+# libs
+project_settings = { path = "libs/project_settings "}
+ref_paths = { path = "libs/ref_paths" }
+behaviour_tree = { path = "libs/behaviour_tree" }
+
+# ================================
+# PROFILES
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.dist] # distribution
+inherits = "release"
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
