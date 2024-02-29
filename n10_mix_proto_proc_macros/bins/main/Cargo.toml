@@ -1,0 +1,9 @@
+[package]
+name = "main"
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+proc_macros.workspace = true
