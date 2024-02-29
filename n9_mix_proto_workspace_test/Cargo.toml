@@ -1,0 +1,32 @@
+[workspace]
+resolver = "2"
+members = ["bins/*", "libs/*"]
+
+[workspace.dependencies]
+foo = { path = "bins/foo"}
+bargo = { path = "libs/bargo" }
+bevy = { version = "0.13.0" }
+bevy_rapier2d = { version = "0.25.0", features = ["serde-serialize"] }
+
+[workspace.package]
+version = "0.0.1"
+authors = ["Dominic Rooney"]
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.dist] # distribution
+inherits = "release"
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

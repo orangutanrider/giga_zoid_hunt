@@ -1,0 +1,10 @@
+[package]
+name = "bargo"
+
+authors.workspace = true
+version.workspace = true
+
+[dependencies]
+bevy.workspace = true
+bevy_rapier2d.workspace = true
+#foo.workspace = true

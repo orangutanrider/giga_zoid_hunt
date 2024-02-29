@@ -1,0 +1,12 @@
+[package]
+name = "main"
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+
+[features]
+dev = ["bevy/dynamic_linking",]

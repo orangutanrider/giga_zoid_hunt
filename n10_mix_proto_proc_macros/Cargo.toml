@@ -1,0 +1,54 @@
+# ================================
+# CARGO SETUP REFERENCES
+# https://github.com/NiklasEi/bevy_game_template
+# https://github.com/DigitalExtinction/Game
+# https://bevyengine.org/learn/quick-start/getting-started/setup/
+# https://stackoverflow.com/questions/64623568/why-sometimes-extern-crate-is-needed 
+
+# ================================
+# RELEVANT COMMANDS
+# rustup default nightly
+# rustup update
+# cargo install -f cargo-binutils
+# rustup component add llvm-tools-preview
+
+# ================================
+# WORKSPACE
+[workspace]
+resolver = "2"
+members = ["libs/*", "bins/*"]
+
+[workspace.package]
+version = "0.0.1"
+authors = ["Dominic Rooney"]
+edition = "2021"
+
+[workspace.dependencies]
+# external
+
+# bins
+main = { path = "bins/main"}
+
+# libs
+proc_macros = { path = "libs/proc_macros"}
+
+# ================================
+# PROFILES
+#[profile.dev]
+#opt-level = 1
+
+#[profile.dev.package."*"]
+#opt-level = 3
+
+#[profile.release]
+#opt-level = "s"
+#lto = true
+#codegen-units = 1
+#strip = true
+
+#[profile.dist] # distribution
+#inherits = "release"
+#opt-level = 3
+#lto = true
+#codegen-units = 1
+#strip = true
