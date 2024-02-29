@@ -1,9 +1,11 @@
+use std::any::Any;
 use std::{
     process::Output, 
     str::FromStr
 };
 
 use proc_macro::*;
+use proc_macro::TokenTree::*;
 
 mod non_macro;
 use non_macro::*;
@@ -124,6 +126,33 @@ pub fn print_nesting_count(statement: TokenStream) -> TokenStream {
     };
     return output;
 }
+
+// it could be done, but you'd have to read for the word mut I think
+// it isn't data that gets packaged along with an ident or anything like that
+//#[proc_macro]
+//pub fn print_mutability(statement: TokenStream) -> TokenStream {
+//    let iter = statement.into_iter();
+//
+//    let mut full_msg = "detect mutability: \n".to_owned();
+//
+//    for token in iter {
+//        let s = token.to_string() + "\n";
+//        full_msg = plus(full_msg.clone(), &s);
+//
+//        let Ident(token) = token else {
+//            continue;
+//        };
+//
+//        token.
+//    }
+//
+//    let print = "println!(\"".to_owned() + &full_msg + "\")";
+//    let output = TokenStream::from_str(&print);
+//    let Ok(output) = output else {
+//        return TokenStream::new();
+//    };
+//    return output;
+//}
 
 fn count_nesting(token: &TokenTree) -> u32 {
     let mut count = 0;

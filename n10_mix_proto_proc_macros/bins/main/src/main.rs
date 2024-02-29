@@ -39,6 +39,11 @@ fn main() {
             let g = 3;
             g + 3
         }
+        //! e
+    );
+
+    print_kind!(
+        //! e
     );
 
     print_kind!(({{{{{{{{{{{let e = 1;}}}}}}}}}}}));
