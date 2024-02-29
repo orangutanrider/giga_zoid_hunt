@@ -33,4 +33,14 @@ fn main() {
     print_kind!(
         let z = 30000;
     );
+
+    print_kind!(
+        let n = {
+            let g = 3;
+            g + 3
+        }
+    );
+
+    print_kind!(({{{{{{{{{{{let e = 1;}}}}}}}}}}}));
+    print_nesting_count!({{{{{{{{{{{let e = 1;}}}}}}}}}}});
 }
