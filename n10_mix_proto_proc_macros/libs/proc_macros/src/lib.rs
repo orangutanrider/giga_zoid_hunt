@@ -1,11 +1,12 @@
-#![feature(proc_macro_quote)]
-
 use std::{
     process::Output, 
     str::FromStr
 };
 
 use proc_macro::*;
+
+mod non_macro;
+use non_macro::*;
 
 //https://github.com/dtolnay/proc-macro-workshop?tab=readme-ov-file#function-like-macro-seq
 //https://www.youtube.com/watch?v=RfhkCdu3iYs
@@ -99,23 +100,45 @@ pub fn print_kind(statement: TokenStream) -> TokenStream {
     return output;
 }
 
-fn token_to_matched_str<'a>(token: &TokenTree) -> &'a str {
-    match token {
-        TokenTree::Group(_) => {
-            return "Group"
-        },
-        TokenTree::Ident(_) => {
-            return "Ident"
-        },
-        TokenTree::Punct(_) => {
-            return "Punct"
-        },
-        TokenTree::Literal(_) => {
-            return "Literal"
-        },
+// Hmm... This would be cool, but I suppose there's a reason that the parameters has to just be a TokenStream
+// The macro can't use type information from the code, I can understand that this is a limitation
+// Maybe one day it becomes possible? Should it be possible though? Hmm...
+// https://forums.swift.org/t/why-arent-macros-given-type-information/66893/5 Hmm...
+//#[proc_macro]
+//pub fn create_let(value: u32) -> TokenStream {
+//    ...
+//}
+
+#[proc_macro]
+pub fn print_nesting_count(statement: TokenStream) -> TokenStream {
+    let iter = statement.into_iter();
+    let mut count = 0;
+    for token in iter {
+        count = count + count_nesting(&token);
     }
+
+    let print = "println!(\"".to_owned() + &count.to_string() + "\")";
+    let output = TokenStream::from_str(&print);
+    let Ok(output) = output else {
+        return TokenStream::new();
+    };
+    return output;
 }
 
-fn plus(s1: String, s2: &str) -> String {
-    return s1 + s2
+fn count_nesting(token: &TokenTree) -> u32 {
+    let mut count = 0;
+    match token {
+        TokenTree::Group(g) => {
+            count = count + 1;
+            let iter = g.stream().into_iter();
+            for iter_token in iter {
+                count = count + count_nesting(&iter_token);
+            }
+        },
+        TokenTree::Ident(_) => {},
+        TokenTree::Punct(_) => {},
+        TokenTree::Literal(_) => {},
+    }
+
+    return count;
 }
