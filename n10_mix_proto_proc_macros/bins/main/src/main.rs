@@ -48,4 +48,6 @@ fn main() {
 
     print_kind!(({{{{{{{{{{{let e = 1;}}}}}}}}}}}));
     print_nesting_count!({{{{{{{{{{{let e = 1;}}}}}}}}}}});
+
+    print_kind!(entrance_entity::query1::()::entity_binding::{});
 }
