@@ -37,37 +37,26 @@ pub fn write_pathway(input: TokenStream) -> TokenStream {
 
 // ================================
 // Pseudocode
-// 1
-// Get entity 
-// :: 
-// If {group}, move to 2, otherwise continue
-// Get query
-// Enter (group)
-// Get optional bindings, if there are any
-// Exit (group)
-// If ; End
-// If -> {group}, move to 3
-// If -> Restart
 
-// 2
-// Get query
-// Enter (group)
-// Get optional bindings, if there are any
-// Exit (group)
-// If ,
-    // Restart 2, expect query 
-// If -> 
-    // Go to 3
+// ENTITY STEP
+// END or
+// IDENT, expect entity binding
+// :: PUNCTUATION
+// IDENT query or {GROUP}
 
-// 3
-// Get entity 
-// :: 
-// If {group}, move to 2, otherwise continue
-// Get query
-// Enter (group)
-// Get optional bindings, if there are any
-// Exit (group)
-// If ,
-    // Restart 3, expect entity 
-// If -> 
-    // Restart 3, expect entity
+// QUERY STEP
+// IDENT, expect query
+// Enter (GROUP)
+// Get comma seperated optional bindings
+// Exit (GROUP)
+// END or -> 
+// IDENT entity or {GROUP}
+
+// END STEP
+// If not nested, semi-colon will EXIT
+// If nested, comma continues the parent's loop
+// If nothing and nested, END to parent
+
+// EXIT STEP
+// If nothing, STOP
+// Otherwise IDENT, expect entity binding
