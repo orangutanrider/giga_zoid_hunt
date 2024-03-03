@@ -7,45 +7,42 @@ use proc_macro::*;
 //    return TokenStream::new()
 //}
 
-fn entity_step(mut iter: token_stream::IntoIter) {
+fn entity_step(mut iter: token_stream::IntoIter) -> Result<token_stream::IntoIter> {
     let entity = iter.next();
 
     // add check for tuple literal
 
     let Some(entity) = entity else {
-        // exit_step();
-        return;
+        return Ok(iter); // return empty iter, exit
     };
     if TokenTree::Ident(entity) != entity {
-        // err_step();
-        return;
+        return Err(_);
     }
 
-    entity_query_punct_step(iter)
+    entity_query_punct_step(iter);
+    return Ok(iter);
 }
 
-fn entity_query_punct_step(mut iter: token_stream::IntoIter) {
+fn entity_query_punct_step(mut iter: token_stream::IntoIter) -> Result<token_stream::IntoIter> {
     let puncts = iter.next_chunk::<2>();
     let Ok(puncts) = puncts else {
-        // error
-        return;
+        return Err(_);
     };
 
     let span = puncts[0].span().join(puncts[1].span());
     let Some(span) = span else {
-        // error
-        return;
+        return Err(_);
     };
     let src = span.source_text();
     if src != "::" {
-        // error
-        return;
+        return Err(_);
     }
 
     query_step(iter);
+    return Ok(iter);
 }
 
-fn query_step(mut iter: token_stream::IntoIter) {
+fn query_step(mut iter: token_stream::IntoIter) -> Result<token_stream::IntoIter> {
     let query = iter.next();
     let Some(query) = query else {
         // err_step();
@@ -54,74 +51,88 @@ fn query_step(mut iter: token_stream::IntoIter) {
 
     match query {
         TokenTree::Punct(_) => {
-            // error
-            return;
+            return Err;
         },
         TokenTree::Literal(_) => {
-            // error
-            return;
+            return Err;
         },
         TokenTree::Group(group) => {
             let group = group.stream().into_iter();
-            multi_query_step(group);
+            return multi_query_step(group);
         },
         TokenTree::Ident(_) => {
-
+            return single_query_step(iter);
         },
     }
 }
 
-fn multi_query_step(mut iter: token_stream::IntoIter) {
-    let query = iter.next();
-    let Some(query) = query else {
-        // err_step();
-        return;
+fn single_query_step(mut iter: token_stream::IntoIter) -> Result<token_stream::IntoIter> {
+    iter = binding_step(iter);
+    let Ok(iter) = iter else {
+        return Err;
     };
 
-    binding_step(iter);
+    return Ok(iter);
 }
 
-fn binding_step(mut iter: token_stream::IntoIter) {
+fn multi_query_step(mut iter: token_stream::IntoIter) -> Result<()> {
+    let query = iter.next();
+    let Some(query) = query else {
+        return Err;
+    };
+
+    let mut iter = binding_step(iter);
+    let Ok(iter) = iter else {
+        return Err;
+    };
+
+    let comma = iter.next();
+    let Some(comma) = comma else {
+        multi_query_step(iter);
+    };
+
+    return Ok;
+}
+
+fn binding_step(mut iter: token_stream::IntoIter) -> Result<token_stream::IntoIter> {
     let group = iter.next();
     let Some(group) = group else {
-        // error
-        return;
+        return Err(_);
     };
     let TokenTree::Group(group) = group else {
-        // error
-        return;
+        return Err(_);
     };
     if group.delimiter() != Delimiter::Parenthesis {
-        // error
-        return;
+        return Err(_);
     }
     
     bindings_step(group);
+    next_entity_punct_step(iter);
+    return Ok(iter);
 }
 
 fn bindings_step(group: Group) {
     // take as string
+    // also needs to detect if anything was declared as mutable, so it knows to do get_mut on entity
 }
 
-fn next_entity_punct_step(mut iter: token_stream::IntoIter) {
+fn next_entity_punct_step(mut iter: token_stream::IntoIter) -> Result<token_stream::IntoIter> {
     let puncts = iter.next_chunk::<2>();
     let Ok(puncts) = puncts else {
-        // error
-        return;
+        return Ok(iter); // return empty iter, exit
     };
 
     let span = puncts[0].span().join(puncts[1].span());
     let Some(span) = span else {
-        // error
-        return;
+        return Err(_);
     };
     let src = span.source_text();
     if src != "->" {
-        // error
-        return;
+        return Err(_);
     }
 
     entity_step(iter);
+    return Ok(iter);
 }
 
 /* 
