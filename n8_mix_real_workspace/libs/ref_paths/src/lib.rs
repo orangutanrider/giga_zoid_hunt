@@ -82,48 +82,46 @@ fn multi_query_step(mut iter: token_stream::IntoIter) {
 }
 
 fn binding_step(mut iter: token_stream::IntoIter) {
-    let local_iter = iter.clone();
-
-    let punct = iter.next();
-    let Some(punct) = punct else {
+    let group = iter.next();
+    let Some(group) = group else {
         // error
         return;
     };
-
-
-
+    let TokenTree::Group(group) = group else {
+        // error
+        return;
+    };
+    if group.delimiter() != Delimiter::Parenthesis {
+        // error
+        return;
+    }
+    
+    bindings_step(group);
 }
 
 fn bindings_step(group: Group) {
-
+    // take as string
 }
 
-fn multi_bindings_step()
-
-fn next_entity_punct_step1(punct: Option<TokenTree>) {
-    let Some(punct) = punct else {
-        // exit
+fn next_entity_punct_step(mut iter: token_stream::IntoIter) {
+    let puncts = iter.next_chunk::<2>();
+    let Ok(puncts) = puncts else {
+        // error
         return;
     };
-    if TokenTree::Punct(punct) != punct {
+
+    let span = puncts[0].span().join(puncts[1].span());
+    let Some(span) = span else {
+        // error
+        return;
+    };
+    let src = span.source_text();
+    if src != "->" {
         // error
         return;
     }
 
-    // add check for if is -
-}
-
-fn next_entity_punct_step2(punct: Option<TokenTree>) {
-    let Some(punct) = punct else {
-        // errpr
-        return;
-    };
-    if TokenTree::Punct(punct) != punct {
-        // error
-        return;
-    }
-
-    // add check for if is >
+    entity_step(iter);
 }
 
 /* 
@@ -158,24 +156,24 @@ fn entity_step(mut iter: token_stream::IntoIter) {
 // Format
 // "..." continues, restarting the pattern
 
-// entity::query<>;
+// entity::query(,);
 
-// entity::query<> -> entity::query<> -> ...;
+// entity::query(,) -> entity::query(,) -> ...;
 
-// entity::query<> -> {
-//     entity::query<> -> ...,
-//     entity::query<>
+// entity::query(,) -> {
+//     entity::query(,) -> ...,
+//     entity::query(,)
 // };
 
 // entity::{
-//     query<>,
-//     query<> -> ... 
+//     query(,),
+//     query(,) -> ... 
 // };
 
-// entity1::query1<>;
-// entity1::query2<> -> {
-//    entity2::query3<> -> ...,
-//    entity3::query4<>
+// entity1::query1(,);
+// entity1::query2(,) -> {
+//    entity2::query3(,) -> ...,
+//    entity3::query4(,)
 // };
 
 // ================================
