@@ -1,3 +1,5 @@
+#![feature(proc_macro_span)]
+
 use proc_macro::*;
 
 //#[proc_macro]
@@ -5,7 +7,11 @@ use proc_macro::*;
 //    return TokenStream::new()
 //}
 
-fn entity_step(entity: Option<TokenTree>) {
+fn entity_step(mut iter: token_stream::IntoIter) {
+    let entity = iter.next();
+
+    // add check for tuple literal
+
     let Some(entity) = entity else {
         // exit_step();
         return;
@@ -14,73 +20,85 @@ fn entity_step(entity: Option<TokenTree>) {
         // err_step();
         return;
     }
+
+    entity_query_punct_step(iter)
 }
 
-fn entity_query_punct_step(punct: Option<TokenTree>) {
-    let Some(punct) = punct else {
-        // err_step();
+fn entity_query_punct_step(mut iter: token_stream::IntoIter) {
+    let puncts = iter.next_chunk::<2>();
+    let Ok(puncts) = puncts else {
+        // error
         return;
     };
-    if TokenTree::Punct(punct) != punct {
-        // err_step();
+
+    let span = puncts[0].span().join(puncts[1].span());
+    let Some(span) = span else {
+        // error
+        return;
+    };
+    let src = span.source_text();
+    if src != "::" {
+        // error
         return;
     }
 
-    // add check for if is :
+    query_step(iter);
 }
 
-fn query_step(query: Option<TokenTree>) {
+fn query_step(mut iter: token_stream::IntoIter) {
+    let query = iter.next();
     let Some(query) = query else {
         // err_step();
         return;
     };
-    if TokenTree::Ident(query) != query {
-        // err_step();
-        return;
+
+    match query {
+        TokenTree::Punct(_) => {
+            // error
+            return;
+        },
+        TokenTree::Literal(_) => {
+            // error
+            return;
+        },
+        TokenTree::Group(group) => {
+            let group = group.stream().into_iter();
+            multi_query_step(group);
+        },
+        TokenTree::Ident(_) => {
+
+        },
     }
 }
 
-fn binding_group_step(group: Option<TokenTree>) {
-    let Some(group) = group else {
+fn multi_query_step(mut iter: token_stream::IntoIter) {
+    let query = iter.next();
+    let Some(query) = query else {
         // err_step();
         return;
     };
-    if TokenTree::Group(group) != group {
-        // err_step();
-        return;
-    }
 
-    // add check for if is ()
+    binding_step(iter);
 }
 
-fn optional_binding_step(mut group: token_stream::IntoIter) {
-    // add check for mutability decleration
-    // add check for reference symbol decleration
+fn binding_step(mut iter: token_stream::IntoIter) {
+    let local_iter = iter.clone();
 
-    let binding = group.next();
-    let Some(binding) = binding else {
-        // exit
-        return;
-    };
-    if TokenTree::Ident(binding) != binding {
+    let punct = iter.next();
+    let Some(punct) = punct else {
         // error
         return;
-    }
-
-    let comma = group.next();
-    let Some(comma) = comma else {
-        // exit
-        return;  
     };
-    if TokenTree::Punct(comma) != comma {
-        // error
-        return;
-    }
 
-    // add check for if is ,
 
-    optional_binding_step(group);
+
 }
+
+fn bindings_step(group: Group) {
+
+}
+
+fn multi_bindings_step()
 
 fn next_entity_punct_step1(punct: Option<TokenTree>) {
     let Some(punct) = punct else {
@@ -140,24 +158,24 @@ fn entity_step(mut iter: token_stream::IntoIter) {
 // Format
 // "..." continues, restarting the pattern
 
-// entity::query(,);
+// entity::query<>;
 
-// entity::query(,) -> entity::query(,) -> ...;
+// entity::query<> -> entity::query<> -> ...;
 
-// entity::query(,) -> {
-//     entity::query(,) -> ...,
-//     entity::query(,)
+// entity::query<> -> {
+//     entity::query<> -> ...,
+//     entity::query<>
 // };
 
 // entity::{
-//     query(,),
-//     query(,) -> ... 
+//     query<>,
+//     query<> -> ... 
 // };
 
-// entity1::query1(,);
-// entity1::query2(,) -> {
-//    entity2::query3(,) -> ...,
-//    entity3::query4(,)
+// entity1::query1<>;
+// entity1::query2<> -> {
+//    entity2::query3<> -> ...,
+//    entity3::query4<>
 // };
 
 // ================================
