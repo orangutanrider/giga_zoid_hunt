@@ -23,31 +23,39 @@ fn main() {
     //);
 
     print_spans!(
-        let x = 12;
+        let x = 12; &&
     );
 
-    print_tokens!(
-        let x = 100;
+    print_resolved_spans!(
+         & & 
     );
 
-    print_kind!(
-        let z = 30000;
+    print_located_spans!(
+         & & 
     );
 
-    print_kind!(
-        let n = {
-            let g = 3;
-            g + 3
-        }
-        //! e
-    );
+    //print_tokens!(
+    //    let x = 100;
+    //);
 
-    print_kind!(
-        //! e
-    );
+    //print_kind!(
+    //    let z = 30000;
+    //);
 
-    print_kind!(({{{{{{{{{{{let e = 1;}}}}}}}}}}}));
-    print_nesting_count!({{{{{{{{{{{let e = 1;}}}}}}}}}}});
+    //print_kind!(
+    //    let n = {
+    //        let g = 3;
+    //        g + 3
+    //    }
+    //    //! e
+    //);
 
-    print_kind!(entrance_entity::query1::()::entity_binding::{});
+    //print_kind!(
+    //    //! e
+    //);
+
+    //print_kind!(({{{{{{{{{{{let e = 1;}}}}}}}}}}}));
+    //print_nesting_count!({{{{{{{{{{{let e = 1;}}}}}}}}}}});
+
+    //print_kind!(entity::query(,) -> entity::query(,););
 }

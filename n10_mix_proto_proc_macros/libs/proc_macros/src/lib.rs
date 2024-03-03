@@ -43,6 +43,66 @@ use non_macro::*;
 //    return return_v
 //}
 
+
+//span.join(other) is an unstable feature
+#[proc_macro]
+pub fn print_resolved_spans(statement: TokenStream) -> TokenStream {
+    let mut span_iter = statement.into_iter();
+
+    let full_span = span_iter.next();
+    let Some(full_span) = full_span else {
+        return TokenStream::new();
+    };
+    let mut full_span = full_span.span();
+
+    for token in span_iter {
+        full_span = full_span.resolved_at(token.span());
+    }
+
+    let msg = "resolved_spans: \n".to_owned();
+    let full_span = full_span.source_text();
+    let Some(full_span) = full_span else {
+        return TokenStream::new();
+    };
+    let msg = msg + &full_span;
+
+    let print = "println!(\"".to_owned() + &msg + "\")";
+    let output = TokenStream::from_str(&print);
+    let Ok(output) = output else {
+        return TokenStream::new();
+    };
+    return output;
+}
+
+#[proc_macro]
+pub fn print_located_spans(statement: TokenStream) -> TokenStream {
+    let mut span_iter = statement.into_iter();
+
+    let full_span = span_iter.next();
+    let Some(full_span) = full_span else {
+        return TokenStream::new();
+    };
+    let mut full_span = full_span.span();
+
+    for token in span_iter {
+        full_span = full_span.located_at(token.span());
+    }
+
+    let msg = "located_spans: \n".to_owned();
+    let full_span = full_span.source_text();
+    let Some(full_span) = full_span else {
+        return TokenStream::new();
+    };
+    let msg = msg + &full_span;
+
+    let print = "println!(\"".to_owned() + &msg + "\")";
+    let output = TokenStream::from_str(&print);
+    let Ok(output) = output else {
+        return TokenStream::new();
+    };
+    return output;
+}
+
 #[proc_macro]
 pub fn print_spans(statement: TokenStream) -> TokenStream {
     let iter = statement.into_iter();
