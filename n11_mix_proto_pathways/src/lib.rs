@@ -36,22 +36,9 @@ fn entity_step(mut iter: TokenIter) -> Result<TokenIter, PathwayError> {
             return Err(PathwayError::Undefined);
         },
         TokenTree::Literal(_) => {
-            return entity_tuple_id_step(iter);
+            return Err(PathwayError::Undefined);
         },
     }
-}
-
-// entity::query(,) -> 0.entity::query(,) -> ...;
-// without a tuple decleration, it'll either assume 0 or assume that there is no tuple (to be added)
-fn entity_tuple_id_step(mut iter: TokenIter) -> Result<TokenIter, PathwayError> {
-    let dot = iter.next();
-    let Some(dot) = dot else {
-        return Err(PathwayError::Undefined)
-    };
-    if dot.to_string() != "." {
-        return Err(PathwayError::Undefined);
-    }
-    return entity_step(iter);
 }
 
 fn single_entity_step(iter: TokenIter) -> Result<TokenIter, PathwayError> {
@@ -112,24 +99,21 @@ fn entity_query_punct_step(mut iter: TokenIter) -> Result<TokenIter, PathwayErro
         return Err(PathwayError::Undefined);
     }
 
-    //query_step(iter);
-    return Ok(iter);
+    return query_step(iter);
 }
 
-/* 
-fn query_step(mut iter: token_stream::IntoIter) -> Result<token_stream::IntoIter> {
+fn query_step(mut iter: TokenIter) -> Result<TokenIter, PathwayError> {
     let query = iter.next();
     let Some(query) = query else {
-        // err_step();
-        return;
+        return Err(PathwayError::Undefined);
     };
 
     match query {
         TokenTree::Punct(_) => {
-            return Err;
+            return Err(PathwayError::Undefined);
         },
         TokenTree::Literal(_) => {
-            return Err;
+            return Err(PathwayError::Undefined);
         },
         TokenTree::Group(group) => {
             let group = group.stream().into_iter();
@@ -141,15 +125,35 @@ fn query_step(mut iter: token_stream::IntoIter) -> Result<token_stream::IntoIter
     }
 }
 
-fn single_query_step(mut iter: token_stream::IntoIter) -> Result<token_stream::IntoIter> {
-    iter = binding_step(iter);
-    let Ok(iter) = iter else {
-        return Err;
-    };
-
-    return Ok(iter);
+fn single_query_step(iter: TokenIter) -> Result<TokenIter, PathwayError> {
+    return binding_step(iter);
 }
 
+fn binding_step(mut iter: TokenIter) -> Result<TokenIter, PathwayError> {
+    let group = iter.next();
+    let Some(group) = group else {
+        return Err(PathwayError::Undefined);
+    };
+    let TokenTree::Group(group) = group else {
+        return Err(PathwayError::Undefined);
+    };
+    if group.delimiter() != Delimiter::Parenthesis {
+        return Err(PathwayError::Undefined);
+    }
+    
+    bindings_step(group);
+
+    return next_entity_punct_step(iter);
+}
+
+fn bindings_step(group: Group) {
+    // entity binding will be created here, that way none of the tuple ID wildcard nonsense is needed
+    
+    // take as string
+    // also needs to detect if anything was declared as mutable, so it knows to do get_mut on entity
+}
+
+/* 
 fn multi_query_step(mut iter: token_stream::IntoIter) -> Result<()> {
     let query = iter.next();
     let Some(query) = query else {
@@ -167,28 +171,6 @@ fn multi_query_step(mut iter: token_stream::IntoIter) -> Result<()> {
     };
 
     return Ok;
-}
-
-fn binding_step(mut iter: token_stream::IntoIter) -> Result<token_stream::IntoIter> {
-    let group = iter.next();
-    let Some(group) = group else {
-        return Err(_);
-    };
-    let TokenTree::Group(group) = group else {
-        return Err(_);
-    };
-    if group.delimiter() != Delimiter::Parenthesis {
-        return Err(_);
-    }
-    
-    bindings_step(group);
-    next_entity_punct_step(iter);
-    return Ok(iter);
-}
-
-fn bindings_step(group: Group) {
-    // take as string
-    // also needs to detect if anything was declared as mutable, so it knows to do get_mut on entity
 }
 
 fn next_entity_punct_step(mut iter: token_stream::IntoIter) -> Result<token_stream::IntoIter> {
