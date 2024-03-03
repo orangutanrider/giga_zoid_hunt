@@ -1,47 +1,113 @@
 #![feature(proc_macro_span)]
+#![feature(iter_next_chunk)]
 
 use proc_macro::*;
+use proc_macro::token_stream::IntoIter as TokenIter;
 
-//#[proc_macro]
-//pub fn write_pathway(input: TokenStream) -> TokenStream {
-//    return TokenStream::new()
-//}
+enum PathwayError {
+    UnDefined,
+}
 
-fn entity_step(mut iter: token_stream::IntoIter) -> Result<token_stream::IntoIter> {
-    let entity = iter.next();
+#[proc_macro]
+pub fn write_pathway(input: TokenStream) -> TokenStream {
+    let iter = input.into_iter();
+    multi_entity_step(iter);
+    //entity_step(iter);
+    //return TokenStream::new();
+}
+
+fn entity_step(mut iter: TokenIter) -> Result<TokenIter, PathwayError> {
+    let token = iter.next();
 
     // add check for tuple literal
 
-    let Some(entity) = entity else {
+    let Some(token) = token else {
         return Ok(iter); // return empty iter, exit
     };
-    if TokenTree::Ident(entity) != entity {
-        return Err(_);
+
+    match token {
+        TokenTree::Group(group) => {
+            let group = group.stream().into_iter();
+            let result = multi_entity_step(group);
+            match result {
+                Ok(()) => return Ok(iter),
+                Err(()) => return Err(PathwayError::UnDefined),
+            }
+        },
+        TokenTree::Ident(_) => {
+            return single_entity_step(iter);
+        },
+        TokenTree::Punct(_) => {
+            // error
+        },
+        TokenTree::Literal(_) => {
+            // single entity step (tuple field literal)
+        },
     }
 
-    entity_query_punct_step(iter);
-    return Ok(iter);
+    return entity_query_punct_step(iter); 
 }
 
-fn entity_query_punct_step(mut iter: token_stream::IntoIter) -> Result<token_stream::IntoIter> {
-    let puncts = iter.next_chunk::<2>();
-    let Ok(puncts) = puncts else {
-        return Err(_);
+fn single_entity_step(mut iter: TokenIter) -> Result<TokenIter, PathwayError> {
+    return entity_query_punct_step(iter); 
+}
+
+fn multi_entity_step(mut group: TokenIter) -> Result<TokenIter, PathwayError> {
+    let token = group.next();
+    let Some(token) = token else {
+        // exit
+        return Ok;
     };
 
-    let span = puncts[0].span().join(puncts[1].span());
-    let Some(span) = span else {
-        return Err(_);
-    };
-    let src = span.source_text();
-    if src != "::" {
-        return Err(_);
+    match token {
+        TokenTree::Group(_) => {
+            return Err(PathwayError::UnDefined)
+        },
+        TokenTree::Ident(_) => {
+            let result = entity_query_punct_step(group);
+            let Ok(result) = result else {
+                return Err(result);
+            };
+            group = result;
+        },
+        TokenTree::Punct(_) => {
+            return Err(PathwayError::UnDefined)
+        },
+        TokenTree::Literal(_) => {
+            // single entity step (tuple field literal)
+        },
     }
 
-    query_step(iter);
-    return Ok(iter);
+    let comma = group.next();
+    let Some(comma) = comma else {
+        return multi_entity_step(group);
+    };
+    return Ok(group)
 }
 
+//fn entity_query_punct_step(mut iter: TokenIter) -> Result<TokenIter, PathwayError> {
+//    let puncts = iter.next_chunk::<2>();
+//    let Ok(puncts) = puncts else {
+//        return Err(PathwayError::UnDefined);
+//    };
+//
+//    let span = puncts[0].span().join(puncts[1].span());
+//    let Some(span) = span else {
+//        return Err(PathwayError::UnDefined);
+//    };
+//    let src = span.source_text();
+//    let Some(src) = src else {
+//        return Err(PathwayError::UnDefined);
+//    };
+//    if src != "::" {
+//        return Err(PathwayError::UnDefined);
+//    }
+//
+//    //query_step(iter);
+//    return Ok(iter);
+//}
+
+/* 
 fn query_step(mut iter: token_stream::IntoIter) -> Result<token_stream::IntoIter> {
     let query = iter.next();
     let Some(query) = query else {
@@ -218,3 +284,4 @@ fn entity_step(mut iter: token_stream::IntoIter) {
 // EXIT STEP
 // If nothing, STOP
 // Otherwise IDENT, expect entity binding
+*/
