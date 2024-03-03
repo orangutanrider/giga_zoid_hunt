@@ -34,6 +34,14 @@ fn main() {
          & & 
     );
 
+    print_joined_spans!(
+         & & 
+    );
+
+    print_joined_spans!(
+        &&
+    );
+
     //print_tokens!(
     //    let x = 100;
     //);

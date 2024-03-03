@@ -1,3 +1,5 @@
+#![feature(proc_macro_span)]
+
 use std::any::Any;
 use std::{
     process::Output, 
@@ -45,6 +47,39 @@ use non_macro::*;
 
 
 //span.join(other) is an unstable feature
+#[proc_macro]
+pub fn print_joined_spans(statement: TokenStream) -> TokenStream {
+    let mut span_iter = statement.into_iter();
+
+    let full_span = span_iter.next();
+    let Some(full_span) = full_span else {
+        return TokenStream::new();
+    };
+    let mut full_span = full_span.span();
+
+    for token in span_iter {
+        let joined = full_span.join(token.span());
+        let Some(joined) = joined else {
+            return TokenStream::new();
+        };
+        full_span = joined;
+    }
+
+    let msg = "joined_spans: \n".to_owned();
+    let full_span = full_span.source_text();
+    let Some(full_span) = full_span else {
+        return TokenStream::new();
+    };
+    let msg = msg + &full_span;
+
+    let print = "println!(\"".to_owned() + &msg + "\")";
+    let output = TokenStream::from_str(&print);
+    let Ok(output) = output else {
+        return TokenStream::new();
+    };
+    return output;
+}
+
 #[proc_macro]
 pub fn print_resolved_spans(statement: TokenStream) -> TokenStream {
     let mut span_iter = statement.into_iter();
