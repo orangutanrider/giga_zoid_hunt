@@ -30,19 +30,83 @@ fn entity_step(mut iter: TokenIter) -> Result<TokenIter, PathwayError> {
             return multi_entity_step(group);
         },
         TokenTree::Ident(_) => {
-            return single_entity_step(iter);
+            return single_entity_step(iter, token.span());
         },
         TokenTree::Punct(_) => {
             return Err(PathwayError::Undefined);
         },
         TokenTree::Literal(_) => {
-            return Err(PathwayError::Undefined);
+            return single_entity_step(iter, token.span());
         },
     }
 }
 
-fn single_entity_step(iter: TokenIter) -> Result<TokenIter, PathwayError> {
+fn single_entity_step(mut iter: TokenIter, initial_span: Span) -> Result<TokenIter, PathwayError> {
     return entity_query_punct_step(iter); 
+}
+
+fn join_until_seperator(mut iter: TokenIter, span: Span) -> Result<(TokenIter, Span), PathwayError> {
+    let token = iter.next();
+    let Some(token) = token else {
+        return Err(PathwayError::Undefined);
+    };
+    
+    match token {
+        TokenTree::Group(_) => {
+            return Err(PathwayError::Undefined);
+        },
+        TokenTree::Punct(_) => {
+            return end_at_seperator(token, iter, span);
+        },
+        TokenTree::Ident(_) => {
+            let span = span.join(token.span());
+            let Some(span) = span else {
+                return Err(PathwayError::Undefined);
+            };
+
+            return join_until_seperator(iter, span);
+        },
+        TokenTree::Literal(_) => {
+            let span = span.join(token.span());
+            let Some(span) = span else {
+                return Err(PathwayError::Undefined);
+            };
+
+            return join_until_seperator(iter, span);
+        },
+    }
+}
+
+fn end_at_seperator(current: TokenTree, mut iter: TokenIter, span: Span) -> Result<(TokenIter, Span), PathwayError> {
+    // If colon expect :: and end
+    if current.to_string() == ":" {
+        let next = iter.next();
+        let Some(next) = next else {
+            return Err(PathwayError::Undefined);
+        };
+        
+        let seperator = current.span().join(next.span());
+        let Some(seperator) = seperator else {
+            return Err(PathwayError::Undefined);
+        };
+        
+        let seperator = seperator.source_text();
+        let Some(seperator) = seperator else {
+            return Err(PathwayError::Undefined);
+        };
+
+        if seperator != "::" {
+            return Err(PathwayError::Undefined);
+        }
+        return Ok((iter, span));
+    }
+
+    // if no colon, continue
+    let span = span.join(current.span());
+    let Some(span) = span else {
+        return Err(PathwayError::Undefined);
+    };
+    return join_until_seperator(iter, span);
 }
 
 fn multi_entity_step(mut group: TokenIter) -> Result<TokenIter, PathwayError> {
