@@ -45,6 +45,30 @@ use non_macro::*;
 //    return return_v
 //}
 
+#[proc_macro]
+pub fn print_end_span_1(statement: TokenStream) -> TokenStream {
+    let mut iter = statement.into_iter();
+
+    let span = iter.next();
+    let Some(span) = span else {
+        return TokenStream::new();
+    };
+    let span = span.span().end();
+
+    let msg = "end_span: \n".to_owned();
+    let span = span.source_text();
+    let Some(span) = span else {
+        return TokenStream::new();
+    };
+    let msg = msg + &span;
+
+    let print = "println!(\"".to_owned() + &msg + "\")";
+    let output = TokenStream::from_str(&print);
+    let Ok(output) = output else {
+        return TokenStream::new();
+    };
+    return output;
+}
 
 //span.join(other) is an unstable feature
 #[proc_macro]
