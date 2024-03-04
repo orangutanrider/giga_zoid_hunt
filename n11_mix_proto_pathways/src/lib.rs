@@ -15,17 +15,25 @@ pub fn write_pathway(input: TokenStream) -> TokenStream {
     return TokenStream::new();
 }
 
-fn entity_step(mut iter: TokenIter) -> Result<TokenIter, PathwayError> {
+fn entity_step(mut iter: TokenIter, mut output: String) -> Result<(TokenIter, String), PathwayError> {
     let token = iter.next();
-
     let Some(token) = token else {
-        return Ok(iter); // return empty iter, exit
+        return Ok((iter, output)); // return empty iter, exit
     };
 
     match token {
         TokenTree::Group(group) => {
             let group = group.stream().into_iter();
-            return multi_entity_step(group);
+            let result = multi_entity_step(group, output.clone());
+            if let Err(result) = result {
+                return Err(result);
+            }
+            let Ok((iter, pathway_step)) = result else {
+                return Err(PathwayError::Undefined)
+            };
+
+            output = output + &pathway_step;
+            return Ok((iter, output));
         },
         TokenTree::Ident(_) => {
             return single_entity_step(iter, token.span());
@@ -39,15 +47,28 @@ fn entity_step(mut iter: TokenIter) -> Result<TokenIter, PathwayError> {
     }
 }
 
-fn single_entity_step(mut iter: TokenIter, current: Span) -> Result<TokenIter, PathwayError> {
+fn single_entity_step(iter: TokenIter, current: Span) -> Result<(TokenIter, String), PathwayError> {
     let result = join_until_seperator(iter, current); 
+    if let Err(result) = result {
+        return Err(result);
+    };
+    let Ok((iter, span)) = result else {
+        return Err(PathwayError::Undefined);
+    };
+    
+    let entity_binding = span.source_text();
+    let Some(entity_binding) = entity_binding else {
+        return Err(PathwayError::Undefined)
+    };
+
+    // return query_step(iter, entity_binding)
     return Err(PathwayError::Undefined);
 }
 
-fn multi_entity_step(mut group: TokenIter) -> Result<TokenIter, PathwayError> {
+fn multi_entity_step(mut group: TokenIter, mut output: String) -> Result<(TokenIter, String), PathwayError> {
     let token = group.next();
     let Some(token) = token else {
-        return Ok(group); // exit with empty
+        return Ok((group, output));
     };
 
     match token {
@@ -56,10 +77,15 @@ fn multi_entity_step(mut group: TokenIter) -> Result<TokenIter, PathwayError> {
         },
         TokenTree::Ident(_) => {
             let result = single_entity_step(group, token.span());
-            let Ok(result) = result else {
+            if let Err(result) = result {
+                return Err(result);
+            };
+            let Ok((iter, pathway_step)) = result else {
                 return Err(PathwayError::Undefined);
             };
-            group = result;
+
+            group = iter;
+            output = output + &pathway_step;
         },
         TokenTree::Punct(_) => {
             return Err(PathwayError::Undefined)
@@ -69,15 +95,16 @@ fn multi_entity_step(mut group: TokenIter) -> Result<TokenIter, PathwayError> {
         },
     }
 
-    let comma = group.next();
-    let Some(comma) = comma else {
-        return multi_entity_step(group);
+    let token = group.next();
+    let Some(token) = token else {
+        return Ok((group, output));
     };
 
-    if comma.to_string() != "," {
-        return Err(PathwayError::Undefined)
+    if token.to_string() == "," {
+        return multi_entity_step(group, output);
     }
-    return Ok(group)
+
+    return Err(PathwayError::Undefined);
 }
 
 fn join_until_seperator(mut iter: TokenIter, span: Span) -> Result<(TokenIter, Span), PathwayError> {
