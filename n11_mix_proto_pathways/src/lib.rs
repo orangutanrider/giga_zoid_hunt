@@ -18,7 +18,7 @@ pub fn write_pathway(input: TokenStream) -> TokenStream {
 fn entity_step(mut iter: TokenIter, mut output: String) -> Result<(TokenIter, String), PathwayError> {
     let token = iter.next();
     let Some(token) = token else {
-        return Ok((iter, output)); // return empty iter, exit
+        return Ok((iter, output)); 
     };
 
     match token {
@@ -36,18 +36,49 @@ fn entity_step(mut iter: TokenIter, mut output: String) -> Result<(TokenIter, St
             return Ok((iter, output));
         },
         TokenTree::Ident(_) => {
-            return single_entity_step(iter, token.span());
+            return single_entity_step(iter, token.span(), EntityType::ToOtherEntity);
         },
         TokenTree::Punct(_) => {
-            return Err(PathwayError::Undefined);
+            return punct_entity_step(token, iter);
         },
         TokenTree::Literal(_) => {
-            return Err(PathwayError::Undefined); // tuple cannot start with a literal
+            return Err(PathwayError::Undefined); 
         },
     }
 }
 
-fn single_entity_step(iter: TokenIter, current: Span) -> Result<(TokenIter, String), PathwayError> {
+fn punct_entity_step(current: TokenTree, mut iter: TokenIter) -> Result<(TokenIter, String), PathwayError> {
+    if current.to_string() != "@" {
+        return Err(PathwayError::Undefined)
+    }
+
+    let token = iter.next();
+    let Some(token) = token else {
+        return Err(PathwayError::Undefined)
+    };
+    
+    match token {
+        TokenTree::Group(_) => {
+            return Err(PathwayError::Undefined)
+        },
+        TokenTree::Ident(_) => {
+            return single_entity_step(iter, token.span(), EntityType::SelfEntity);
+        },
+        TokenTree::Punct(_) => {
+            return Err(PathwayError::Undefined)
+        },
+        TokenTree::Literal(_) => {
+            return Err(PathwayError::Undefined)
+        },
+    }
+}
+
+enum EntityType {
+    SelfEntity,
+    ToOtherEntity
+}
+
+fn single_entity_step(iter: TokenIter, current: Span, entity_type: EntityType) -> Result<(TokenIter, String), PathwayError> {
     let result = join_until_seperator(iter, current); 
     if let Err(result) = result {
         return Err(result);
@@ -57,9 +88,16 @@ fn single_entity_step(iter: TokenIter, current: Span) -> Result<(TokenIter, Stri
     };
     
     let entity_binding = span.source_text();
-    let Some(entity_binding) = entity_binding else {
+    let Some(mut entity_binding) = entity_binding else {
         return Err(PathwayError::Undefined)
     };
+
+    match entity_type {
+        EntityType::SelfEntity => { }
+        EntityType::ToOtherEntity => {
+            entity_binding = entity_binding + ".go()"
+        },
+    }
 
     // return query_step(iter, entity_binding)
     return Err(PathwayError::Undefined);
