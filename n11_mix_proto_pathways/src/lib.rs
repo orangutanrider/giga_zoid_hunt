@@ -18,8 +18,6 @@ pub fn write_pathway(input: TokenStream) -> TokenStream {
 fn entity_step(mut iter: TokenIter) -> Result<TokenIter, PathwayError> {
     let token = iter.next();
 
-    // add check for tuple literal
-
     let Some(token) = token else {
         return Ok(iter); // return empty iter, exit
     };
@@ -36,13 +34,50 @@ fn entity_step(mut iter: TokenIter) -> Result<TokenIter, PathwayError> {
             return Err(PathwayError::Undefined);
         },
         TokenTree::Literal(_) => {
-            return single_entity_step(iter, token.span());
+            return Err(PathwayError::Undefined); // tuple cannot start with a literal
         },
     }
 }
 
-fn single_entity_step(mut iter: TokenIter, initial_span: Span) -> Result<TokenIter, PathwayError> {
-    return entity_query_punct_step(iter); 
+fn single_entity_step(mut iter: TokenIter, current: Span) -> Result<TokenIter, PathwayError> {
+    let result = join_until_seperator(iter, current); 
+    return Err(PathwayError::Undefined);
+}
+
+fn multi_entity_step(mut group: TokenIter) -> Result<TokenIter, PathwayError> {
+    let token = group.next();
+    let Some(token) = token else {
+        return Ok(group); // exit with empty
+    };
+
+    match token {
+        TokenTree::Group(_) => {
+            return Err(PathwayError::Undefined)
+        },
+        TokenTree::Ident(_) => {
+            let result = single_entity_step(group, token.span());
+            let Ok(result) = result else {
+                return Err(PathwayError::Undefined);
+            };
+            group = result;
+        },
+        TokenTree::Punct(_) => {
+            return Err(PathwayError::Undefined)
+        },
+        TokenTree::Literal(_) => {
+            return Err(PathwayError::Undefined); // tuple cannot start with a literal
+        },
+    }
+
+    let comma = group.next();
+    let Some(comma) = comma else {
+        return multi_entity_step(group);
+    };
+
+    if comma.to_string() != "," {
+        return Err(PathwayError::Undefined)
+    }
+    return Ok(group)
 }
 
 fn join_until_seperator(mut iter: TokenIter, span: Span) -> Result<(TokenIter, Span), PathwayError> {
@@ -109,63 +144,7 @@ fn end_at_seperator(current: TokenTree, mut iter: TokenIter, span: Span) -> Resu
     return join_until_seperator(iter, span);
 }
 
-fn multi_entity_step(mut group: TokenIter) -> Result<TokenIter, PathwayError> {
-    let token = group.next();
-    let Some(token) = token else {
-        return Ok(group); // exit with empty
-    };
-
-    match token {
-        TokenTree::Group(_) => {
-            return Err(PathwayError::Undefined)
-        },
-        TokenTree::Ident(_) => {
-            let result = entity_query_punct_step(group);
-            let Ok(result) = result else {
-                return Err(PathwayError::Undefined);
-            };
-            group = result;
-        },
-        TokenTree::Punct(_) => {
-            return Err(PathwayError::Undefined)
-        },
-        TokenTree::Literal(_) => {
-            return entity_tuple_id_step(group);
-        },
-    }
-
-    let comma = group.next();
-    let Some(comma) = comma else {
-        return multi_entity_step(group);
-    };
-
-    if comma.to_string() != "," {
-        return Err(PathwayError::Undefined)
-    }
-    return Ok(group)
-}
-
-fn entity_query_punct_step(mut iter: TokenIter) -> Result<TokenIter, PathwayError> {
-    let puncts = iter.next_chunk::<2>();
-    let Ok(puncts) = puncts else {
-        return Err(PathwayError::Undefined);
-    };
-
-    let span = puncts[0].span().join(puncts[1].span());
-    let Some(span) = span else {
-        return Err(PathwayError::Undefined);
-    };
-    let src = span.source_text();
-    let Some(src) = src else {
-        return Err(PathwayError::Undefined);
-    };
-    if src != "::" {
-        return Err(PathwayError::Undefined);
-    }
-
-    return query_step(iter);
-}
-
+/*
 fn query_step(mut iter: TokenIter) -> Result<TokenIter, PathwayError> {
     let query = iter.next();
     let Some(query) = query else {
@@ -216,7 +195,7 @@ fn bindings_step(group: Group) {
     // take as string
     // also needs to detect if anything was declared as mutable, so it knows to do get_mut on entity
 }
-
+*/
 /* 
 fn multi_query_step(mut iter: token_stream::IntoIter) -> Result<()> {
     let query = iter.next();
