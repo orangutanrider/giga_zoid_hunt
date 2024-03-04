@@ -3,7 +3,9 @@ use proc_macros::*;
 fn main() {
     println!("Hello World");
 
-    print_end_span_1!( &* )
+    print_end_span_1!( &* );
+    print_groups!( ( e ) );
+    print_tokens!( ( e ) );
 
     //print_as_string!(
     //    let x = 3;
