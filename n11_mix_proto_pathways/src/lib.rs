@@ -171,6 +171,69 @@ fn end_at_seperator(current: TokenTree, mut iter: TokenIter, span: Span) -> Resu
     return join_until_seperator(iter, span);
 }
 
+fn single_query_step(iter: TokenIter, query: &str, entity: &str) -> Result<(TokenIter, String), PathwayError> {
+    let result = binding_step(iter);
+    if let Err(result) = result {
+        return Err(result);
+    }
+    let Ok((iter, binding_decleration, mutability)) = result else {
+        return Err(PathwayError::Undefined)
+    };
+
+    let mut output = binding_decleration + query + ".get";
+
+    match mutability {
+        BindingMutability::IsMutable => {
+            output = output + "_mut(";
+        },
+        BindingMutability::IsNotMutable => {
+            output = output + "(";
+        },
+    }
+    output = output + entity + ");";
+
+    return e;
+}
+
+enum BindingMutability {
+    IsMutable,
+    IsNotMutable
+}
+
+fn binding_step(mut iter: TokenIter) -> Result<(TokenIter, String, BindingMutability), PathwayError> {
+    let group = iter.next();
+    let Some(group) = group else {
+        return Err(PathwayError::Undefined);
+    };
+    let TokenTree::Group(group) = group else {
+        return Err(PathwayError::Undefined);
+    };
+    if group.delimiter() != Delimiter::Parenthesis {
+        return Err(PathwayError::Undefined);
+    }
+    
+    let (binding, mutability) = bindings_step(group);
+    let binding = "let ".to_owned() + &binding + " = ";
+    return Ok((iter, binding, mutability));
+}
+
+fn bindings_step(group: Group) -> (String, BindingMutability) {
+    let mut output = "".to_owned();
+    let mut detection = BindingMutability::IsNotMutable;
+
+    let group = group.stream().into_iter();
+    for token in group {
+        let s = token.to_string();
+        if s == "mut" {
+            detection = BindingMutability::IsMutable;
+        }
+
+        output = output + &s;
+    }
+
+    return (output, detection);   
+}
+
 /*
 fn query_step(mut iter: TokenIter) -> Result<TokenIter, PathwayError> {
     let query = iter.next();
@@ -195,33 +258,6 @@ fn query_step(mut iter: TokenIter) -> Result<TokenIter, PathwayError> {
     }
 }
 
-fn single_query_step(iter: TokenIter) -> Result<TokenIter, PathwayError> {
-    return binding_step(iter);
-}
-
-fn binding_step(mut iter: TokenIter) -> Result<TokenIter, PathwayError> {
-    let group = iter.next();
-    let Some(group) = group else {
-        return Err(PathwayError::Undefined);
-    };
-    let TokenTree::Group(group) = group else {
-        return Err(PathwayError::Undefined);
-    };
-    if group.delimiter() != Delimiter::Parenthesis {
-        return Err(PathwayError::Undefined);
-    }
-    
-    bindings_step(group);
-
-    return next_entity_punct_step(iter);
-}
-
-fn bindings_step(group: Group) {
-    // entity binding will be created here, that way none of the tuple ID wildcard nonsense is needed
-    
-    // take as string
-    // also needs to detect if anything was declared as mutable, so it knows to do get_mut on entity
-}
 */
 /* 
 fn multi_query_step(mut iter: token_stream::IntoIter) -> Result<()> {
