@@ -46,6 +46,33 @@ use non_macro::*;
 //}
 
 #[proc_macro]
+pub fn print_groups(statement: TokenStream) -> TokenStream {
+    let iter = statement.into_iter();
+
+    let mut full_msg = "groups: \n".to_owned();
+
+    for token in iter {
+        match token {
+            TokenTree::Group(group) => {
+                let s = group.to_string() + "\n";
+                full_msg = plus(full_msg.clone(), &s);
+            },
+            TokenTree::Ident(_) => {},
+            TokenTree::Punct(_) => {},
+            TokenTree::Literal(_) => {},
+        }
+    }
+
+    let print = "println!(\"".to_owned() + &full_msg + "\")";
+    let output = TokenStream::from_str(&print);
+    let Ok(output) = output else {
+        return TokenStream::new();
+    };
+    return output;
+}
+
+
+#[proc_macro]
 pub fn print_end_span_1(statement: TokenStream) -> TokenStream {
     let mut iter = statement.into_iter();
 
