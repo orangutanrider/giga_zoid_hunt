@@ -3,6 +3,8 @@ use proc_macros::*;
 fn main() {
     println!("Hello World");
 
+    print_end_span_1!( &* )
+
     //print_as_string!(
     //    let x = 3;
     //);
@@ -22,25 +24,25 @@ fn main() {
     //    "let x = 10;"
     //);
 
-    print_spans!(
-        let x = 12; &&
-    );
+    //print_spans!(
+    //    let x = 12; &&
+    //);
 
-    print_resolved_spans!(
-         & & 
-    );
+    //print_resolved_spans!(
+    //     & & 
+    //);
 
-    print_located_spans!(
-         & & 
-    );
+    //print_located_spans!(
+    //     & & 
+    //);
 
-    print_joined_spans!(
-         & & 
-    );
+    //print_joined_spans!(
+    //     & & 
+    //);
 
-    print_joined_spans!(
-        &&
-    );
+    //print_joined_spans!(
+    //    &&
+    //);
 
     //print_tokens!(
     //    let x = 100;
