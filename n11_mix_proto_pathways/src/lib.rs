@@ -1,6 +1,8 @@
 #![feature(proc_macro_span)]
 #![feature(iter_next_chunk)]
 
+use std::result;
+
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
@@ -36,21 +38,27 @@ fn entity_step(mut iter: TokenIter, mut output: String) -> Result<(TokenIter, St
             return Ok((iter, output));
         },
         TokenTree::Ident(_) => {
-            return single_entity_step(iter, token.span(), EntityKind::ToOther);
+            return single_entity_step(iter, token.span(), EntityKind::ToOther)
         },
         TokenTree::Punct(_) => {
-            if token.to_string() == "@" {
-                return punct_at_entity_step(iter)
-            }
-            if token.to_string() == "^" {
-                return punct_lift_entity_step(iter)
-            }
-            return Err(PathwayError::Undefined)
+            return entity_wildcard_step(iter, token)
         },
         TokenTree::Literal(_) => {
-            return Err(PathwayError::Undefined); 
+            return Err(PathwayError::Undefined)
         },
     }
+}
+
+fn entity_wildcard_step(iter: TokenIter, current: TokenTree) -> Result<(TokenIter, String), PathwayError> {
+    if current.to_string() == "@" {
+        return punct_at_entity_step(iter);
+    }
+    
+    if current.to_string() == "^" {
+        return punct_lift_entity_step(iter);
+    }
+
+    return Err(PathwayError::Undefined)
 }
 
 fn punct_at_entity_step(mut iter: TokenIter) -> Result<(TokenIter, String), PathwayError> {
@@ -123,7 +131,15 @@ fn single_entity_step(iter: TokenIter, current: Span, kind: EntityKind) -> Resul
             entity_binding = entity_binding + ".go()"
         },
         EntityKind::LiftedToOther => {
+            let lift = lift_entity_binding(entity_binding, additional_puncts);
+            if let Err(lift) = lift {
+                return Err(lift)
+            }
+            let Ok(lift) = lift else {
+                return Err(PathwayError::Undefined)
+            };
 
+            entity_binding = lift;
         }
     }
 
@@ -131,7 +147,7 @@ fn single_entity_step(iter: TokenIter, current: Span, kind: EntityKind) -> Resul
     return Err(PathwayError::Undefined);
 }
 
-fn lift_entity_binding(entity_binding: String, is_there: AdditionalPuncts) -> Result<String, PathwayError> {
+fn lift_entity_binding(mut entity_binding: String, is_there: AdditionalPuncts) -> Result<String, PathwayError> {
     match is_there {
         AdditionalPuncts::Found => {
             return Err(PathwayError::Undefined)
@@ -139,11 +155,16 @@ fn lift_entity_binding(entity_binding: String, is_there: AdditionalPuncts) -> Re
         AdditionalPuncts::NoneFound => { },
     }
 
-    // check if it begins with to_
-    // if so remove it
-    // otherwise add _dest to the end
+    // if format is "to_entity", removes the "to_"
+    let to = &entity_binding[..3];
+    if to == "to_" {
+        entity_binding.replace_range(..3, "");
+        return Ok(entity_binding)
+    }
 
-    return
+    // otherwise adds "_dest" to the end
+    entity_binding = entity_binding + "_dest";
+    return Ok(entity_binding);
 }
 
 fn multi_entity_step(mut group: TokenIter, mut output: String) -> Result<(TokenIter, String), PathwayError> {
@@ -157,7 +178,7 @@ fn multi_entity_step(mut group: TokenIter, mut output: String) -> Result<(TokenI
             return Err(PathwayError::Undefined)
         },
         TokenTree::Ident(_) => {
-            let result = single_entity_step(group, token.span());
+            let result = single_entity_step(group, token.span(), EntityKind::ToOther);
             if let Err(result) = result {
                 return Err(result);
             };
@@ -169,13 +190,23 @@ fn multi_entity_step(mut group: TokenIter, mut output: String) -> Result<(TokenI
             output = output + &pathway_step;
         },
         TokenTree::Punct(_) => {
-            return Err(PathwayError::Undefined)
+            let result = entity_wildcard_step(group, token);
+            if let Err(result) = result {
+                return Err(result);
+            };
+            let Ok((iter, pathway_step)) = result else {
+                return Err(PathwayError::Undefined);
+            };
+
+            group = iter;
+            output = output + &pathway_step;
         },
         TokenTree::Literal(_) => {
-            return Err(PathwayError::Undefined); // tuple cannot start with a literal
+            return Err(PathwayError::Undefined); 
         },
     }
 
+    // Check for comma, continue or end
     let token = group.next();
     let Some(token) = token else {
         return Ok((group, output));
