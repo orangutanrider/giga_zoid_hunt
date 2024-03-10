@@ -20,7 +20,7 @@ pub fn query_step(mut caravan: Caravan, entity_input: String) -> Result<Caravan,
 
     match token {
         TokenTree::Group(group) => { // one entity clause to many queries
-            let group = Caravan::new(group.stream().into_iter(), caravan.output);
+            let group = Caravan::dig(group.stream().into_iter(), caravan.output, caravan.deeper());
             
             let result = multi_query_step(group, entity_input);
             if let Err(result) = result {
@@ -48,6 +48,7 @@ pub fn query_step(mut caravan: Caravan, entity_input: String) -> Result<Caravan,
 fn multi_query_step(mut caravan: Caravan, entity_input: String) -> Result<Caravan, CaravanError> {
     let token = caravan.next();
     let Some(token) = token else {
+        caravan.escape();
         return Ok(caravan);
     };
 
@@ -77,6 +78,7 @@ fn multi_query_step(mut caravan: Caravan, entity_input: String) -> Result<Carava
     // Check for comma, continue or end
     let token = caravan.next();
     let Some(token) = token else {
+        caravan.escape();
         return Ok(caravan);
     };
 
@@ -153,20 +155,10 @@ fn bindings_step(group: Group) -> Result<(Span, SingleQueryStep), CaravanError> 
     return Ok((output, detection));   
 }
 
-fn query_next_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
-    let token = caravan.next();
-    let Some(token) = token else {
-        return Ok(caravan);
-    };
-
-    let span = token.span();
-    let token = token.next();
-    
-
-    // if no colon, continue
-    let output = output.join(current.span());
-    let Some(output) = output else {
-        return Err(CaravanError::Undefined);
-    };
-    return join_until_seperator(caravan, output);
+fn query_next(caravan: Caravan) -> Result<Caravan, CaravanError> {
+    if caravan.at_surface() {
+        return query_surface_next(caravan);
+    } else {
+        return query_deep_next(caravan);
+    }
 }

@@ -34,7 +34,7 @@ pub fn entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
 
     match token {
         TokenTree::Group(group) => {
-            let group = Caravan::new(group.stream().into_iter(), caravan.output);
+            let group = Caravan::dig(group.stream().into_iter(), caravan.output, caravan.deeper());
             
             let result = multi_entity_step(group);
             if let Err(result) = result {
@@ -112,6 +112,7 @@ fn single_entity_step(caravan: Caravan, current: Span, kind: SingleEntityStep) -
 fn multi_entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
     let token = caravan.next();
     let Some(token) = token else {
+        caravan.escape();
         return Ok(caravan);
     };
 
@@ -147,6 +148,7 @@ fn multi_entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
     // Check for comma, continue or end
     let token = caravan.next();
     let Some(token) = token else {
+        caravan.escape();
         return Ok(caravan);
     };
 
