@@ -4,6 +4,7 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 pub use super::*;
+use internal::*;
 
 /// The different kinds of singular entity steps
 enum SingleEntityStep {
@@ -25,69 +26,32 @@ enum SingleEntityStep {
 }
 
 fn entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
-    let token = iter.next();
+    let token = caravan.next();
     let Some(token) = token else {
-        return Ok((iter, output)); 
+        return Ok(caravan);
     };
 
     match token {
         TokenTree::Group(group) => {
-            let group = group.stream().into_iter();
-            let result = multi_entity_step(group, output.clone());
+            let group = Caravan::new(group.stream().into_iter(), caravan.output);
+            
+            let result = multi_entity_step(group);
             if let Err(result) = result {
                 return Err(result);
             }
-            let Ok((iter, pathway_step)) = result else {
+            let Ok(mut result) = result else {
                 return Err(CaravanError::Undefined)
             };
 
-            output = output + &pathway_step;
-            return Ok((iter, output));
+            result.iter = caravan.iter;
+            return Ok(result);
         },
         TokenTree::Ident(_) => {
             // Direct entity step
             return single_entity_step(caravan, token.span(), SingleEntityStep::Direct)
         },
         TokenTree::Punct(_) => {
-            return punct_to_entity_wildcard(iter, token)
-        },
-        TokenTree::Literal(_) => {
-            return Err(CaravanError::Undefined)
-        },
-    }
-}
-
-fn punct_to_entity_wildcard(mut caravan: Caravan, current: TokenTree) -> Result<Caravan, CaravanError> {
-    if current.to_string() == "@" {
-        return entity_wildcard_step(iter, SingleEntityStep::Literal)
-    }
-    
-    if current.to_string() == "^" {
-        return entity_wildcard_step(iter, SingleEntityStep::Lifted)
-    }
-
-    if current.to_string() == "~" {
-        return entity_wildcard_step(iter, SingleEntityStep::Overlap)
-    }
-
-    return Err(CaravanError::Undefined)
-}
-
-fn entity_wildcard_step(mut caravan: Caravan, kind: SingleEntityStep) -> Result<Caravan, CaravanError> {
-    let token = iter.next();
-    let Some(token) = token else {
-        return Err(CaravanError::Undefined)
-    };
-    
-    match token {
-        TokenTree::Group(_) => {
-            return Err(CaravanError::Undefined)
-        },
-        TokenTree::Ident(_) => {
-            return single_entity_step(iter, token.span(), kind);
-        },
-        TokenTree::Punct(_) => {
-            return Err(CaravanError::Undefined)
+            return punct_to_entity_wildcard(caravan, token)
         },
         TokenTree::Literal(_) => {
             return Err(CaravanError::Undefined)
@@ -96,15 +60,15 @@ fn entity_wildcard_step(mut caravan: Caravan, kind: SingleEntityStep) -> Result<
 }
 
 fn single_entity_step(mut caravan: Caravan, current: Span, kind: SingleEntityStep) -> Result<Caravan, CaravanError> {
-    let result = walk_to_end_of_entity_clause(iter, current); 
+    let result = walk_to_entity_clause_end(caravan, current); 
     if let Err(result) = result {
         return Err(result);
     };
-    let Ok((iter, span, additional_puncts)) = result else {
+    let Ok((caravan, entity_clause)) = result else {
         return Err(CaravanError::Undefined);
     };
     
-    let entity_clause = span.source_text();
+    let entity_clause = entity_clause.source_text();
     let Some(mut entity_clause) = entity_clause else {
         return Err(CaravanError::Undefined)
     };
@@ -124,7 +88,7 @@ fn single_entity_step(mut caravan: Caravan, current: Span, kind: SingleEntitySte
             entity_let = "let ".to_owned() + &entity_clause + " = " + &entity_clause + ".go();" + "\n";
         },
         SingleEntityStep::Lifted => {
-            let lift = lift_entity_clause(entity_clause, additional_puncts);
+            let lift = lift_entity_clause(entity_clause);
             if let Err(lift) = lift {
                 return Err(lift)
             }
@@ -138,15 +102,17 @@ fn single_entity_step(mut caravan: Caravan, current: Span, kind: SingleEntitySte
         }
     }
 
+    caravan.output.push_str(&entity_let);
+
     // return query_step(iter, entity_clause)
     return Err(CaravanError::Undefined);
 }
 
 /// Caravan iter recieved as group
 fn multi_entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
-    let token = group.next();
+    let token = caravan.next();
     let Some(token) = token else {
-        return Ok((group, output));
+        return Ok(caravan);
     };
 
     match token {
@@ -154,28 +120,24 @@ fn multi_entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
             return Err(CaravanError::Undefined)
         },
         TokenTree::Ident(_) => {
-            let result = single_entity_step(group, token.span(), SingleEntityStep::ToOther);
+            let result = single_entity_step(caravan, token.span(), SingleEntityStep::Direct);
             if let Err(result) = result {
                 return Err(result);
             };
-            let Ok((iter, pathway_step)) = result else {
+            let Ok(result) = result else {
                 return Err(CaravanError::Undefined);
             };
-
-            group = iter;
-            output = output + &pathway_step;
+            caravan = result;
         },
         TokenTree::Punct(_) => {
-            let result = entity_wildcard_step(group, token);
+            let result = punct_to_entity_wildcard(caravan, token);
             if let Err(result) = result {
                 return Err(result);
             };
-            let Ok((iter, pathway_step)) = result else {
+            let Ok(result) = result else {
                 return Err(CaravanError::Undefined);
             };
-
-            group = iter;
-            output = output + &pathway_step;
+            caravan = result;
         },
         TokenTree::Literal(_) => {
             return Err(CaravanError::Undefined); 
@@ -183,13 +145,13 @@ fn multi_entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
     }
 
     // Check for comma, continue or end
-    let token = group.next();
+    let token = caravan.next();
     let Some(token) = token else {
-        return Ok((group, output));
+        return Ok(caravan);
     };
 
     if token.to_string() == "," {
-        return multi_entity_step(group, output);
+        return multi_entity_step(caravan);
     }
 
     return Err(CaravanError::Undefined);

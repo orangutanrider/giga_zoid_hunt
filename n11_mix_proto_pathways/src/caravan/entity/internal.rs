@@ -3,7 +3,47 @@ use proc_macro::token_stream::IntoIter as TokenIter;
 
 use super::*;
 
-fn lift_entity_clause(mut entity_clause: String) -> Result<String, CaravanError> {
+pub fn punct_to_entity_wildcard(caravan: Caravan, current: TokenTree) -> Result<Caravan, CaravanError> {
+    if current.to_string() == "@" {
+        return entity_wildcard_step(caravan, SingleEntityStep::Literal)
+    }
+    
+    if current.to_string() == "^" {
+        return entity_wildcard_step(caravan, SingleEntityStep::Lifted)
+    }
+
+    if current.to_string() == "~" {
+        return entity_wildcard_step(caravan, SingleEntityStep::Overlap)
+    }
+
+    return Err(CaravanError::Undefined)
+}
+
+pub fn entity_wildcard_step(mut caravan: Caravan, kind: SingleEntityStep) -> Result<Caravan, CaravanError> {
+    let iter = &mut caravan.iter;
+
+    let token = iter.next();
+    let Some(token) = token else {
+        return Err(CaravanError::Undefined)
+    };
+    
+    match token {
+        TokenTree::Group(_) => {
+            return Err(CaravanError::Undefined)
+        },
+        TokenTree::Ident(_) => {
+            return single_entity_step(caravan, token.span(), kind);
+        },
+        TokenTree::Punct(_) => {
+            return Err(CaravanError::Undefined)
+        },
+        TokenTree::Literal(_) => {
+            return Err(CaravanError::Undefined)
+        },
+    }
+}
+
+pub fn lift_entity_clause(mut entity_clause: String) -> Result<String, CaravanError> {
     // if format is "to_entity", removes the "to_"
     let to = &entity_clause[..3];
     if to == "to_" {
@@ -16,7 +56,7 @@ fn lift_entity_clause(mut entity_clause: String) -> Result<String, CaravanError>
     return Ok(entity_clause);
 }
 
-fn walk_to_entity_clause_end(mut caravan: Caravan, span: Span,) -> Result<(Caravan, Span), CaravanError> {
+pub fn walk_to_entity_clause_end(mut caravan: Caravan, span: Span,) -> Result<(Caravan, Span), CaravanError> {
     return join_until_seperator(iter, span)
 }
 
