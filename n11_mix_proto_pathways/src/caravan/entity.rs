@@ -60,7 +60,7 @@ fn entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
 }
 
 fn single_entity_step(mut caravan: Caravan, current: Span, kind: SingleEntityStep) -> Result<Caravan, CaravanError> {
-    let result = walk_to_entity_clause_end(caravan, current); 
+    let result = till_entity_clause(caravan, current); 
     if let Err(result) = result {
         return Err(result);
     };

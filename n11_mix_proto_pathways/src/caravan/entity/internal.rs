@@ -56,12 +56,13 @@ pub fn lift_entity_clause(mut entity_clause: String) -> Result<String, CaravanEr
     return Ok(entity_clause);
 }
 
-pub fn walk_to_entity_clause_end(mut caravan: Caravan, span: Span,) -> Result<(Caravan, Span), CaravanError> {
-    return join_until_seperator(iter, span)
+/// Outputs span of entity clause
+pub fn till_entity_clause(caravan: Caravan, current: Span,) -> Result<(Caravan, Span), CaravanError> {
+    return join_until_seperator(caravan, current)
 }
 
-fn join_until_seperator(mut caravan: Caravan, span: Span) -> Result<(Caravan, Span), CaravanError> {
-    let token = iter.next();
+fn join_until_seperator(mut caravan: Caravan, current: Span) -> Result<(Caravan, Span), CaravanError> {
+    let token = caravan.next();
     let Some(token) = token else {
         return Err(CaravanError::Undefined);
     };
@@ -71,31 +72,31 @@ fn join_until_seperator(mut caravan: Caravan, span: Span) -> Result<(Caravan, Sp
             return Err(CaravanError::Undefined);
         },
         TokenTree::Punct(_) => {
-            return end_at_seperator(token, iter, span);
+            return end_if_seperator(caravan, current, token);
         },
         TokenTree::Ident(_) => {
-            let span = span.join(token.span());
-            let Some(span) = span else {
+            let current = current.join(token.span());
+            let Some(current) = current else {
                 return Err(CaravanError::Undefined);
             };
 
-            return join_until_seperator(iter, span);
+            return join_until_seperator(caravan, current);
         },
         TokenTree::Literal(_) => {
-            let span = span.join(token.span());
-            let Some(span) = span else {
+            let current = current.join(token.span());
+            let Some(current) = current else {
                 return Err(CaravanError::Undefined);
             };
 
-            return join_until_seperator(iter, span);
+            return join_until_seperator(caravan, current);
         },
     }
 }
 
-fn end_at_seperator(mut caravan: Caravan, current: TokenTree, span: Span) -> Result<(Caravan, Span), CaravanError> {
+fn end_if_seperator(mut caravan: Caravan, output: Span, current: TokenTree) -> Result<(Caravan, Span), CaravanError> {
     // If colon expect :: and end
     if current.to_string() == ":" {
-        let next = iter.next();
+        let next = caravan.next();
         let Some(next) = next else {
             return Err(CaravanError::Undefined);
         };
@@ -113,13 +114,13 @@ fn end_at_seperator(mut caravan: Caravan, current: TokenTree, span: Span) -> Res
         if seperator != "::" {
             return Err(CaravanError::Undefined);
         }
-        return Ok((iter, span, is_there));
+        return Ok((caravan, output));
     }
 
     // if no colon, continue
-    let span = span.join(current.span());
-    let Some(span) = span else {
+    let output = output.join(current.span());
+    let Some(output) = output else {
         return Err(CaravanError::Undefined);
     };
-    return join_until_seperator(iter, span);
+    return join_until_seperator(caravan, output);
 }
