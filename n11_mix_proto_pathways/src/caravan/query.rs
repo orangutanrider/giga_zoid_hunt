@@ -129,7 +129,7 @@ fn single_query_step(caravan: Caravan, current: TokenTree, entity_input: String)
     output = output + &entity_input + "); \n";
 
     caravan.output.push_str(&output);
-    return Ok(caravan);
+    return query_next(caravan)
 }
 
 fn bindings_step(group: Group) -> Result<(Span, SingleQueryStep), CaravanError> {
