@@ -57,7 +57,7 @@ pub fn lift_entity_clause(mut entity_clause: String) -> Result<String, CaravanEr
 }
 
 /// Outputs span of entity clause
-pub fn till_entity_clause(caravan: Caravan, current: Span,) -> Result<(Caravan, Span), CaravanError> {
+pub fn till_entity_clause_fin(caravan: Caravan, current: Span,) -> Result<(Caravan, Span), CaravanError> {
     return join_until_seperator(caravan, current)
 }
 
