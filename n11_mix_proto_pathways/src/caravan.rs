@@ -4,7 +4,9 @@ mod query;
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
-struct Caravan<'o> {
+pub use entity::entity_step;
+
+pub struct Caravan<'o> {
     iter: TokenIter,
     output: &'o mut String, // The collected code output, from all recursions
     depth: u32,
@@ -17,6 +19,14 @@ impl<'o> Caravan<'o> {
             depth,
         }
     }
+
+    pub fn start(iter: TokenIter, output: &'o mut String) -> Self {
+        return Self {
+            iter,
+            output,
+            depth: 0,
+        }
+    }
 }
 
 impl<'o> Caravan<'o> {
@@ -26,6 +36,10 @@ impl<'o> Caravan<'o> {
 
     fn escape(&mut self) {
         self.depth = self.depth - 1;
+    }
+
+    pub fn unpack(&self) -> String {
+        return self.output.clone()
     }
 }
 
@@ -39,12 +53,6 @@ impl<'o> Caravan<'o> {
     }
 }
 
-enum CaravanError {
+pub enum CaravanError {
     Undefined,
-}
-
-/// Format: entity_clause::query(bindings) -> ...
-#[proc_macro]
-pub fn ref_caravan(input: TokenStream) -> TokenStream {
-    return TokenStream::new();
 }
