@@ -13,6 +13,7 @@ enum CaravanError {
     Undefined,
 }
 
+/// Format: entity_clause::query(bindings) -> ...
 #[proc_macro]
 pub fn ref_caravan(input: TokenStream) -> TokenStream {
     return TokenStream::new();

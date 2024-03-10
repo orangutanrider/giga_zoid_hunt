@@ -3,7 +3,7 @@ use proc_macro::token_stream::IntoIter as TokenIter;
 
 use super::*;
 
-fn lift_entity_binding(mut entity_binding: String, is_there: AdditionalPuncts) -> Result<String, CaravanError> {
+fn lift_entity_clause(mut entity_clause: String) -> Result<String, CaravanError> {
     match is_there {
         AdditionalPuncts::Found => {
             return Err(CaravanError::Undefined)
@@ -12,18 +12,18 @@ fn lift_entity_binding(mut entity_binding: String, is_there: AdditionalPuncts) -
     }
 
     // if format is "to_entity", removes the "to_"
-    let to = &entity_binding[..3];
+    let to = &entity_clause[..3];
     if to == "to_" {
-        entity_binding.replace_range(..3, "");
-        return Ok(entity_binding)
+        entity_clause.replace_range(..3, "");
+        return Ok(entity_clause)
     }
 
     // otherwise adds "_dest" to the end
-    entity_binding = entity_binding + "_dest";
-    return Ok(entity_binding);
+    entity_clause = entity_clause + "_dest";
+    return Ok(entity_clause);
 }
 
-fn walk_to_entity_binding_end(mut caravan: Caravan, span: Span,) -> Result<(Caravan, Span, AdditionalPuncts), CaravanError> {
+fn walk_to_entity_clause_end(mut caravan: Caravan, span: Span,) -> Result<(Caravan, Span, AdditionalPuncts), CaravanError> {
     return join_until_seperator(iter, span, AdditionalPuncts::NoneFound)
 }
 
