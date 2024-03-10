@@ -96,7 +96,7 @@ fn entity_wildcard_step(mut caravan: Caravan, kind: SingleEntityStep) -> Result<
 }
 
 fn single_entity_step(mut caravan: Caravan, current: Span, kind: SingleEntityStep) -> Result<Caravan, CaravanError> {
-    let result = walk_to_end_of_entity_binding(iter, current); 
+    let result = walk_to_end_of_entity_clause(iter, current); 
     if let Err(result) = result {
         return Err(result);
     };
@@ -104,8 +104,8 @@ fn single_entity_step(mut caravan: Caravan, current: Span, kind: SingleEntitySte
         return Err(CaravanError::Undefined);
     };
     
-    let entity_binding = span.source_text();
-    let Some(mut entity_binding) = entity_binding else {
+    let entity_clause = span.source_text();
+    let Some(mut entity_clause) = entity_clause else {
         return Err(CaravanError::Undefined)
     };
 
@@ -114,31 +114,31 @@ fn single_entity_step(mut caravan: Caravan, current: Span, kind: SingleEntitySte
 
     match kind {
         SingleEntityStep::Literal => {
-            query_input = entity_binding;
+            query_input = entity_clause;
         },
         SingleEntityStep::Direct => {
-            query_input = entity_binding + ".go()";
+            query_input = entity_clause + ".go()";
         },
         SingleEntityStep::Overlap => {
-            query_input = entity_binding.clone();
-            entity_let = "let ".to_owned() + &entity_binding + " = " + &entity_binding + ".go();" + "\n";
+            query_input = entity_clause.clone();
+            entity_let = "let ".to_owned() + &entity_clause + " = " + &entity_clause + ".go();" + "\n";
         },
         SingleEntityStep::Lifted => {
-            let lift = lift_entity_binding(entity_binding, additional_puncts);
+            let lift = lift_entity_clause(entity_clause, additional_puncts);
             if let Err(lift) = lift {
                 return Err(lift)
             }
             let Ok(lift) = lift else {
                 return Err(CaravanError::Undefined)
             };
-            entity_binding = lift;
+            entity_clause = lift;
 
-            query_input = entity_binding.clone();
-            entity_let = "let ".to_owned() + &entity_binding + " = " + &entity_binding + ".go();" + "\n";
+            query_input = entity_clause.clone();
+            entity_let = "let ".to_owned() + &entity_clause + " = " + &entity_clause + ".go();" + "\n";
         }
     }
 
-    // return query_step(iter, entity_binding)
+    // return query_step(iter, entity_clause)
     return Err(CaravanError::Undefined);
 }
 
