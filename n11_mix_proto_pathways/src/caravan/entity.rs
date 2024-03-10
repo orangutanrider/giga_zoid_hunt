@@ -4,6 +4,7 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 pub use super::*;
+use super::query::*;
 use internal::*;
 
 /// The different kinds of singular entity steps
@@ -25,7 +26,7 @@ enum SingleEntityStep {
     Literal, 
 }
 
-fn entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
+pub fn entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
     let token = caravan.next();
     let Some(token) = token else {
         return Ok(caravan);
@@ -59,7 +60,7 @@ fn entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
     }
 }
 
-fn single_entity_step(mut caravan: Caravan, current: Span, kind: SingleEntityStep) -> Result<Caravan, CaravanError> {
+fn single_entity_step(caravan: Caravan, current: Span, kind: SingleEntityStep) -> Result<Caravan, CaravanError> {
     let result = till_entity_clause_fin(caravan, current); 
     if let Err(result) = result {
         return Err(result);
@@ -84,7 +85,7 @@ fn single_entity_step(mut caravan: Caravan, current: Span, kind: SingleEntitySte
             query_input = entity_clause + ".go()";
         },
         SingleEntityStep::Overlap => {
-            query_input = entity_clause.clone();
+            query_input = query_input + &entity_clause;
             entity_let = "let ".to_owned() + &entity_clause + " = " + &entity_clause + ".go();" + "\n";
         },
         SingleEntityStep::Lifted => {
@@ -97,15 +98,14 @@ fn single_entity_step(mut caravan: Caravan, current: Span, kind: SingleEntitySte
             };
             entity_clause = lift;
 
-            query_input = entity_clause.clone();
+            query_input = query_input + &entity_clause;
             entity_let = "let ".to_owned() + &entity_clause + " = " + &entity_clause + ".go();" + "\n";
         }
     }
 
     caravan.output.push_str(&entity_let);
 
-    // return query_step(iter, entity_clause)
-    return Err(CaravanError::Undefined);
+    return query_step(caravan, query_input);
 }
 
 /// Caravan iter recieved as group
