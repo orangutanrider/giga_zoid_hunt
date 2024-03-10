@@ -4,6 +4,7 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 pub use super::*;
+use super::entity::*;
 use internal::*;
 
 enum SingleQueryStep {
@@ -11,7 +12,7 @@ enum SingleQueryStep {
     GetMut
 }
 
-fn query_step<'o>(mut caravan: Caravan<'o>, entity_input: &'o str) -> Result<Caravan<'o>, CaravanError> {
+pub fn query_step(mut caravan: Caravan, entity_input: String) -> Result<Caravan, CaravanError> {
     let token = caravan.next();
     let Some(token) = token else {
         return Ok(caravan);
@@ -33,7 +34,37 @@ fn query_step<'o>(mut caravan: Caravan<'o>, entity_input: &'o str) -> Result<Car
             return Ok(result);
         },
         TokenTree::Ident(_) => {
-            return single_query_step(caravan, entity_input)
+            return single_query_step(caravan, token, entity_input)
+        },
+        TokenTree::Punct(_) => {
+            return single_query_step(caravan, token, entity_input)
+        },
+        TokenTree::Literal(_) => {
+            return Err(CaravanError::Undefined)
+        },
+    }
+}
+
+fn multi_query_step(mut caravan: Caravan, entity_input: String) -> Result<Caravan, CaravanError> {
+    let token = caravan.next();
+    let Some(token) = token else {
+        return Ok(caravan);
+    };
+
+    match token {
+        TokenTree::Group(_) => { // one entity clause to many queries
+            return Err(CaravanError::Undefined)
+        },
+        TokenTree::Ident(_) => {
+            let result = single_query_step(caravan, token, entity_input.clone());
+            if let Err(result) = result {
+                return Err(result);
+            }
+            let Ok(result) = result else {
+                return Err(CaravanError::Undefined)
+            };
+
+            caravan = result;
         },
         TokenTree::Punct(_) => {
             return Err(CaravanError::Undefined)
@@ -42,57 +73,100 @@ fn query_step<'o>(mut caravan: Caravan<'o>, entity_input: &'o str) -> Result<Car
             return Err(CaravanError::Undefined)
         },
     }
-}
 
-fn multi_query_step(caravan: Caravan, entity_input: &str) -> Result<Caravan, CaravanError> {
+    // Check for comma, continue or end
+    let token = caravan.next();
+    let Some(token) = token else {
+        return Ok(caravan);
+    };
 
-}
-
-fn single_query_step<'o>(mut caravan: Caravan<'o>, entity_input: &'o str) -> Result<Caravan<'o>, CaravanError> {
-    let bindings = binding_step(iter);
-    if let Err(bindings) = bindings {
-        return Err(bindings);
+    if token.to_string() == "," {
+        return multi_query_step(caravan, entity_input);
     }
-    let Ok() = result else {
+
+    return Err(CaravanError::Undefined);
+}
+
+fn single_query_step(caravan: Caravan, current: TokenTree, entity_input: String) -> Result<Caravan, CaravanError> {
+    // Walk to end of query statement
+    let query = till_query_fin(caravan, current.span());
+    if let Err(query) = query {
+        return Err(query)
+    }
+    let Ok((caravan, query, bindings)) = query else {
+        return Err(CaravanError::Undefined)
+    };
+    let query = query.source_text();
+    let Some(query) = query else {
         return Err(CaravanError::Undefined)
     };
 
-    let mut output = binding_decleration + query + ".get";
-
-    match mutability {
-        BindingMutability::IsMutable => {
-            output = output + "_mut(";
-        },
-        BindingMutability::IsNotMutable => {
-            output = output + "(";
-        },
-    }
-    output = output + entity + ");";
-
-    return e;
-}
-
-/// Outputs the bindings statement and infers query kind from them.
-fn binding_step(mut caravan: Caravan) -> Result<(Caravan, Span, SingleQueryStep), CaravanError> {
-    // enter ()
-    let group = caravan.next();
-    let Some(group) = group else {
-        return Err(CaravanError::Undefined);
-    };
-    let TokenTree::Group(group) = group else {
-        return Err(CaravanError::Undefined);
-    };
-    if group.delimiter() != Delimiter::Parenthesis {
-        return Err(CaravanError::Undefined);
-    }
-    
-    let result = bindings_step(group);
+    // Get binding decleration
+    let result = bindings_step(bindings);
     if let Err(result) = result {
         return Err(result)
     }
     let Ok((binding, kind)) = result else {
         return Err(CaravanError::Undefined)
     };
+    let binding = binding.source_text();
+    let Some(binding) = binding else {
+        return Err(CaravanError::Undefined)
+    };
+    
+    // Create query get to bindings statement
+    let mut output = "let ".to_owned() + &binding + " = " + &query;
+    match kind {
+        SingleQueryStep::Get => {
+            output = output + ".get(";
+        },
+        SingleQueryStep::GetMut => {
+            output = output + ".get_mut(";
+        },
+    }
+    output = output + &entity_input + "); \n";
 
-    return Ok((caravan, binding, kind));
+    caravan.output.push_str(&output);
+    return Ok(caravan);
+}
+
+fn bindings_step(group: Group) -> Result<(Span, SingleQueryStep), CaravanError> {
+    let mut output = group.span().end();
+    let mut detection = SingleQueryStep::Get;
+
+    let group = group.stream().into_iter();
+    for token in group {
+        // add to output
+        let joined = output.join(token.span());
+        let Some(joined) = joined else {
+            return Err(CaravanError::Undefined)
+        };
+        output = joined;
+
+        // detect mut
+        let token = token.to_string();
+        if token == "mut" {
+            detection = SingleQueryStep::GetMut;
+        }
+    }
+
+    return Ok((output, detection));   
+}
+
+fn query_next_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
+    let token = caravan.next();
+    let Some(token) = token else {
+        return Ok(caravan);
+    };
+
+    let span = token.span();
+    let token = token.next();
+    
+
+    // if no colon, continue
+    let output = output.join(current.span());
+    let Some(output) = output else {
+        return Err(CaravanError::Undefined);
+    };
+    return join_until_seperator(caravan, output);
 }
