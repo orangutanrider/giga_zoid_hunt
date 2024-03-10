@@ -4,13 +4,6 @@ use proc_macro::token_stream::IntoIter as TokenIter;
 use super::*;
 
 fn lift_entity_clause(mut entity_clause: String) -> Result<String, CaravanError> {
-    match is_there {
-        AdditionalPuncts::Found => {
-            return Err(CaravanError::Undefined)
-        },
-        AdditionalPuncts::NoneFound => { },
-    }
-
     // if format is "to_entity", removes the "to_"
     let to = &entity_clause[..3];
     if to == "to_" {
@@ -23,11 +16,11 @@ fn lift_entity_clause(mut entity_clause: String) -> Result<String, CaravanError>
     return Ok(entity_clause);
 }
 
-fn walk_to_entity_clause_end(mut caravan: Caravan, span: Span,) -> Result<(Caravan, Span, AdditionalPuncts), CaravanError> {
-    return join_until_seperator(iter, span, AdditionalPuncts::NoneFound)
+fn walk_to_entity_clause_end(mut caravan: Caravan, span: Span,) -> Result<(Caravan, Span), CaravanError> {
+    return join_until_seperator(iter, span)
 }
 
-fn join_until_seperator(mut caravan: Caravan, span: Span, is_there: AdditionalPuncts) -> Result<(Caravan, Span, AdditionalPuncts), CaravanError> {
+fn join_until_seperator(mut caravan: Caravan, span: Span) -> Result<(Caravan, Span), CaravanError> {
     let token = iter.next();
     let Some(token) = token else {
         return Err(CaravanError::Undefined);
@@ -38,7 +31,7 @@ fn join_until_seperator(mut caravan: Caravan, span: Span, is_there: AdditionalPu
             return Err(CaravanError::Undefined);
         },
         TokenTree::Punct(_) => {
-            return end_at_seperator(token, iter, span, is_there);
+            return end_at_seperator(token, iter, span);
         },
         TokenTree::Ident(_) => {
             let span = span.join(token.span());
@@ -46,7 +39,7 @@ fn join_until_seperator(mut caravan: Caravan, span: Span, is_there: AdditionalPu
                 return Err(CaravanError::Undefined);
             };
 
-            return join_until_seperator(iter, span, is_there);
+            return join_until_seperator(iter, span);
         },
         TokenTree::Literal(_) => {
             let span = span.join(token.span());
@@ -54,12 +47,12 @@ fn join_until_seperator(mut caravan: Caravan, span: Span, is_there: AdditionalPu
                 return Err(CaravanError::Undefined);
             };
 
-            return join_until_seperator(iter, span, is_there);
+            return join_until_seperator(iter, span);
         },
     }
 }
 
-fn end_at_seperator(mut caravan: Caravan, current: TokenTree, span: Span, is_there: AdditionalPuncts) -> Result<(Caravan, Span, AdditionalPuncts), CaravanError> {
+fn end_at_seperator(mut caravan: Caravan, current: TokenTree, span: Span) -> Result<(Caravan, Span), CaravanError> {
     // If colon expect :: and end
     if current.to_string() == ":" {
         let next = iter.next();
@@ -88,5 +81,5 @@ fn end_at_seperator(mut caravan: Caravan, current: TokenTree, span: Span, is_the
     let Some(span) = span else {
         return Err(CaravanError::Undefined);
     };
-    return join_until_seperator(iter, span, AdditionalPuncts::Found);
+    return join_until_seperator(iter, span);
 }

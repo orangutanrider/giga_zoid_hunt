@@ -1,13 +1,9 @@
+mod internal;
+
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 pub use super::*;
-
-/// If there are additional puncts, it cannot be lifted or overlapped, as it's evident of a tuple or structure
-enum AdditionalPuncts {
-    Found,
-    NoneFound,
-}
 
 /// The different kinds of singular entity steps
 enum SingleEntityStep {
