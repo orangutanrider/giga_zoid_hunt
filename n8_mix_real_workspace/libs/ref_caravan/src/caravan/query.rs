@@ -1,10 +1,6 @@
 mod internal;
 
-use proc_macro::*;
-use proc_macro::token_stream::IntoIter as TokenIter;
-
 pub use super::*;
-use super::entity::*;
 use internal::*;
 
 enum SingleQueryStep {
