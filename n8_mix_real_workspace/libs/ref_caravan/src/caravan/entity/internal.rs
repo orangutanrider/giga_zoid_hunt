@@ -1,18 +1,17 @@
 use proc_macro::*;
-use proc_macro::token_stream::IntoIter as TokenIter;
 
 use super::*;
 
 pub fn punct_to_entity_wildcard(caravan: Caravan, current: TokenTree) -> Result<Caravan, CaravanError> {
-    if current.to_string() == "@" {
+    if current.to_string() == LITERAL {
         return entity_wildcard_step(caravan, SingleEntityStep::Literal)
     }
     
-    if current.to_string() == "^" {
+    if current.to_string() == LIFT {
         return entity_wildcard_step(caravan, SingleEntityStep::Lifted)
     }
 
-    if current.to_string() == "~" {
+    if current.to_string() == OVERLAP {
         return entity_wildcard_step(caravan, SingleEntityStep::Overlap)
     }
 
@@ -46,13 +45,13 @@ pub fn entity_wildcard_step(mut caravan: Caravan, kind: SingleEntityStep) -> Res
 pub fn lift_entity_clause(mut entity_clause: String) -> Result<String, CaravanError> {
     // if format is "to_entity", removes the "to_"
     let to = &entity_clause[..3];
-    if to == "to_" {
+    if to == LIFT_REMOVE {
         entity_clause.replace_range(..3, "");
         return Ok(entity_clause)
     }
 
     // otherwise adds "_dest" to the end
-    entity_clause = entity_clause + "_dest";
+    entity_clause = entity_clause + LIFT_ADD;
     return Ok(entity_clause);
 }
 
