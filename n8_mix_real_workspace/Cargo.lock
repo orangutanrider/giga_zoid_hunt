@@ -2924,6 +2924,9 @@ version = "0.0.1"
 [[package]]
 name = "ref_paths"
 version = "0.0.1"
+dependencies = [
+ "bevy",
+]
 
 [[package]]
 name = "regex"

@@ -5,8 +5,5 @@ version.workspace = true
 authors.workspace = true
 edition.workspace = true
 
-#[dependencies]
-#bevy.workspace = true
-
-[lib]
-proc-macro = true
+[dependencies]
+bevy.workspace = true
