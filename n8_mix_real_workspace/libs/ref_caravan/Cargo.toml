@@ -1,0 +1,9 @@
+[package]
+name = "ref_caravan"
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[lib]
+proc-macro = true   
