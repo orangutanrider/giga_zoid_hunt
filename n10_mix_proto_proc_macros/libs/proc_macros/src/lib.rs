@@ -1,9 +1,13 @@
+#![feature(proc_macro_span)]
+
+use std::any::Any;
 use std::{
     process::Output, 
     str::FromStr
 };
 
 use proc_macro::*;
+use proc_macro::TokenTree::*;
 
 mod non_macro;
 use non_macro::*;
@@ -40,6 +44,150 @@ use non_macro::*;
 //    };
 //    return return_v
 //}
+
+#[proc_macro]
+pub fn print_groups(statement: TokenStream) -> TokenStream {
+    let iter = statement.into_iter();
+
+    let mut full_msg = "groups: \n".to_owned();
+
+    for token in iter {
+        match token {
+            TokenTree::Group(group) => {
+                let s = group.to_string() + "\n";
+                full_msg = plus(full_msg.clone(), &s);
+            },
+            TokenTree::Ident(_) => {},
+            TokenTree::Punct(_) => {},
+            TokenTree::Literal(_) => {},
+        }
+    }
+
+    let print = "println!(\"".to_owned() + &full_msg + "\")";
+    let output = TokenStream::from_str(&print);
+    let Ok(output) = output else {
+        return TokenStream::new();
+    };
+    return output;
+}
+
+
+#[proc_macro]
+pub fn print_end_span_1(statement: TokenStream) -> TokenStream {
+    let mut iter = statement.into_iter();
+
+    let span = iter.next();
+    let Some(span) = span else {
+        return TokenStream::new();
+    };
+    let span = span.span().end();
+
+    let msg = "end_span: \n".to_owned();
+    let span = span.source_text();
+    let Some(span) = span else {
+        return TokenStream::new();
+    };
+    let msg = msg + &span;
+
+    let print = "println!(\"".to_owned() + &msg + "\")";
+    let output = TokenStream::from_str(&print);
+    let Ok(output) = output else {
+        return TokenStream::new();
+    };
+    return output;
+}
+
+//span.join(other) is an unstable feature
+#[proc_macro]
+pub fn print_joined_spans(statement: TokenStream) -> TokenStream {
+    let mut span_iter = statement.into_iter();
+
+    let full_span = span_iter.next();
+    let Some(full_span) = full_span else {
+        return TokenStream::new();
+    };
+    let mut full_span = full_span.span();
+
+    for token in span_iter {
+        let joined = full_span.join(token.span());
+        let Some(joined) = joined else {
+            return TokenStream::new();
+        };
+        full_span = joined;
+    }
+
+    let msg = "joined_spans: \n".to_owned();
+    let full_span = full_span.source_text();
+    let Some(full_span) = full_span else {
+        return TokenStream::new();
+    };
+    let msg = msg + &full_span;
+
+    let print = "println!(\"".to_owned() + &msg + "\")";
+    let output = TokenStream::from_str(&print);
+    let Ok(output) = output else {
+        return TokenStream::new();
+    };
+    return output;
+}
+
+#[proc_macro]
+pub fn print_resolved_spans(statement: TokenStream) -> TokenStream {
+    let mut span_iter = statement.into_iter();
+
+    let full_span = span_iter.next();
+    let Some(full_span) = full_span else {
+        return TokenStream::new();
+    };
+    let mut full_span = full_span.span();
+
+    for token in span_iter {
+        full_span = full_span.resolved_at(token.span());
+    }
+
+    let msg = "resolved_spans: \n".to_owned();
+    let full_span = full_span.source_text();
+    let Some(full_span) = full_span else {
+        return TokenStream::new();
+    };
+    let msg = msg + &full_span;
+
+    let print = "println!(\"".to_owned() + &msg + "\")";
+    let output = TokenStream::from_str(&print);
+    let Ok(output) = output else {
+        return TokenStream::new();
+    };
+    return output;
+}
+
+#[proc_macro]
+pub fn print_located_spans(statement: TokenStream) -> TokenStream {
+    let mut span_iter = statement.into_iter();
+
+    let full_span = span_iter.next();
+    let Some(full_span) = full_span else {
+        return TokenStream::new();
+    };
+    let mut full_span = full_span.span();
+
+    for token in span_iter {
+        full_span = full_span.located_at(token.span());
+    }
+
+    let msg = "located_spans: \n".to_owned();
+    let full_span = full_span.source_text();
+    let Some(full_span) = full_span else {
+        return TokenStream::new();
+    };
+    let msg = msg + &full_span;
+
+    let print = "println!(\"".to_owned() + &msg + "\")";
+    let output = TokenStream::from_str(&print);
+    let Ok(output) = output else {
+        return TokenStream::new();
+    };
+    return output;
+}
 
 #[proc_macro]
 pub fn print_spans(statement: TokenStream) -> TokenStream {
@@ -124,6 +272,33 @@ pub fn print_nesting_count(statement: TokenStream) -> TokenStream {
     };
     return output;
 }
+
+// it could be done, but you'd have to read for the word mut I think
+// it isn't data that gets packaged along with an ident or anything like that
+//#[proc_macro]
+//pub fn print_mutability(statement: TokenStream) -> TokenStream {
+//    let iter = statement.into_iter();
+//
+//    let mut full_msg = "detect mutability: \n".to_owned();
+//
+//    for token in iter {
+//        let s = token.to_string() + "\n";
+//        full_msg = plus(full_msg.clone(), &s);
+//
+//        let Ident(token) = token else {
+//            continue;
+//        };
+//
+//        token.
+//    }
+//
+//    let print = "println!(\"".to_owned() + &full_msg + "\")";
+//    let output = TokenStream::from_str(&print);
+//    let Ok(output) = output else {
+//        return TokenStream::new();
+//    };
+//    return output;
+//}
 
 fn count_nesting(token: &TokenTree) -> u32 {
     let mut count = 0;
