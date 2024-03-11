@@ -117,7 +117,7 @@ fn single_query_step(caravan: Caravan, current: TokenTree, entity_input: String)
     };
     
     // Create query get to bindings statement
-    let mut output = "let ".to_owned() + &binding + " = " + &query;
+    let mut output = "let Ok(".to_owned() + &binding + ") = " + &query;
     match kind {
         SingleQueryStep::Get => {
             output = output + ".get(";
@@ -126,7 +126,7 @@ fn single_query_step(caravan: Caravan, current: TokenTree, entity_input: String)
             output = output + ".get_mut(";
         },
     }
-    output = output + &entity_input + "); \n";
+    output = output + &entity_input + ") else { return; } \n";
 
     caravan.output.push_str(&output);
     return query_next(caravan)
