@@ -68,7 +68,8 @@ fn collect_until_seperator(mut caravan: Caravan, mut output: String) -> Result<(
     
     match token {
         TokenTree::Group(_) => {
-            return Err(CaravanError::ExpectedSeperator);
+            output.push_str(&token.to_string());
+            return collect_until_seperator(caravan, output);
         },
         TokenTree::Punct(punct) => {
             return end_if_seperator(caravan, output, punct);
@@ -87,7 +88,7 @@ fn collect_until_seperator(mut caravan: Caravan, mut output: String) -> Result<(
 fn end_if_seperator(mut caravan: Caravan, mut output: String, current: Punct) -> Result<(Caravan, String), CaravanError> {
     // If non :, add to string and continue
     let ch = current.as_char();
-    if ch == '.' {
+    if ch != ':' {
         output.push(ch);
         return collect_until_seperator(caravan, output)
     }

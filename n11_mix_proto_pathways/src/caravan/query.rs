@@ -85,14 +85,10 @@ fn multi_query_step(mut caravan: Caravan, entity_input: String) -> Result<Carava
 
 fn single_query_step(caravan: Caravan, current: TokenTree, entity_input: String) -> Result<Caravan, CaravanError> {
     // Walk to end of query statement
-    let query = till_query_fin(caravan, current.span());
+    let query = collect_query(caravan, current);
     let (caravan, query, bindings) = match query {
         Ok(ok) => ok,
         Err(err) => return Err(err),
-    };
-    let query = query.source_text();
-    let Some(query) = query else {
-        return Err(CaravanError::SpanToStringError)
     };
 
     // Get binding decleration
@@ -100,10 +96,6 @@ fn single_query_step(caravan: Caravan, current: TokenTree, entity_input: String)
     let (binding, kind) = match result {
         Ok(ok) => ok,
         Err(err) => return Err(err),
-    };
-    let binding = binding.source_text();
-    let Some(binding) = binding else {
-        return Err(CaravanError::SpanToStringError)
     };
     
     // Create query get to bindings statement
@@ -122,24 +114,18 @@ fn single_query_step(caravan: Caravan, current: TokenTree, entity_input: String)
     return query_next(caravan)
 }
 
-fn bindings_step(group: Group) -> Result<(Span, SingleQueryStep), CaravanError> {
-    let mut output = group.span().end();
+fn bindings_step(group: Group) -> Result<(String, SingleQueryStep), CaravanError> {
+    let mut output = "".to_owned();
     let mut detection = SingleQueryStep::Get;
 
     let group = group.stream().into_iter();
     for token in group {
-        // add to output
-        let joined = output.join(token.span());
-        let Some(joined) = joined else {
-            return Err(CaravanError::JoinSpansError)
-        };
-        output = joined;
-
         // detect mut
         let token = token.to_string();
         if token == "mut" {
             detection = SingleQueryStep::GetMut;
         }
+        output.push_str(&token);
     }
 
     return Ok((output, detection));   
