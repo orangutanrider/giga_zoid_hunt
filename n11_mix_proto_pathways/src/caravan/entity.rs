@@ -71,11 +71,9 @@ pub fn entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
 
 fn single_entity_step(caravan: Caravan, current: Span, kind: SingleEntityStep) -> Result<Caravan, CaravanError> {
     let result = till_entity_clause_fin(caravan, current); 
-    if let Err(result) = result {
-        return Err(result);
-    };
-    let Ok((caravan, entity_clause)) = result else {
-        return Err(CaravanError::Undefined);
+    let (caravan, entity_clause) = match result {
+        Ok(ok) => ok,
+        Err(err) => return Err(err),
     };
     
     let entity_clause = entity_clause.source_text();
@@ -99,11 +97,9 @@ fn single_entity_step(caravan: Caravan, current: Span, kind: SingleEntityStep) -
         },
         SingleEntityStep::Lifted => {
             let lift = lift_entity_clause(entity_clause);
-            if let Err(lift) = lift {
-                return Err(lift)
-            }
-            let Ok(lift) = lift else {
-                return Err(CaravanError::Undefined)
+            let lift = match lift {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
             };
             entity_clause = lift;
 
@@ -131,21 +127,17 @@ fn multi_entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
         },
         TokenTree::Ident(_) => {
             let result = single_entity_step(caravan, token.span(), SingleEntityStep::Direct);
-            if let Err(result) = result {
-                return Err(result);
-            };
-            let Ok(result) = result else {
-                return Err(CaravanError::Undefined);
+            let result = match result {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
             };
             caravan = result;
         },
         TokenTree::Punct(_) => {
             let result = punct_to_entity_wildcard(caravan, token);
-            if let Err(result) = result {
-                return Err(result);
-            };
-            let Ok(result) = result else {
-                return Err(CaravanError::Undefined);
+            let result = match result {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
             };
             caravan = result;
         },
