@@ -1,6 +1,8 @@
 mod entity;
 mod query;
 
+use std::str::FromStr;
+
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
@@ -53,6 +55,32 @@ impl<'o> Caravan<'o> {
     }
 }
 
+#[derive(Debug)]
 pub enum CaravanError {
     Undefined,
+    UnexpectedGroup,
+    UnexpectedPunct,
+    UnexpectedLiteral,
+    ExpectedComma,
+    ExpectedArrow,
+    ExpectedSeperator,
+    ExpectedBindings,
+    ExpectedEntityClause,
+    IncorrectDelimiter,
+    SpanToStringError,
+    JoinSpansError,
+    NoMatchingWildcard,
+}
+
+use std::fmt;
+impl fmt::Display for CaravanError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl CaravanError {
+    pub fn to_stream(&self) -> Result<TokenStream, LexError> {
+        return TokenStream::from_str(&self.to_string())
+    }
 }

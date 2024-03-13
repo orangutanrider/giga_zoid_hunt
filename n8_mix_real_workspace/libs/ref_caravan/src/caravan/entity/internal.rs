@@ -15,7 +15,7 @@ pub fn punct_to_entity_wildcard(caravan: Caravan, current: TokenTree) -> Result<
         return entity_wildcard_step(caravan, SingleEntityStep::Overlap)
     }
 
-    return Err(CaravanError::Undefined)
+    return Err(CaravanError::NoMatchingWildcard)
 }
 
 pub fn entity_wildcard_step(mut caravan: Caravan, kind: SingleEntityStep) -> Result<Caravan, CaravanError> {
@@ -23,21 +23,21 @@ pub fn entity_wildcard_step(mut caravan: Caravan, kind: SingleEntityStep) -> Res
 
     let token = iter.next();
     let Some(token) = token else {
-        return Err(CaravanError::Undefined)
+        return Err(CaravanError::ExpectedEntityClause)
     };
     
     match token {
         TokenTree::Group(_) => {
-            return Err(CaravanError::Undefined)
+            return Err(CaravanError::ExpectedEntityClause)
         },
         TokenTree::Ident(_) => {
             return single_entity_step(caravan, token.span(), kind);
         },
         TokenTree::Punct(_) => {
-            return Err(CaravanError::Undefined)
+            return Err(CaravanError::ExpectedEntityClause)
         },
         TokenTree::Literal(_) => {
-            return Err(CaravanError::Undefined)
+            return Err(CaravanError::ExpectedEntityClause)
         },
     }
 }
@@ -63,12 +63,12 @@ pub fn till_entity_clause_fin(caravan: Caravan, current: Span,) -> Result<(Carav
 fn join_until_seperator(mut caravan: Caravan, current: Span) -> Result<(Caravan, Span), CaravanError> {
     let token = caravan.next();
     let Some(token) = token else {
-        return Err(CaravanError::Undefined);
+        return Err(CaravanError::ExpectedSeperator);
     };
     
     match token {
         TokenTree::Group(_) => {
-            return Err(CaravanError::Undefined);
+            return Err(CaravanError::ExpectedSeperator);
         },
         TokenTree::Punct(_) => {
             return end_if_seperator(caravan, current, token);
@@ -76,7 +76,7 @@ fn join_until_seperator(mut caravan: Caravan, current: Span) -> Result<(Caravan,
         TokenTree::Ident(_) => {
             let current = current.join(token.span());
             let Some(current) = current else {
-                return Err(CaravanError::Undefined);
+                return Err(CaravanError::JoinSpansError);
             };
 
             return join_until_seperator(caravan, current);
@@ -84,7 +84,7 @@ fn join_until_seperator(mut caravan: Caravan, current: Span) -> Result<(Caravan,
         TokenTree::Literal(_) => {
             let current = current.join(token.span());
             let Some(current) = current else {
-                return Err(CaravanError::Undefined);
+                return Err(CaravanError::JoinSpansError);
             };
 
             return join_until_seperator(caravan, current);
@@ -97,21 +97,21 @@ fn end_if_seperator(mut caravan: Caravan, output: Span, current: TokenTree) -> R
     if current.to_string() == ":" {
         let next = caravan.next();
         let Some(next) = next else {
-            return Err(CaravanError::Undefined);
+            return Err(CaravanError::ExpectedSeperator);
         };
         
         let seperator = current.span().join(next.span());
         let Some(seperator) = seperator else {
-            return Err(CaravanError::Undefined);
+            return Err(CaravanError::JoinSpansError);
         };
         
         let seperator = seperator.source_text();
         let Some(seperator) = seperator else {
-            return Err(CaravanError::Undefined);
+            return Err(CaravanError::SpanToStringError);
         };
 
         if seperator != "::" {
-            return Err(CaravanError::Undefined);
+            return Err(CaravanError::ExpectedSeperator);
         }
         return Ok((caravan, output));
     }
@@ -119,7 +119,7 @@ fn end_if_seperator(mut caravan: Caravan, output: Span, current: TokenTree) -> R
     // if no colon, continue
     let output = output.join(current.span());
     let Some(output) = output else {
-        return Err(CaravanError::Undefined);
+        return Err(CaravanError::JoinSpansError);
     };
     return join_until_seperator(caravan, output);
 }

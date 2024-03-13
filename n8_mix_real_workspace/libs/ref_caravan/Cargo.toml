@@ -7,3 +7,8 @@ edition.workspace = true
 
 [lib]
 proc-macro = true   
+
+[dev-dependencies]
+bevy.workspace = true
+ref_paths.workspace = true
+cargo-expand.workspace = true
