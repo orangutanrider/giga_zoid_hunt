@@ -16,16 +16,18 @@ pub fn query_step(mut caravan: Caravan, entity_input: String) -> Result<Caravan,
 
     match token {
         TokenTree::Group(group) => { // one entity clause to many queries
-            let group = Caravan::dig(group.stream().into_iter(), caravan.output, caravan.deeper());
-            
-            let result = multi_query_step(group, entity_input);
-            let mut result = match result {
+            // Unpack into nested caravan
+            let unpack = &mut caravan.unpack();
+            let nested = Caravan::new(group.stream().into_iter(), unpack, caravan.deeper());
+            let nested = multi_query_step(nested, entity_input);
+            let mut nested = match nested {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
 
-            result.iter = caravan.iter;
-            return Ok(result);
+            // Repack and continue
+            caravan.repack(&nested.unpack());
+            return query_next(caravan)
         },
         TokenTree::Ident(_) => {
             return single_query_step(caravan, token, entity_input)
@@ -147,6 +149,6 @@ fn query_next(caravan: Caravan) -> Result<Caravan, CaravanError> {
     if caravan.at_surface() {
         return query_surface_next(caravan);
     } else {
-        return query_deep_next(caravan);
+        return query_nested_next(caravan);
     }
 }

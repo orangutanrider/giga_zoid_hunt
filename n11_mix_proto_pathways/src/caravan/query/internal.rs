@@ -7,7 +7,7 @@ pub fn till_query_fin(caravan: Caravan, current: Span,) -> Result<(Caravan, Span
 }
 
 /// Will not check for semi-colon
-pub fn query_deep_next(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
+pub fn query_nested_next(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
     let token = caravan.next();
     let Some(token) = token else {
         return Ok(caravan); // If nothing, exit

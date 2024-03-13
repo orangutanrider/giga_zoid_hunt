@@ -14,7 +14,7 @@ pub struct Caravan<'o> {
     depth: u32,
 }
 impl<'o> Caravan<'o> {
-    fn dig(iter: TokenIter, output: &'o mut String, depth: u32) -> Self {
+    fn new(iter: TokenIter, output: &'o mut String, depth: u32) -> Self {
         return Self {
             iter,
             output,
@@ -36,12 +36,21 @@ impl<'o> Caravan<'o> {
         return self.iter.next()
     }
 
+    fn pack(&mut self, string: &str) {
+        self.output.push_str(string)
+    }
+
+    fn repack(&mut self, string: &str) {
+        self.output.clear();
+        self.output.push_str(string)
+    }
+
     fn escape(&mut self) {
         self.depth = self.depth - 1;
     }
 
-    pub fn unpack(&self) -> String {
-        return self.output.clone()
+    pub fn unpack(&mut self) -> String {
+        return self.output.to_owned()
     }
 }
 
