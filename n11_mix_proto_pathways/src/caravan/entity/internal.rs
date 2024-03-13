@@ -92,34 +92,27 @@ fn join_until_seperator(mut caravan: Caravan, current: Span) -> Result<(Caravan,
     }
 }
 
-fn end_if_seperator(mut caravan: Caravan, output: Span, current: TokenTree) -> Result<(Caravan, Span), CaravanError> {
-    // If colon expect :: and end
-    if current.to_string() == ":" {
-        let next = caravan.next();
-        let Some(next) = next else {
-            return Err(CaravanError::ExpectedSeperator);
-        };
-        
-        let seperator = current.span().join(next.span());
-        let Some(seperator) = seperator else {
-            return Err(CaravanError::JoinSpansError);
-        };
-        
-        let seperator = seperator.source_text();
-        let Some(seperator) = seperator else {
-            return Err(CaravanError::SpanToStringError);
-        };
-
-        if seperator != "::" {
-            return Err(CaravanError::ExpectedSeperator);
-        }
-        return Ok((caravan, output));
+fn end_if_seperator(mut caravan: Caravan, output: Span, current: Punct) -> Result<(Caravan, Span), CaravanError> {
+    // If non :, continue
+    if current != ':' {
+        return join_until_seperator(caravan, current)
+    }
+    
+    // Expect ::
+    match current.spacing() {
+        Spacing::Joint => (/* continue */),
+        Spacing::Alone => return Err(CaravanError::ExpectedSeperator), 
+    }
+    let Some(current) = caravan.next() else {
+        return Err(CaravanError::ExpectedSeperator) 
+    };
+    let TokenTree::Punct(current) = current else {
+        return Err(CaravanError::ExpectedSeperator)
+    };
+    if current != ':' {
+        return Err(CaravanError::ExpectedSeperator) 
     }
 
-    // if no colon, continue
-    let output = output.join(current.span());
-    let Some(output) = output else {
-        return Err(CaravanError::JoinSpansError);
-    };
-    return join_until_seperator(caravan, output);
+    // End
+    return Ok(caravan)
 }
