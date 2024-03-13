@@ -64,7 +64,7 @@ pub fn entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
             return punct_to_entity_wildcard(caravan, token)
         },
         TokenTree::Literal(_) => {
-            return Err(CaravanError::Undefined)
+            return Err(CaravanError::UnexpectedLiteral)
         },
     }
 }
@@ -80,7 +80,7 @@ fn single_entity_step(caravan: Caravan, current: Span, kind: SingleEntityStep) -
     
     let entity_clause = entity_clause.source_text();
     let Some(mut entity_clause) = entity_clause else {
-        return Err(CaravanError::Undefined)
+        return Err(CaravanError::SpanToStringError)
     };
 
     let mut query_input = "".to_owned();
@@ -127,7 +127,7 @@ fn multi_entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
 
     match token {
         TokenTree::Group(_) => {
-            return Err(CaravanError::Undefined)
+            return Err(CaravanError::UnexpectedGroup)
         },
         TokenTree::Ident(_) => {
             let result = single_entity_step(caravan, token.span(), SingleEntityStep::Direct);
@@ -150,7 +150,7 @@ fn multi_entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
             caravan = result;
         },
         TokenTree::Literal(_) => {
-            return Err(CaravanError::Undefined); 
+            return Err(CaravanError::UnexpectedLiteral); 
         },
     }
 
@@ -165,5 +165,5 @@ fn multi_entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
         return multi_entity_step(caravan);
     }
 
-    return Err(CaravanError::Undefined);
+    return Err(CaravanError::ExpectedComma);
 }

@@ -27,8 +27,9 @@ edition = "2021"
 # external
 bevy = { version = "0.13.0" }  
 bevy_rapier2d = { version = "0.25.0", features = ["serde-serialize"] }
-bitflags = { version = "2.4.2" }
 # bevy_rapier2d: --features -f debug-render-2d simd-nightly
+bitflags = { version = "2.4.2" }
+cargo-expand = { version = "1.0.79" }
 
 # bins
 main = { path = "bins/main"}
