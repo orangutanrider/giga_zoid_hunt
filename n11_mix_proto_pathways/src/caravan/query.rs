@@ -1,10 +1,6 @@
 mod internal;
 
-use proc_macro::*;
-use proc_macro::token_stream::IntoIter as TokenIter;
-
 pub use super::*;
-use super::entity::*;
 use internal::*;
 
 enum SingleQueryStep {
@@ -40,7 +36,7 @@ pub fn query_step(mut caravan: Caravan, entity_input: String) -> Result<Caravan,
             return single_query_step(caravan, token, entity_input)
         },
         TokenTree::Literal(_) => {
-            return Err(CaravanError::Undefined)
+            return Err(CaravanError::UnexpectedLiteral)
         },
     }
 }
@@ -54,7 +50,7 @@ fn multi_query_step(mut caravan: Caravan, entity_input: String) -> Result<Carava
 
     match token {
         TokenTree::Group(_) => { // one entity clause to many queries
-            return Err(CaravanError::Undefined)
+            return Err(CaravanError::UnexpectedGroup)
         },
         TokenTree::Ident(_) => {
             let result = single_query_step(caravan, token, entity_input.clone());
@@ -68,10 +64,10 @@ fn multi_query_step(mut caravan: Caravan, entity_input: String) -> Result<Carava
             caravan = result;
         },
         TokenTree::Punct(_) => {
-            return Err(CaravanError::Undefined)
+            return Err(CaravanError::UnexpectedPunct)
         },
         TokenTree::Literal(_) => {
-            return Err(CaravanError::Undefined)
+            return Err(CaravanError::UnexpectedLiteral)
         },
     }
 
@@ -86,7 +82,7 @@ fn multi_query_step(mut caravan: Caravan, entity_input: String) -> Result<Carava
         return multi_query_step(caravan, entity_input);
     }
 
-    return Err(CaravanError::Undefined);
+    return Err(CaravanError::ExpectedComma);
 }
 
 fn single_query_step(caravan: Caravan, current: TokenTree, entity_input: String) -> Result<Caravan, CaravanError> {
@@ -100,7 +96,7 @@ fn single_query_step(caravan: Caravan, current: TokenTree, entity_input: String)
     };
     let query = query.source_text();
     let Some(query) = query else {
-        return Err(CaravanError::Undefined)
+        return Err(CaravanError::SpanToStringError)
     };
 
     // Get binding decleration
@@ -113,7 +109,7 @@ fn single_query_step(caravan: Caravan, current: TokenTree, entity_input: String)
     };
     let binding = binding.source_text();
     let Some(binding) = binding else {
-        return Err(CaravanError::Undefined)
+        return Err(CaravanError::SpanToStringError)
     };
     
     // Create query get to bindings statement
@@ -141,7 +137,7 @@ fn bindings_step(group: Group) -> Result<(Span, SingleQueryStep), CaravanError> 
         // add to output
         let joined = output.join(token.span());
         let Some(joined) = joined else {
-            return Err(CaravanError::Undefined)
+            return Err(CaravanError::JoinSpansError)
         };
         output = joined;
 
