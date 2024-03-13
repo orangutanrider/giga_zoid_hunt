@@ -24,7 +24,7 @@ pub fn ref_caravan(input: TokenStream) -> TokenStream {
             Err(lex) => { return TokenStream::new(); },
         }
     }
-    let Ok(caravan) = caravan else {
+    let Ok(mut caravan) = caravan else {
         return TokenStream::new();
     };
 
