@@ -1,8 +1,5 @@
 mod internal;
 
-use proc_macro::*;
-use proc_macro::token_stream::IntoIter as TokenIter;
-
 pub use super::*;
 use super::query::*;
 use internal::*;
@@ -25,6 +22,18 @@ enum SingleEntityStep {
     /// A literal entity.
     Literal, 
 }
+
+/// For the entity pointers, the macro will write this function, to get the entity they are pointing to.
+const TO_ENTITY_FN: &str = ".go()";
+/// Will remove from an entity binding decleration (a let statement's name), to generate a new binding (resulting from an entity pointer binding).
+const LIFT_REMOVE: &str = "to_"; 
+/// If the remove text isn't detected at the start of the entity binding decleration, this will be added to the end of the decleration instead, to generate the new binding.
+const LIFT_ADD: &str = "_dest";
+
+// Entity clause wildcards
+const LIFT: &str = "^";
+const OVERLAP: &str = "~";
+const LITERAL: &str = "@";
 
 pub fn entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
     let token = caravan.next();
@@ -55,7 +64,7 @@ pub fn entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
             return punct_to_entity_wildcard(caravan, token)
         },
         TokenTree::Literal(_) => {
-            return Err(CaravanError::Undefined)
+            return Err(CaravanError::UnexpectedLiteral)
         },
     }
 }
@@ -71,7 +80,7 @@ fn single_entity_step(caravan: Caravan, current: Span, kind: SingleEntityStep) -
     
     let entity_clause = entity_clause.source_text();
     let Some(mut entity_clause) = entity_clause else {
-        return Err(CaravanError::Undefined)
+        return Err(CaravanError::SpanToStringError)
     };
 
     let mut query_input = "".to_owned();
@@ -82,11 +91,11 @@ fn single_entity_step(caravan: Caravan, current: Span, kind: SingleEntityStep) -
             query_input = entity_clause;
         },
         SingleEntityStep::Direct => {
-            query_input = entity_clause + ".go()";
+            query_input = entity_clause + TO_ENTITY_FN;
         },
         SingleEntityStep::Overlap => {
             query_input = query_input + &entity_clause;
-            entity_let = "let ".to_owned() + &entity_clause + " = " + &entity_clause + ".go();" + "\n";
+            entity_let = "let ".to_owned() + &entity_clause + " = " + &entity_clause + TO_ENTITY_FN + "\n";
         },
         SingleEntityStep::Lifted => {
             let lift = lift_entity_clause(entity_clause);
@@ -99,7 +108,7 @@ fn single_entity_step(caravan: Caravan, current: Span, kind: SingleEntityStep) -
             entity_clause = lift;
 
             query_input = query_input + &entity_clause;
-            entity_let = "let ".to_owned() + &entity_clause + " = " + &entity_clause + ".go();" + "\n";
+            entity_let = "let ".to_owned() + &entity_clause + " = " + &entity_clause + TO_ENTITY_FN + "\n";
         }
     }
 
@@ -118,7 +127,7 @@ fn multi_entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
 
     match token {
         TokenTree::Group(_) => {
-            return Err(CaravanError::Undefined)
+            return Err(CaravanError::UnexpectedGroup)
         },
         TokenTree::Ident(_) => {
             let result = single_entity_step(caravan, token.span(), SingleEntityStep::Direct);
@@ -141,7 +150,7 @@ fn multi_entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
             caravan = result;
         },
         TokenTree::Literal(_) => {
-            return Err(CaravanError::Undefined); 
+            return Err(CaravanError::UnexpectedLiteral); 
         },
     }
 
@@ -156,5 +165,5 @@ fn multi_entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
         return multi_entity_step(caravan);
     }
 
-    return Err(CaravanError::Undefined);
+    return Err(CaravanError::ExpectedComma);
 }
