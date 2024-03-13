@@ -31,7 +31,7 @@ pub fn entity_wildcard_step(mut caravan: Caravan, kind: SingleEntityStep) -> Res
             return Err(CaravanError::ExpectedEntityClause)
         },
         TokenTree::Ident(_) => {
-            return single_entity_step(caravan, token.span(), kind);
+            return single_entity_step(caravan, token, kind);
         },
         TokenTree::Punct(_) => {
             return Err(CaravanError::ExpectedEntityClause)
@@ -42,25 +42,25 @@ pub fn entity_wildcard_step(mut caravan: Caravan, kind: SingleEntityStep) -> Res
     }
 }
 
-pub fn lift_entity_clause(mut entity_clause: String) -> Result<String, CaravanError> {
+pub fn lift_entity_clause(mut entity_clause: String) -> String {
     // if format is "to_entity", removes the "to_"
     let to = &entity_clause[..3];
     if to == LIFT_REMOVE {
         entity_clause.replace_range(..3, "");
-        return Ok(entity_clause)
+        return entity_clause
     }
 
     // otherwise adds "_dest" to the end
     entity_clause = entity_clause + LIFT_ADD;
-    return Ok(entity_clause);
+    return entity_clause;
 }
 
-/// Outputs span of entity clause
-pub fn till_entity_clause_fin(caravan: Caravan, current: Span,) -> Result<(Caravan, Span), CaravanError> {
-    return join_until_seperator(caravan, current)
+/// Outputs entity clause
+pub fn collect_entity_clause(caravan: Caravan, current: TokenTree) -> Result<(Caravan, String), CaravanError> {
+    return collect_until_seperator(caravan, current.to_string())
 }
 
-fn join_until_seperator(mut caravan: Caravan, current: Span) -> Result<(Caravan, Span), CaravanError> {
+fn collect_until_seperator(mut caravan: Caravan, mut output: String) -> Result<(Caravan, String), CaravanError> {
     let token = caravan.next();
     let Some(token) = token else {
         return Err(CaravanError::ExpectedSeperator);
@@ -70,32 +70,26 @@ fn join_until_seperator(mut caravan: Caravan, current: Span) -> Result<(Caravan,
         TokenTree::Group(_) => {
             return Err(CaravanError::ExpectedSeperator);
         },
-        TokenTree::Punct(_) => {
-            return end_if_seperator(caravan, current, token);
+        TokenTree::Punct(punct) => {
+            return end_if_seperator(caravan, output, punct);
         },
         TokenTree::Ident(_) => {
-            let current = current.join(token.span());
-            let Some(current) = current else {
-                return Err(CaravanError::JoinSpansError);
-            };
-
-            return join_until_seperator(caravan, current);
+            output.push_str(&token.to_string());
+            return collect_until_seperator(caravan, output);
         },
         TokenTree::Literal(_) => {
-            let current = current.join(token.span());
-            let Some(current) = current else {
-                return Err(CaravanError::JoinSpansError);
-            };
-
-            return join_until_seperator(caravan, current);
+            output.push_str(&token.to_string());
+            return collect_until_seperator(caravan, output);
         },
     }
 }
 
-fn end_if_seperator(mut caravan: Caravan, output: Span, current: Punct) -> Result<(Caravan, Span), CaravanError> {
-    // If non :, continue
-    if current != ':' {
-        return join_until_seperator(caravan, current)
+fn end_if_seperator(mut caravan: Caravan, mut output: String, current: Punct) -> Result<(Caravan, String), CaravanError> {
+    // If non :, add to string and continue
+    let ch = current.as_char();
+    if ch == '.' {
+        output.push(ch);
+        return collect_until_seperator(caravan, output)
     }
     
     // Expect ::
@@ -114,5 +108,5 @@ fn end_if_seperator(mut caravan: Caravan, output: Span, current: Punct) -> Resul
     }
 
     // End
-    return Ok(caravan)
+    return Ok((caravan, output))
 }
