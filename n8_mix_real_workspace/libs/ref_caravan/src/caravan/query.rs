@@ -53,13 +53,13 @@ fn multi_query_step(mut caravan: Caravan, entity_input: TokenStream) -> Result<C
             return Err(CaravanError::UnexpectedGroup)
         },
         TokenTree::Ident(_) => {
-            let result = single_query_step(caravan, token, entity_input.clone());
-            let result = match result {
+            let caravan = single_query_step(caravan, token, entity_input.clone());
+            let caravan = match caravan {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
 
-            caravan = result;
+            return multi_query_step(caravan, entity_input)
         },
         TokenTree::Punct(_) => {
             return Err(CaravanError::UnexpectedPunct)
@@ -68,19 +68,6 @@ fn multi_query_step(mut caravan: Caravan, entity_input: TokenStream) -> Result<C
             return Err(CaravanError::UnexpectedLiteral)
         },
     }
-
-    // Check for comma, continue or end
-    let token = caravan.next();
-    let Some(token) = token else {
-        caravan.escape();
-        return Ok(caravan);
-    };
-
-    if token.to_string() == "," {
-        return multi_query_step(caravan, entity_input);
-    }
-
-    return Err(CaravanError::ExpectedComma);
 }
 
 fn single_query_step(caravan: Caravan, current: TokenTree, entity_input: TokenStream) -> Result<Caravan, CaravanError> {
