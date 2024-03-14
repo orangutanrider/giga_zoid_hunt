@@ -120,17 +120,17 @@ fn single_entity_step(caravan: Caravan, current: TokenTree, kind: SingleEntitySt
             let Ok(eq_token) = TokenStream::from_str(" = ") else {
                 return Err(CaravanError::Undefined)
             };
-            let Ok(to_entity) = TokenStream::from_str(TO_ENTITY_FN) else {
+            let Ok(to_entity) = TokenStream::from_str(&("".to_owned() + TO_ENTITY_FN + ";")) else {
                 return Err(CaravanError::Undefined)
             };
 
-            let_token.extend(lift);
+            let_token.extend(lift.clone()); // binding
             let_token.extend(eq_token);
             let_token.extend(entity_clause.clone());
             let_token.extend(to_entity);
 
             caravan.pack(let_token);
-            return query_step(caravan, entity_clause);
+            return query_step(caravan, lift);
         }
     }
 }
