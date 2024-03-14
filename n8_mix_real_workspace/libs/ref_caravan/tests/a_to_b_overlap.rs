@@ -37,11 +37,11 @@ struct BBundle {
 }
 
 #[test]
-fn a_to_b_lift() {
+fn a_to_b_overlap() {
     let mut app = App::new();
 
     // Add system
-    app.add_systems(Update, a_to_b_lift_sys);
+    app.add_systems(Update, a_to_b_overlap_sys);
 
     // Set-up world state
     let world = &mut app.world;
@@ -61,16 +61,16 @@ fn a_to_b_lift() {
     app.update();
 }
 
-fn a_to_b_lift_sys(
+fn a_to_b_overlap_sys(
     a_q: Query<&ToMid, With<A>>,
     mid_q: Query<&MidToB>,
     b_q: Query<&mut B>,
 ) {
     for to_mid in a_q.iter() {
         ref_caravan!(
-            ^to_mid::mid_q(mid_to_b) -> mid_to_b::b_q(b);
+            ~to_mid::mid_q(mid_to_b) -> mid_to_b::b_q(b);
         );
 
-        assert_eq!(b.0, false, "ref_caravan test: ^mid::mid_q(mid_to_b) -> mid_to_b::b_q(b);");
+        assert_eq!(b.0, false, "ref_caravan test: ~mid::mid_q(mid_to_b) -> mid_to_b::b_q(b);");
     }
 }
