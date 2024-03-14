@@ -68,7 +68,7 @@ fn a_to_b_mut() {
 fn a_to_b_mut_sys(
     a_q: Query<&ToMid, With<A>>,
     mid_q: Query<&MidToB>,
-    b_q: Query<&mut B>,
+    mut b_q: Query<&mut B>,
 ) {
     for to_mid in a_q.iter() {
         ref_caravan!(

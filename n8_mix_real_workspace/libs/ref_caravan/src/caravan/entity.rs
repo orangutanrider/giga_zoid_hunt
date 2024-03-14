@@ -23,6 +23,8 @@ enum SingleEntityStep {
     Literal, 
 }
 
+// Once quote becomes stable, replace these with token streams using that.
+
 /// For the entity pointers, the macro will write this function, to get the entity they are pointing to.
 const TO_ENTITY_FN: &str = ".go()";
 /// Will remove from an entity binding decleration (a let statement's name), to generate a new binding (resulting from an entity pointer binding).
@@ -44,7 +46,7 @@ pub fn entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
     match token {
         TokenTree::Group(group) => {
             // Unpack into nested caravan
-            let unpack = &mut caravan.unpack();
+            let unpack = caravan.unpack();
             let nested = Caravan::new(group.stream().into_iter(), unpack, caravan.deeper());
             let nested = multi_entity_step(nested);
             let mut nested = match nested {
@@ -53,7 +55,7 @@ pub fn entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
             };
 
             // Repack and continue
-            caravan.repack(&nested.unpack());
+            caravan.repack(nested.unpack());
             return entity_step(caravan)
         },
         TokenTree::Ident(_) => {
@@ -71,7 +73,7 @@ pub fn entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
 
 fn single_entity_step(caravan: Caravan, current: TokenTree, kind: SingleEntityStep) -> Result<Caravan, CaravanError> {
     let result = collect_entity_clause(caravan, current); 
-    let (mut caravan, entity_clause) = match result {
+    let (mut caravan, mut entity_clause) = match result {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
@@ -81,17 +83,53 @@ fn single_entity_step(caravan: Caravan, current: TokenTree, kind: SingleEntitySt
             return query_step(caravan, entity_clause)
         },
         SingleEntityStep::Direct => {
-            return query_step(caravan, entity_clause + TO_ENTITY_FN);
+            let Ok(to_entity) = TokenStream::from_str(TO_ENTITY_FN) else {
+                return Err(CaravanError::Undefined)
+            };
+            entity_clause.extend(to_entity);
+            return query_step(caravan, entity_clause);
         },
         SingleEntityStep::Overlap => {
-            let entity_let = "let ".to_owned() + &entity_clause + " = " + &entity_clause + TO_ENTITY_FN + "\n";
-            caravan.pack(&entity_let);
+            let Ok(mut let_token) = TokenStream::from_str("let ") else {
+                return Err(CaravanError::Undefined)
+            };
+            let Ok(eq_token) = TokenStream::from_str(" = ") else {
+                return Err(CaravanError::Undefined)
+            };
+            let Ok(to_entity) = TokenStream::from_str(TO_ENTITY_FN) else {
+                return Err(CaravanError::Undefined)
+            };
+
+            let_token.extend(entity_clause.clone());
+            let_token.extend(eq_token);
+            let_token.extend(entity_clause.clone());
+            let_token.extend(to_entity);
+
+            caravan.pack(let_token);
             return query_step(caravan, entity_clause);
         },
         SingleEntityStep::Lifted => {
-            let entity_clause = lift_entity_clause(entity_clause);
-            let entity_let = "let ".to_owned() + &entity_clause + " = " + &entity_clause + TO_ENTITY_FN + "\n";
-            caravan.pack(&entity_let);
+            let lift = match lift_entity_clause(entity_clause.clone()) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
+
+            let Ok(mut let_token) = TokenStream::from_str("let ") else {
+                return Err(CaravanError::Undefined)
+            };
+            let Ok(eq_token) = TokenStream::from_str(" = ") else {
+                return Err(CaravanError::Undefined)
+            };
+            let Ok(to_entity) = TokenStream::from_str(TO_ENTITY_FN) else {
+                return Err(CaravanError::Undefined)
+            };
+
+            let_token.extend(lift);
+            let_token.extend(eq_token);
+            let_token.extend(entity_clause.clone());
+            let_token.extend(to_entity);
+
+            caravan.pack(let_token);
             return query_step(caravan, entity_clause);
         }
     }
