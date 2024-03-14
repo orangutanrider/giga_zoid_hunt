@@ -13,8 +13,7 @@ pub fn ref_caravan(input: TokenStream) -> TokenStream {
     use caravan::*;
 
     let iter: TokenIter = input.into_iter();
-    let mut output = String::new();
-    let caravan = Caravan::start(iter, &mut output);
+    let caravan = Caravan::start(iter);
     let caravan = entity_step(caravan);
 
     if let Err(error) = caravan {
@@ -29,10 +28,6 @@ pub fn ref_caravan(input: TokenStream) -> TokenStream {
     };
 
     let output = caravan.unpack();
-    let output = TokenStream::from_str(&output);
-    let Ok(output) = output else {
-        return TokenStream::new()
-    };
 
     return output
 }
