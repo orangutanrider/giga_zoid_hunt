@@ -1,6 +1,3 @@
-#![feature(proc_macro_span)]
-#![feature(iter_next_chunk)]
-
 mod caravan;
 
 use std::str::FromStr;
@@ -27,7 +24,7 @@ pub fn ref_caravan(input: TokenStream) -> TokenStream {
             Err(lex) => { return TokenStream::new(); },
         }
     }
-    let Ok(caravan) = caravan else {
+    let Ok(mut caravan) = caravan else {
         return TokenStream::new();
     };
 
