@@ -96,7 +96,7 @@ fn single_entity_step(caravan: Caravan, current: TokenTree, kind: SingleEntitySt
             let Ok(eq_token) = TokenStream::from_str(" = ") else {
                 return Err(CaravanError::Undefined)
             };
-            let Ok(to_entity) = TokenStream::from_str(TO_ENTITY_FN) else {
+            let Ok(to_entity) = TokenStream::from_str(&("".to_owned() + TO_ENTITY_FN + ";")) else {
                 return Err(CaravanError::Undefined)
             };
 
