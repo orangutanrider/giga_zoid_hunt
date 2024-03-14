@@ -16,18 +16,18 @@ pub fn query_step(mut caravan: Caravan, entity_input: String) -> Result<Caravan,
 
     match token {
         TokenTree::Group(group) => { // one entity clause to many queries
-            let group = Caravan::dig(group.stream().into_iter(), caravan.output, caravan.deeper());
-            
-            let result = multi_query_step(group, entity_input);
-            if let Err(result) = result {
-                return Err(result);
-            }
-            let Ok(mut result) = result else {
-                return Err(CaravanError::Undefined)
+            // Unpack into nested caravan
+            let unpack = &mut caravan.unpack();
+            let nested = Caravan::new(group.stream().into_iter(), unpack, caravan.deeper());
+            let nested = multi_query_step(nested, entity_input);
+            let mut nested = match nested {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
             };
 
-            result.iter = caravan.iter;
-            return Ok(result);
+            // Repack and continue
+            caravan.repack(&nested.unpack());
+            return query_next(caravan)
         },
         TokenTree::Ident(_) => {
             return single_query_step(caravan, token, entity_input)
@@ -54,11 +54,9 @@ fn multi_query_step(mut caravan: Caravan, entity_input: String) -> Result<Carava
         },
         TokenTree::Ident(_) => {
             let result = single_query_step(caravan, token, entity_input.clone());
-            if let Err(result) = result {
-                return Err(result);
-            }
-            let Ok(result) = result else {
-                return Err(CaravanError::Undefined)
+            let result = match result {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
             };
 
             caravan = result;
@@ -87,29 +85,17 @@ fn multi_query_step(mut caravan: Caravan, entity_input: String) -> Result<Carava
 
 fn single_query_step(caravan: Caravan, current: TokenTree, entity_input: String) -> Result<Caravan, CaravanError> {
     // Walk to end of query statement
-    let query = till_query_fin(caravan, current.span());
-    if let Err(query) = query {
-        return Err(query)
-    }
-    let Ok((caravan, query, bindings)) = query else {
-        return Err(CaravanError::Undefined)
-    };
-    let query = query.source_text();
-    let Some(query) = query else {
-        return Err(CaravanError::SpanToStringError)
+    let query = collect_query(caravan, current);
+    let (caravan, query, bindings) = match query {
+        Ok(ok) => ok,
+        Err(err) => return Err(err),
     };
 
     // Get binding decleration
     let result = bindings_step(bindings);
-    if let Err(result) = result {
-        return Err(result)
-    }
-    let Ok((binding, kind)) = result else {
-        return Err(CaravanError::Undefined)
-    };
-    let binding = binding.source_text();
-    let Some(binding) = binding else {
-        return Err(CaravanError::SpanToStringError)
+    let (binding, kind) = match result {
+        Ok(ok) => ok,
+        Err(err) => return Err(err),
     };
     
     // Create query get to bindings statement
@@ -128,24 +114,18 @@ fn single_query_step(caravan: Caravan, current: TokenTree, entity_input: String)
     return query_next(caravan)
 }
 
-fn bindings_step(group: Group) -> Result<(Span, SingleQueryStep), CaravanError> {
-    let mut output = group.span().end();
+fn bindings_step(group: Group) -> Result<(String, SingleQueryStep), CaravanError> {
+    let mut output = "".to_owned();
     let mut detection = SingleQueryStep::Get;
 
     let group = group.stream().into_iter();
     for token in group {
-        // add to output
-        let joined = output.join(token.span());
-        let Some(joined) = joined else {
-            return Err(CaravanError::JoinSpansError)
-        };
-        output = joined;
-
         // detect mut
         let token = token.to_string();
         if token == "mut" {
             detection = SingleQueryStep::GetMut;
         }
+        output.push_str(&token);
     }
 
     return Ok((output, detection));   
@@ -155,6 +135,6 @@ fn query_next(caravan: Caravan) -> Result<Caravan, CaravanError> {
     if caravan.at_surface() {
         return query_surface_next(caravan);
     } else {
-        return query_deep_next(caravan);
+        return query_nested_next(caravan);
     }
 }

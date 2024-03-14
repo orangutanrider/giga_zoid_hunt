@@ -43,22 +43,22 @@ pub fn entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
 
     match token {
         TokenTree::Group(group) => {
-            let group = Caravan::dig(group.stream().into_iter(), caravan.output, caravan.deeper());
-            
-            let result = multi_entity_step(group);
-            if let Err(result) = result {
-                return Err(result);
-            }
-            let Ok(mut result) = result else {
-                return Err(CaravanError::Undefined)
+            // Unpack into nested caravan
+            let unpack = &mut caravan.unpack();
+            let nested = Caravan::new(group.stream().into_iter(), unpack, caravan.deeper());
+            let nested = multi_entity_step(nested);
+            let mut nested = match nested {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
             };
 
-            result.iter = caravan.iter;
-            return Ok(result);
+            // Repack and continue
+            caravan.repack(&nested.unpack());
+            return entity_step(caravan)
         },
         TokenTree::Ident(_) => {
             // Direct entity step
-            return single_entity_step(caravan, token.span(), SingleEntityStep::Direct)
+            return single_entity_step(caravan, token, SingleEntityStep::Direct)
         },
         TokenTree::Punct(_) => {
             return punct_to_entity_wildcard(caravan, token)
@@ -69,52 +69,32 @@ pub fn entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
     }
 }
 
-fn single_entity_step(caravan: Caravan, current: Span, kind: SingleEntityStep) -> Result<Caravan, CaravanError> {
-    let result = till_entity_clause_fin(caravan, current); 
-    if let Err(result) = result {
-        return Err(result);
+fn single_entity_step(caravan: Caravan, current: TokenTree, kind: SingleEntityStep) -> Result<Caravan, CaravanError> {
+    let result = collect_entity_clause(caravan, current); 
+    let (mut caravan, entity_clause) = match result {
+        Ok(ok) => ok,
+        Err(err) => return Err(err),
     };
-    let Ok((caravan, entity_clause)) = result else {
-        return Err(CaravanError::Undefined);
-    };
-    
-    let entity_clause = entity_clause.source_text();
-    let Some(mut entity_clause) = entity_clause else {
-        return Err(CaravanError::SpanToStringError)
-    };
-
-    let mut query_input = "".to_owned();
-    let mut entity_let = "".to_owned();
 
     match kind {
         SingleEntityStep::Literal => {
-            query_input = entity_clause;
+            return query_step(caravan, entity_clause)
         },
         SingleEntityStep::Direct => {
-            query_input = entity_clause + TO_ENTITY_FN;
+            return query_step(caravan, entity_clause + TO_ENTITY_FN);
         },
         SingleEntityStep::Overlap => {
-            query_input = query_input + &entity_clause;
-            entity_let = "let ".to_owned() + &entity_clause + " = " + &entity_clause + TO_ENTITY_FN + "\n";
+            let entity_let = "let ".to_owned() + &entity_clause + " = " + &entity_clause + TO_ENTITY_FN + "\n";
+            caravan.pack(&entity_let);
+            return query_step(caravan, entity_clause);
         },
         SingleEntityStep::Lifted => {
-            let lift = lift_entity_clause(entity_clause);
-            if let Err(lift) = lift {
-                return Err(lift)
-            }
-            let Ok(lift) = lift else {
-                return Err(CaravanError::Undefined)
-            };
-            entity_clause = lift;
-
-            query_input = query_input + &entity_clause;
-            entity_let = "let ".to_owned() + &entity_clause + " = " + &entity_clause + TO_ENTITY_FN + "\n";
+            let entity_clause = lift_entity_clause(entity_clause);
+            let entity_let = "let ".to_owned() + &entity_clause + " = " + &entity_clause + TO_ENTITY_FN + "\n";
+            caravan.pack(&entity_let);
+            return query_step(caravan, entity_clause);
         }
     }
-
-    caravan.output.push_str(&entity_let);
-
-    return query_step(caravan, query_input);
 }
 
 /// Caravan iter recieved as group
@@ -130,22 +110,18 @@ fn multi_entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
             return Err(CaravanError::UnexpectedGroup)
         },
         TokenTree::Ident(_) => {
-            let result = single_entity_step(caravan, token.span(), SingleEntityStep::Direct);
-            if let Err(result) = result {
-                return Err(result);
-            };
-            let Ok(result) = result else {
-                return Err(CaravanError::Undefined);
+            let result = single_entity_step(caravan, token, SingleEntityStep::Direct);
+            let result = match result {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
             };
             caravan = result;
         },
         TokenTree::Punct(_) => {
             let result = punct_to_entity_wildcard(caravan, token);
-            if let Err(result) = result {
-                return Err(result);
-            };
-            let Ok(result) = result else {
-                return Err(CaravanError::Undefined);
+            let result = match result {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
             };
             caravan = result;
         },

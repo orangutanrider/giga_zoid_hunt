@@ -2,38 +2,18 @@ use proc_macro::*;
 
 use super::*;
 
-pub fn till_query_fin(caravan: Caravan, current: Span,) -> Result<(Caravan, Span, Group), CaravanError> {
-    return join_until_bindings(caravan, current)
+pub fn collect_query(caravan: Caravan, current: TokenTree) -> Result<(Caravan, String, Group), CaravanError> {
+    return collect_until_bindings(caravan, current.to_string())
 }
 
 /// Will not check for semi-colon
-pub fn query_deep_next(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
+pub fn query_nested_next(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
     let token = caravan.next();
     let Some(token) = token else {
-        return Ok(caravan);
+        return Ok(caravan); // If nothing, exit
     };
 
-    // get combined symbols
-    let span = token.span();
-    let token = caravan.next();
-    let Some(token) = token else {
-        return Err(CaravanError::ExpectedArrow);
-    };
-    let span = span.join(token.span());
-    let Some(span) = span else {
-        return Err(CaravanError::JoinSpansError)
-    };
-    let span = span.source_text();
-    let Some(span) = span else {
-        return Err(CaravanError::SpanToStringError)
-    };
-
-    // expect '->'
-    if span != "->" {
-        return Err(CaravanError::ExpectedArrow);
-    }
-
-    return entity_step(caravan)
+    return expect_next(caravan, token)
 }
 
 pub fn query_surface_next(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
@@ -43,38 +23,43 @@ pub fn query_surface_next(mut caravan: Caravan) -> Result<Caravan, CaravanError>
     };
 
     let symbol = token.to_string();
-    if symbol == ";" {
+    if symbol == ";" { // Contine to next statement (End)
         return entity_step(caravan)
     }
 
-    if symbol != "-" {
-        return Err(CaravanError::ExpectedArrow)
-    }
-
-    // get combined symbols
-    let span = token.span();
-    let token = caravan.next();
-    let Some(token) = token else {
-        return Err(CaravanError::ExpectedArrow);
-    };
-    let span = span.join(token.span());
-    let Some(span) = span else {
-        return Err(CaravanError::JoinSpansError)
-    };
-    let span = span.source_text();
-    let Some(span) = span else {
-        return Err(CaravanError::SpanToStringError)
-    };
-
-    // expect '->'
-    if span != "->" {
-        return Err(CaravanError::ExpectedArrow);
-    }
-
-    return entity_step(caravan)
+    return expect_next(caravan, token);
 }
 
-fn join_until_bindings(mut caravan: Caravan, current: Span) -> Result<(Caravan, Span, Group), CaravanError> {
+fn expect_next(mut caravan: Caravan, current: TokenTree) -> Result<Caravan, CaravanError> {
+    // Expect arrow ->
+    let current = match current {
+        TokenTree::Group(_) => return Err(CaravanError::ExpectedArrow),
+        TokenTree::Ident(_) => return Err(CaravanError::ExpectedArrow),
+        TokenTree::Punct(punct) => punct,
+        TokenTree::Literal(_) => return Err(CaravanError::ExpectedArrow),
+    };
+    if current != '-' {
+        return Err(CaravanError::ExpectedArrow)
+    }
+    match current.spacing() {
+        Spacing::Joint => (/* continue */),
+        Spacing::Alone => return Err(CaravanError::ExpectedArrow),
+    }
+    let Some(current) = caravan.next() else {
+        return Err(CaravanError::ExpectedArrow)
+    };
+    let TokenTree::Punct(current) = current else {
+        return Err(CaravanError::ExpectedArrow)
+    };
+    if current != '>' {
+        return Err(CaravanError::ExpectedArrow);
+    }
+
+    // Go next
+    return entity_step(caravan)   
+}
+
+fn collect_until_bindings(mut caravan: Caravan, mut output: String) -> Result<(Caravan, String, Group), CaravanError> {
     let token = caravan.next();
     let Some(token) = token else {
         return Err(CaravanError::ExpectedBindings);
@@ -82,38 +67,27 @@ fn join_until_bindings(mut caravan: Caravan, current: Span) -> Result<(Caravan, 
     
     match token {
         TokenTree::Group(group) => {
-            return end_if_bindings(caravan, current, group)
+            return end_if_bindings(caravan, output, group)
         },
         TokenTree::Punct(_) => {
-            let current = current.join(token.span());
-            let Some(current) = current else {
-                return Err(CaravanError::JoinSpansError);
-            };
-
-            return join_until_bindings(caravan, current)
+            output.push_str(&token.to_string());
+            return collect_until_bindings(caravan, output);
         },
         TokenTree::Ident(_) => {
-            let current = current.join(token.span());
-            let Some(current) = current else {
-                return Err(CaravanError::JoinSpansError);
-            };
-
-            return join_until_bindings(caravan, current)
+            output.push_str(&token.to_string());
+            return collect_until_bindings(caravan, output);
         },
         TokenTree::Literal(_) => {
-            let current = current.join(token.span());
-            let Some(current) = current else {
-                return Err(CaravanError::JoinSpansError);
-            };
-
-            return join_until_bindings(caravan, current)
+            output.push_str(&token.to_string());
+            return collect_until_bindings(caravan, output);
         },
     }
 }
 
-fn end_if_bindings(caravan: Caravan, output: Span, current: Group) -> Result<(Caravan, Span, Group), CaravanError> {
+fn end_if_bindings(caravan: Caravan, mut output: String, current: Group) -> Result<(Caravan, String, Group), CaravanError> {
     if current.delimiter() != Delimiter::Parenthesis {
-        return Err(CaravanError::IncorrectDelimiter)
+        output.push_str(&current.to_string());
+        return collect_until_bindings(caravan, output);
     }
 
     return Ok((caravan, output, current))
