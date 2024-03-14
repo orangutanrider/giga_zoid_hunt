@@ -2,8 +2,10 @@ use proc_macro::*;
 
 use super::*;
 
-pub fn collect_query(caravan: Caravan, current: TokenTree) -> Result<(Caravan, String, Group), CaravanError> {
-    return collect_until_bindings(caravan, current.to_string())
+pub fn collect_query(caravan: Caravan, current: TokenTree) -> Result<(Caravan, TokenStream, Group), CaravanError> {
+    let mut vec = Vec::new();
+    vec.push(current);
+    return collect_until_bindings(caravan, vec)
 }
 
 /// Will not check for semi-colon
@@ -59,36 +61,42 @@ fn expect_next(mut caravan: Caravan, current: TokenTree) -> Result<Caravan, Cara
     return entity_step(caravan)   
 }
 
-fn collect_until_bindings(mut caravan: Caravan, mut output: String) -> Result<(Caravan, String, Group), CaravanError> {
+fn collect_until_bindings(mut caravan: Caravan, mut collection: Vec<TokenTree>) -> Result<(Caravan, TokenStream, Group), CaravanError> {
     let token = caravan.next();
     let Some(token) = token else {
         return Err(CaravanError::ExpectedBindings);
     };
     
     match token {
-        TokenTree::Group(group) => {
-            return end_if_bindings(caravan, output, group)
+        TokenTree::Group(_) => {
+            return end_if_bindings(caravan, collection, token)
         },
         TokenTree::Punct(_) => {
-            output.push_str(&token.to_string());
-            return collect_until_bindings(caravan, output);
+            collection.push(token);
+            return collect_until_bindings(caravan, collection);
         },
         TokenTree::Ident(_) => {
-            output.push_str(&token.to_string());
-            return collect_until_bindings(caravan, output);
+            collection.push(token);
+            return collect_until_bindings(caravan, collection);
         },
         TokenTree::Literal(_) => {
-            output.push_str(&token.to_string());
-            return collect_until_bindings(caravan, output);
+            collection.push(token);
+            return collect_until_bindings(caravan, collection);
         },
     }
 }
 
-fn end_if_bindings(caravan: Caravan, mut output: String, current: Group) -> Result<(Caravan, String, Group), CaravanError> {
-    if current.delimiter() != Delimiter::Parenthesis {
-        output.push_str(&current.to_string());
-        return collect_until_bindings(caravan, output);
+fn end_if_bindings(caravan: Caravan, mut collection: Vec<TokenTree>, current: TokenTree) -> Result<(Caravan, TokenStream, Group), CaravanError> {
+    let TokenTree::Group(group) = current.clone() else{
+        return Err(CaravanError::Undefined)
+    };
+
+    if group.delimiter() != Delimiter::Parenthesis {
+        collection.push(current);
+        return collect_until_bindings(caravan, collection);
     }
 
-    return Ok((caravan, output, current))
+    let output = collection.into_iter();
+    let output = TokenStream::from_iter(output);
+    return Ok((caravan, output, group))
 }
