@@ -88,20 +88,20 @@ fn a_to_bc_nested_sys(
         ref_caravan!(
             to_mid::mid_q((mid_to_b, mid_to_c)) -> {
                 mid_to_b::b_q(b),
-                mid_to_c::c_q(c),
+                mid_to_c::c_q(c)
             }
         );
 
         assert_eq!(b.0, false, "ref_caravan test:
-        to_mid::mid_q((mid_to_b, mid_to_c)) -> { 
+        to_mid::mid_q((mid_to_b, mid_to_c)) -> {{ 
             mid_to_b::b_q(b), 
             mid_to_c::c_q(c), 
-        }");
+        }}");
 
         assert_eq!(c.0, false, "ref_caravan test:
-        to_mid::mid_q((mid_to_b, mid_to_c)) -> { 
+        to_mid::mid_q((mid_to_b, mid_to_c)) -> {{ 
             mid_to_b::b_q(b), 
             mid_to_c::c_q(c), 
-        }");
+        }}");
     }
 }

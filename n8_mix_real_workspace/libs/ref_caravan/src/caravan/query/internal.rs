@@ -15,6 +15,10 @@ pub fn query_nested_next(mut caravan: Caravan) -> Result<Caravan, CaravanError> 
         return Ok(caravan); // If nothing, exit
     };
 
+    if token.to_string() == "," {
+        return Ok(caravan);
+    }
+
     return expect_next(caravan, token)
 }
 
@@ -35,26 +39,26 @@ pub fn query_surface_next(mut caravan: Caravan) -> Result<Caravan, CaravanError>
 fn expect_next(mut caravan: Caravan, current: TokenTree) -> Result<Caravan, CaravanError> {
     // Expect arrow ->
     let current = match current {
-        TokenTree::Group(_) => return Err(CaravanError::ExpectedArrow),
-        TokenTree::Ident(_) => return Err(CaravanError::ExpectedArrow),
+        TokenTree::Group(_) => return Err(CaravanError::Undefined),
+        TokenTree::Ident(_) => return Err(CaravanError::ExpectedBindings),
         TokenTree::Punct(punct) => punct,
-        TokenTree::Literal(_) => return Err(CaravanError::ExpectedArrow),
+        TokenTree::Literal(_) => return Err(CaravanError::ExpectedComma),
     };
     if current != '-' {
-        return Err(CaravanError::ExpectedArrow)
+        return Err(CaravanError::NoMatchingWildcard)
     }
     match current.spacing() {
         Spacing::Joint => (/* continue */),
-        Spacing::Alone => return Err(CaravanError::ExpectedArrow),
+        Spacing::Alone => return Err(CaravanError::ExpectedEntityClause),
     }
     let Some(current) = caravan.next() else {
-        return Err(CaravanError::ExpectedArrow)
+        return Err(CaravanError::ExpectedSeperator)
     };
     let TokenTree::Punct(current) = current else {
-        return Err(CaravanError::ExpectedArrow)
+        return Err(CaravanError::JoinSpansError)
     };
     if current != '>' {
-        return Err(CaravanError::ExpectedArrow);
+        return Err(CaravanError::SpanToStringError);
     }
 
     // Go next
