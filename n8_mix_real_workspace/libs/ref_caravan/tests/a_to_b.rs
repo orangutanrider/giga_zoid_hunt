@@ -40,8 +40,11 @@ struct BBundle {
 fn a_to_b() {
     let mut app = App::new();
 
+    // Add system
+    app.add_systems(Update, a_to_b_sys);
+
     // Set-up world state
-    let mut world = app.world;
+    let world = &mut app.world;
     let b = world.spawn(BBundle{
         b: B(false)
     }).id();
@@ -53,6 +56,9 @@ fn a_to_b() {
         flag: AToBRefFlag,
         to_mid: ToMid::new(mid),
     });
+
+    // run system
+    app.update();
 }
 
 fn a_to_b_sys(
@@ -65,6 +71,6 @@ fn a_to_b_sys(
             to_mid::mid_q(mid_to_b) -> mid_to_b::b_q(b);
         );
 
-
+        assert_eq!(b.0, false);
     }
 }
