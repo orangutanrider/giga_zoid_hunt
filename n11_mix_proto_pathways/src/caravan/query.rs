@@ -101,7 +101,7 @@ fn single_query_step(caravan: Caravan, current: TokenTree, entity_input: TokenSt
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
-    let bindings = bindings.stream();
+    let bindings = TokenStream::from_str(&bindings.to_string());
     // Equal
     let Ok(eq_token) = TokenStream::from_str(" = ") else {
         return Err(CaravanError::Undefined)
@@ -121,7 +121,7 @@ fn single_query_step(caravan: Caravan, current: TokenTree, entity_input: TokenSt
     };
     // Entity
     let entity_input = Group::new(Delimiter::Parenthesis, entity_input);
-    let entity_input = entity_input.stream();
+    let entity_input = TokenStream::from_str(&entity_input.to_string());
     // Else return
     let Ok(end) = TokenStream::from_str(" else { return; }; \n ") else {
         return Err(CaravanError::Undefined)
