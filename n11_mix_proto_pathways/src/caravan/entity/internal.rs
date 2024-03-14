@@ -18,7 +18,35 @@ pub fn punct_to_entity_wildcard(caravan: Caravan, current: TokenTree) -> Result<
     return Err(CaravanError::NoMatchingWildcard)
 }
 
-pub fn entity_wildcard_step(mut caravan: Caravan, kind: SingleEntityStep) -> Result<Caravan, CaravanError> {
+pub fn lift_entity_clause(entity_clause: TokenStream) -> Result<TokenStream, CaravanError> {
+    let mut entity_clause = entity_clause.to_string();
+
+    // if format is "to_entity", removes the "to_"
+    let to = &entity_clause[..3];
+    if to == LIFT_REMOVE {
+        entity_clause.replace_range(..3, "");
+        match TokenStream::from_str(&entity_clause) {
+            Ok(ok) => return Ok(ok),
+            Err(_) => return Err(CaravanError::Undefined),
+        }
+    }
+
+    // otherwise adds "_dest" to the end
+    entity_clause = entity_clause + LIFT_ADD;
+    match TokenStream::from_str(&entity_clause) {
+        Ok(ok) => return Ok(ok),
+        Err(_) => return Err(CaravanError::Undefined),
+    }
+}
+
+/// Outputs entity clause
+pub fn collect_entity_clause(caravan: Caravan, current: TokenTree) -> Result<(Caravan, TokenStream), CaravanError> {
+    let mut vec = Vec::new();
+    vec.push(current);
+    return collect_until_seperator(caravan, vec)
+}
+
+fn entity_wildcard_step(mut caravan: Caravan, kind: SingleEntityStep) -> Result<Caravan, CaravanError> {
     let iter = &mut caravan.iter;
 
     let token = iter.next();
@@ -42,27 +70,7 @@ pub fn entity_wildcard_step(mut caravan: Caravan, kind: SingleEntityStep) -> Res
     }
 }
 
-pub fn lift_entity_clause(mut entity_clause: String) -> String {
-    // if format is "to_entity", removes the "to_"
-    let to = &entity_clause[..3];
-    if to == LIFT_REMOVE {
-        entity_clause.replace_range(..3, "");
-        return entity_clause
-    }
-
-    // otherwise adds "_dest" to the end
-    entity_clause = entity_clause + LIFT_ADD;
-    return entity_clause;
-}
-
-/// Outputs entity clause
-pub fn collect_entity_clause(caravan: Caravan, current: TokenTree) -> Result<(Caravan, String), CaravanError> {
-    let mut vec = Vec::new();
-    vec.push(current);
-    return collect_until_seperator(caravan, vec)
-}
-
-fn collect_until_seperator(mut caravan: Caravan, mut collection: Vec<TokenTree>) -> Result<(Caravan, String), CaravanError> {
+fn collect_until_seperator(mut caravan: Caravan, mut collection: Vec<TokenTree>) -> Result<(Caravan, TokenStream), CaravanError> {
     let token = caravan.next();
     let Some(token) = token else {
         return Err(CaravanError::ExpectedSeperator);
@@ -87,7 +95,7 @@ fn collect_until_seperator(mut caravan: Caravan, mut collection: Vec<TokenTree>)
     }
 }
 
-fn end_if_seperator(mut caravan: Caravan, mut collection: Vec<TokenTree>, current: TokenTree) -> Result<(Caravan, String), CaravanError> {
+fn end_if_seperator(mut caravan: Caravan, mut collection: Vec<TokenTree>, current: TokenTree) -> Result<(Caravan, TokenStream), CaravanError> {
     // If non :, add to string and continue
     if current.to_string() != ":" {
         collection.push(current);
@@ -116,6 +124,5 @@ fn end_if_seperator(mut caravan: Caravan, mut collection: Vec<TokenTree>, curren
     // End
     let output = collection.into_iter();
     let output = TokenStream::from_iter(output);
-    let output = output.to_string();
     return Ok((caravan, output))
 }
