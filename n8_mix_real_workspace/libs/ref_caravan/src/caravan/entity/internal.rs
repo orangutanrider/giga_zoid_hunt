@@ -57,41 +57,46 @@ pub fn lift_entity_clause(mut entity_clause: String) -> String {
 
 /// Outputs entity clause
 pub fn collect_entity_clause(caravan: Caravan, current: TokenTree) -> Result<(Caravan, String), CaravanError> {
-    return collect_until_seperator(caravan, current.to_string())
+    let mut vec = Vec::new();
+    vec.push(current);
+    return collect_until_seperator(caravan, vec)
 }
 
-fn collect_until_seperator(mut caravan: Caravan, mut output: String) -> Result<(Caravan, String), CaravanError> {
+fn collect_until_seperator(mut caravan: Caravan, mut collection: Vec<TokenTree>) -> Result<(Caravan, String), CaravanError> {
     let token = caravan.next();
     let Some(token) = token else {
         return Err(CaravanError::ExpectedSeperator);
     };
-    
+
     match token {
         TokenTree::Group(_) => {
-            output.push_str(&token.to_string());
-            return collect_until_seperator(caravan, output);
+            collection.push(token);
+            return collect_until_seperator(caravan, collection);
         },
-        TokenTree::Punct(punct) => {
-            return end_if_seperator(caravan, output, punct);
+        TokenTree::Punct(_) => {
+            return end_if_seperator(caravan, collection, token);
         },
         TokenTree::Ident(_) => {
-            output.push_str(&token.to_string());
-            return collect_until_seperator(caravan, output);
+            collection.push(token);
+            return collect_until_seperator(caravan, collection);
         },
         TokenTree::Literal(_) => {
-            output.push_str(&token.to_string());
-            return collect_until_seperator(caravan, output);
+            collection.push(token);
+            return collect_until_seperator(caravan, collection);
         },
     }
 }
 
-fn end_if_seperator(mut caravan: Caravan, mut output: String, current: Punct) -> Result<(Caravan, String), CaravanError> {
+fn end_if_seperator(mut caravan: Caravan, mut collection: Vec<TokenTree>, current: TokenTree) -> Result<(Caravan, String), CaravanError> {
     // If non :, add to string and continue
-    let ch = current.as_char();
-    if ch != ':' {
-        output.push(ch);
-        return collect_until_seperator(caravan, output)
+    if current.to_string() != ":" {
+        collection.push(current);
+        return collect_until_seperator(caravan, collection)
     }
+
+    let TokenTree::Punct(current) = current else {
+        return Err(CaravanError::Undefined)
+    };
     
     // Expect ::
     match current.spacing() {
@@ -109,5 +114,8 @@ fn end_if_seperator(mut caravan: Caravan, mut output: String, current: Punct) ->
     }
 
     // End
+    let output = collection.into_iter();
+    let output = TokenStream::from_iter(output);
+    let output = output.to_string();
     return Ok((caravan, output))
 }
