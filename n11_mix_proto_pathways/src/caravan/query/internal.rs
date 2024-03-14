@@ -87,7 +87,7 @@ fn collect_until_bindings(mut caravan: Caravan, mut output: String) -> Result<(C
 fn end_if_bindings(caravan: Caravan, mut output: String, current: Group) -> Result<(Caravan, String, Group), CaravanError> {
     if current.delimiter() != Delimiter::Parenthesis {
         output.push_str(&current.to_string());
-        collect_until_bindings(caravan, output)
+        return collect_until_bindings(caravan, output);
     }
 
     return Ok((caravan, output, current))
