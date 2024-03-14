@@ -108,7 +108,7 @@ fn single_query_step(caravan: Caravan, current: TokenTree, entity_input: String)
             output = output + ".get_mut(";
         },
     }
-    output = output + &entity_input + ") else { return; } \n";
+    output = output + &entity_input + ") else { return; }; \n";
 
     caravan.output.push_str(&output);
     return query_next(caravan)

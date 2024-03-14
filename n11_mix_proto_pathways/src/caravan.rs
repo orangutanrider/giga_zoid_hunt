@@ -8,13 +8,13 @@ use proc_macro::token_stream::IntoIter as TokenIter;
 
 pub use entity::entity_step;
 
-pub struct Caravan<'o> {
+pub struct Caravan {
     iter: TokenIter,
-    output: &'o mut String, // The collected code output, from all recursions
+    output: TokenStream,
     depth: u32,
 }
-impl<'o> Caravan<'o> {
-    fn new(iter: TokenIter, output: &'o mut String, depth: u32) -> Self {
+impl Caravan {
+    fn new(iter: TokenIter, output: TokenStream, depth: u32) -> Self {
         return Self {
             iter,
             output,
@@ -22,39 +22,38 @@ impl<'o> Caravan<'o> {
         }
     }
 
-    pub fn start(iter: TokenIter, output: &'o mut String) -> Self {
+    pub fn start(iter: TokenIter) -> Self {
         return Self {
             iter,
-            output,
+            output: TokenStream::new(),
             depth: 0,
         }
     }
 }
 
-impl<'o> Caravan<'o> {
+impl Caravan {
     fn next(&mut self) -> Option<TokenTree> {
         return self.iter.next()
     }
 
-    fn pack(&mut self, string: &str) {
-        self.output.push_str(string)
+    fn pack(&mut self, stream: TokenStream) {
+        self.output.extend(stream)
     }
 
-    fn repack(&mut self, string: &str) {
-        self.output.clear();
-        self.output.push_str(string)
+    fn repack(&mut self, stream: TokenStream) {
+        self.output = stream;
     }
 
     fn escape(&mut self) {
         self.depth = self.depth - 1;
     }
 
-    pub fn unpack(&mut self) -> String {
+    pub fn unpack(&mut self) -> TokenStream {
         return self.output.to_owned()
     }
 }
 
-impl<'o> Caravan<'o> {
+impl Caravan {
     fn deeper(&self) -> u32 {
         return self.depth + 1
     }
