@@ -73,7 +73,7 @@ pub fn entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
 
 fn single_entity_step(caravan: Caravan, current: TokenTree, kind: SingleEntityStep) -> Result<Caravan, CaravanError> {
     let result = collect_entity_clause(caravan, current); 
-    let (mut caravan, entity_clause) = match result {
+    let (mut caravan, mut entity_clause) = match result {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
