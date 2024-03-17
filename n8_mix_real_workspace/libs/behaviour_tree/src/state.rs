@@ -1,12 +1,12 @@
-mod terminal;
-mod output;
+pub mod terminal;
+pub mod output;
 
 use std::any::TypeId;
 use bevy::prelude::*;
 
 /// A bit mask identifying behaviour state flags.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-pub struct State(u32);
+pub(crate) struct State(u32);
 impl Default for State {
     fn default() -> Self {
         State::ALL
@@ -15,7 +15,7 @@ impl Default for State {
 
 /// Identification types for anything trying to input state into a state terminal.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-pub enum Key{
+pub(crate) enum Key{
     ExternalEntity(Entity),
     LocalComponent(TypeId)
 }

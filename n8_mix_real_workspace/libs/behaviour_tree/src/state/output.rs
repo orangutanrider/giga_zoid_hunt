@@ -14,7 +14,7 @@ use terminal::TState;
 #[derive(Component)]
 /// Collects local state inputs and outputs it as a single HashMap entry
 /// To the parent node's state terminal, key'd via entity
-pub struct StateOutput {
+pub(crate) struct StateOutput {
     /// True if the held state has changed, on change output to parent
     changed: bool, 
     /// Overall held state, collected from all registered state input

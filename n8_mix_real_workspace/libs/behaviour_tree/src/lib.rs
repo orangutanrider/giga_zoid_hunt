@@ -1,4 +1,6 @@
 pub mod state;
+pub mod bang;
+pub mod root;
 
 use bevy::prelude::*;
 use ref_paths::*;
@@ -10,3 +12,4 @@ waymark!(ToParentNode);
 #[derive(Component)]
 pub struct ToBehaviourRoot(Entity);
 waymark!(ToBehaviourRoot);
+
