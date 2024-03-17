@@ -96,7 +96,7 @@ fn single_entity_step(caravan: Caravan, current: TokenTree, kind: SingleEntitySt
             let Ok(eq_token) = TokenStream::from_str(" = ") else {
                 return Err(CaravanError::Undefined)
             };
-            let Ok(to_entity) = TokenStream::from_str(TO_ENTITY_FN) else {
+            let Ok(to_entity) = TokenStream::from_str(&("".to_owned() + TO_ENTITY_FN + ";")) else {
                 return Err(CaravanError::Undefined)
             };
 
@@ -120,17 +120,17 @@ fn single_entity_step(caravan: Caravan, current: TokenTree, kind: SingleEntitySt
             let Ok(eq_token) = TokenStream::from_str(" = ") else {
                 return Err(CaravanError::Undefined)
             };
-            let Ok(to_entity) = TokenStream::from_str(TO_ENTITY_FN) else {
+            let Ok(to_entity) = TokenStream::from_str(&("".to_owned() + TO_ENTITY_FN + ";")) else {
                 return Err(CaravanError::Undefined)
             };
 
-            let_token.extend(lift);
+            let_token.extend(lift.clone()); // binding
             let_token.extend(eq_token);
             let_token.extend(entity_clause.clone());
             let_token.extend(to_entity);
 
             caravan.pack(let_token);
-            return query_step(caravan, entity_clause);
+            return query_step(caravan, lift);
         }
     }
 }
@@ -148,36 +148,23 @@ fn multi_entity_step(mut caravan: Caravan) -> Result<Caravan, CaravanError> {
             return Err(CaravanError::UnexpectedGroup)
         },
         TokenTree::Ident(_) => {
-            let result = single_entity_step(caravan, token, SingleEntityStep::Direct);
-            let result = match result {
+            let caravan = single_entity_step(caravan, token, SingleEntityStep::Direct);
+            let caravan = match caravan {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
-            caravan = result;
+            return multi_entity_step(caravan)
         },
         TokenTree::Punct(_) => {
-            let result = punct_to_entity_wildcard(caravan, token);
-            let result = match result {
+            let caravan = punct_to_entity_wildcard(caravan, token);
+            let caravan = match caravan {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
-            caravan = result;
+            return multi_entity_step(caravan)
         },
         TokenTree::Literal(_) => {
             return Err(CaravanError::UnexpectedLiteral); 
         },
     }
-
-    // Check for comma, continue or end
-    let token = caravan.next();
-    let Some(token) = token else {
-        caravan.escape();
-        return Ok(caravan);
-    };
-
-    if token.to_string() == "," {
-        return multi_entity_step(caravan);
-    }
-
-    return Err(CaravanError::ExpectedComma);
 }

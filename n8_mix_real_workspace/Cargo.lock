@@ -2918,8 +2918,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "ref_caravan"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_paths",
+]
+
+[[package]]
 name = "ref_paths"
 version = "0.0.1"
+dependencies = [
+ "bevy",
+]
 
 [[package]]
 name = "regex"
