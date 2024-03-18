@@ -126,16 +126,11 @@ fn single_query_step(caravan: Caravan, current: TokenTree, entity_input: TokenSt
 }
 
 fn bindings_step(group: Group) -> Result<(Group, SingleQueryStep), CaravanError> {
-    let mut detection = SingleQueryStep::Get;
-
     let iter = group.clone().stream().into_iter();
-    for token in iter {
-        // detect mut
-        let token = token.to_string();
-        if token == "mut" {
-            detection = SingleQueryStep::GetMut;
-        }
-    }
+    let detection = match detect_mut(iter) {
+        true => SingleQueryStep::GetMut,
+        false => SingleQueryStep::Get,
+    };
 
     return Ok((group, detection));   
 }
