@@ -1,5 +1,5 @@
 pub mod latch;
-pub mod update;
+pub mod export;
 
 use ref_caravan::ref_caravan;
 use ref_paths::*;
@@ -30,10 +30,19 @@ impl TBang { //! Constructor
 }
 
 impl TBang { //! Set
-    pub fn set_bang(&mut self, v: bool) {
-        if self.active == v { return; }
+    /// Bang activation, should only be done by latches, that are doing via reading the parent node
+    pub fn activate(&mut self) {
+        if self.active == true { return; }
         self.update_to_root = true;
-        self.active = v;
+        self.active = true;
+    }
+
+    /// Bang decativation, should only be done internally, by behaviour managing systems, that do not read beyond their node.
+    /// They should only execute, when their bang is active.
+    pub fn deactivate(&mut self) {
+        if self.active == false { return; }
+        self.update_to_root = true;
+        self.active = false;
     }
 }
 impl TBang { //! Get

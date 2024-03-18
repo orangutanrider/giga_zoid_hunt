@@ -48,7 +48,11 @@ pub(crate) fn latch_set_bang<F>(
         return;
     }
 
-    local_bang.set_bang(latch_logic(parent_state, parent_bang));
+    if !latch_logic(parent_state, parent_bang) {
+        return;
+    }
+
+    local_bang.activate();
 }
 
 #[derive(Component)]
@@ -79,7 +83,7 @@ fn basic_latch_set_bang(
         return;
     }
 
-    local_bang.set_bang(true);
+    local_bang.activate();
 }
 
 #[derive(Component)]
