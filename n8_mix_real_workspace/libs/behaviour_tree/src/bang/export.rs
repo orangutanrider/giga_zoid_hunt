@@ -1,16 +1,30 @@
-use bevy::prelude::*;
+use bevy::{ prelude::*};
 
 use ref_caravan::ref_caravan;
-
+use ref_paths::*;
 use crate::ToBehaviourRoot;
 
 use super::Bang;
 
-fn ref_bang_export_sys<RefBang: Component, RefBangExport: Component>(
-    node_q: Query<&ToBehaviourRoot, (Changed<ExportPropagator>, With<RefBang>)>,
-    root_q: Query<&mut RefBangExport>
-) {
+pub(crate) trait RefBangExport {
 
+}
+
+pub(crate) fn ref_bang_export_sys<RefBang: Component, RefBangExport: Component>(
+    node_q: Query<&ToBehaviourRoot, (Changed<ExportPropagator>, With<RefBang>)>,
+    mut root_q: Query<&mut RefBangExport>
+) {
+    for to_root in node_q.iter() {
+        ref_bang_export(to_root, &mut root_q)
+    }
+}
+
+pub(crate) fn ref_bang_export<RefBangExport: Component>(
+    to_root: &ToBehaviourRoot,
+    root_q: &mut Query<&mut RefBangExport>
+) {
+    ref_caravan!(to_root::root_q(export););
+    
 }
 
 #[derive(Component)]
