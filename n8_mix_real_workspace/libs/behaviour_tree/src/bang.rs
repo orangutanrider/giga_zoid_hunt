@@ -46,7 +46,7 @@ impl Bang { //! Set
     }
 }
 impl Bang { //! Get
-    pub fn active(&self) -> bool {
+    pub fn is_active(&self) -> bool {
         return self.active
     }
 }
@@ -64,7 +64,7 @@ fn bang_propogation_sys(
     mut child_q: Query<&mut Bang>,
 ) {
     for (terminal, children) in node_q.iter() {
-        if terminal.active() {
+        if terminal.is_active() {
             continue;
         }
 
