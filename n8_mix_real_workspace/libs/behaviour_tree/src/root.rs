@@ -1,25 +1,43 @@
+pub mod export;
+
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub(crate) struct RootBang {
-    // signal to reset and send propogation wave for reference export
-    bang_update: bool, 
-}
-impl Default for RootBang {
+// signal to reset and send propogation wave for reference export
+pub(crate) struct ResetBang(bool);
+impl Default for ResetBang {
     fn default() -> Self {
         return Self::new()
     }
 }
-impl RootBang { //! Constructor
+impl ResetBang {
     pub fn new() -> Self {
-        return Self {
-            bang_update: false,
-        }
+        return Self (false)
+    }
+
+    pub fn is_active(&self) -> bool {
+        return self.0
+    }
+
+    pub fn bang(&mut self) {
+        self.0 = true;
     }
 }
 
-impl RootBang { //! Set
-    pub fn update(&mut self) {
-        self.bang_update = true;
+/// A component, that can be used with the reset_behaviour_sys system.
+/// The system will ping the component, when the reset signal has been recieved.
+pub(crate) trait ResetBehaviour: Component {
+    fn go(&mut self);
+}
+
+pub(crate) fn reset_behaviour_sys<R: ResetBehaviour>(
+    mut root_q: Query<(&ResetBang, &mut R), Changed<ResetBang>>
+) {
+    for (reset, mut export) in root_q.iter_mut() {
+        if !reset.is_active() {
+            continue;
+        }
+
+        export.go();
     }
 }
