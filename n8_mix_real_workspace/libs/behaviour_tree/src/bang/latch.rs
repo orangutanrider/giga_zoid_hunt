@@ -15,15 +15,15 @@ use crate::{state::terminal::TState, ToParentNode};
 #[derive(SystemParam)]
 /// Standard query set for bang latch systems
 pub(crate) struct LatchQueries<'w, 's, Latch: Component> {
-    pub node_q: Query<'w, 's, (&'static mut TBang, &'static LatchPropagator, &'static ToParentNode), (With<Latch>, Changed<LatchPropagator>)>,
-    pub parent_q:  Query<'w, 's, (&'static TState, &'static TBang)>,
+    pub node_q: Query<'w, 's, (&'static mut Bang, &'static LatchPropagator, &'static ToParentNode), (With<Latch>, Changed<LatchPropagator>)>,
+    pub parent_q:  Query<'w, 's, (&'static TState, &'static Bang)>,
 }
 
 /// Prefab system for bang latches that are flagged by a single component
 pub(crate) fn bang_latch_sys<F, Latch: Component>(
     mut latch_qs: LatchQueries<Latch>,
     latch_logic: F
-) where F: Fn(&TState, &TBang) -> bool { 
+) where F: Fn(&TState, &Bang) -> bool { 
     let mut node_q = latch_qs.node_q;
     let parent_q = &latch_qs.parent_q;
 
@@ -34,12 +34,12 @@ pub(crate) fn bang_latch_sys<F, Latch: Component>(
 
 /// Prefab function for bang latch systems
 pub(crate) fn latch_set_bang<F>(
-    mut local_bang: Mut<TBang>,
+    mut local_bang: Mut<Bang>,
     propagator: &LatchPropagator,
     to_parent: &ToParentNode,
-    parent_q: &Query<(&TState, &TBang)>,
+    parent_q: &Query<(&TState, &Bang)>,
     latch_logic: F
-) where F: Fn(&TState, &TBang) -> bool { 
+) where F: Fn(&TState, &Bang) -> bool { 
     ref_caravan!(to_parent::parent_q((parent_state, parent_bang)););
     
     // (Latches should not attempt activation, when the parent node is not active.)
@@ -61,8 +61,8 @@ pub(crate) fn latch_set_bang<F>(
 pub struct BasicLatch;
 
 fn basic_latch_sys(
-    mut node_q: Query<(&mut TBang, &LatchPropagator, &ToParentNode), (With<BasicLatch>, Changed<LatchPropagator>)>,
-    parent_q: Query<&TBang>,
+    mut node_q: Query<(&mut Bang, &LatchPropagator, &ToParentNode), (With<BasicLatch>, Changed<LatchPropagator>)>,
+    parent_q: Query<&Bang>,
 ) {
     for (local_bang, propagator, to_parent) in node_q.iter_mut() {
         basic_latch_set_bang(local_bang, propagator, to_parent, &parent_q)
@@ -70,10 +70,10 @@ fn basic_latch_sys(
 }
 
 fn basic_latch_set_bang(
-    mut local_bang: Mut<TBang>,
+    mut local_bang: Mut<Bang>,
     propagator: &LatchPropagator,
     to_parent: &ToParentNode,
-    parent_q: &Query<&TBang>,
+    parent_q: &Query<&Bang>,
 ) {
     ref_caravan!(to_parent::parent_q(parent_bang););
 
@@ -107,7 +107,7 @@ impl LatchPropagator {
 }
 
 fn latch_propagation_sys(
-    mut node_q: Query<(&TBang, &Children, &mut LatchPropagator), Changed<TBang>>,
+    mut node_q: Query<(&Bang, &Children, &mut LatchPropagator), Changed<Bang>>,
     mut child_q: Query<&mut LatchPropagator>
 ) {
     for (terminal, children, mut propagator) in node_q.iter_mut() {

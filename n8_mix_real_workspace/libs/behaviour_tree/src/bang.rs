@@ -5,22 +5,22 @@ use ref_caravan::ref_caravan;
 use ref_paths::*;
 use bevy::prelude::*;
 
-use crate::{root::RootBang, ToBehaviourRoot};
+use crate::{root::ResetBang, ToBehaviourRoot};
 
 #[derive(Component)]
 /// Bang terminal
 /// Holds the active/inactive state of a node
 /// Sends internal changes to the root
-pub(crate) struct TBang {
+pub(crate) struct Bang {
     active: bool,
     update_to_root: bool, // change to root
 }
-impl Default for TBang {
+impl Default for Bang {
     fn default() -> Self {
         return Self::new()
     }
 }
-impl TBang { //! Constructor
+impl Bang { //! Constructor
     pub fn new() -> Self {
         return Self {
             active: false,
@@ -29,7 +29,7 @@ impl TBang { //! Constructor
     }
 }
 
-impl TBang { //! Set
+impl Bang { //! Set
     /// Bang activation, should only be done by latches, that are doing via reading the parent node
     pub fn activate(&mut self) {
         if self.active == true { return; }
@@ -45,13 +45,13 @@ impl TBang { //! Set
         self.active = false;
     }
 }
-impl TBang { //! Get
+impl Bang { //! Get
     pub fn active(&self) -> bool {
         return self.active
     }
 }
 
-impl TBang { //! Internal
+impl Bang { //! Internal
     fn propogate_bang(&mut self) {
         // deactivates without flagging a change
         self.active = false
@@ -60,8 +60,8 @@ impl TBang { //! Internal
 
 /// Deactivation propogation
 fn bang_propogation_sys(
-    node_q: Query<(&TBang, &Children), Changed<TBang>>,
-    mut child_q: Query<&mut TBang>,
+    node_q: Query<(&Bang, &Children), Changed<Bang>>,
+    mut child_q: Query<&mut Bang>,
 ) {
     for (terminal, children) in node_q.iter() {
         if terminal.active() {
@@ -75,7 +75,7 @@ fn bang_propogation_sys(
 }
 
 fn bang_propogation(
-    child_q: &mut Query<&mut TBang>,
+    child_q: &mut Query<&mut Bang>,
     child: &Entity
 ) {
     let child = *child;
@@ -85,8 +85,8 @@ fn bang_propogation(
 }
 
 fn bang_update_to_root_sys(
-    mut node_q: Query<(&mut TBang, &ToBehaviourRoot), Changed<TBang>>,
-    mut root_q: Query<&mut RootBang>
+    mut node_q: Query<(&mut Bang, &ToBehaviourRoot), Changed<Bang>>,
+    mut root_q: Query<&mut ResetBang>
 ) {
     for (mut terminal, to_root) in node_q.iter_mut() {
         if !terminal.update_to_root {
@@ -100,9 +100,9 @@ fn bang_update_to_root_sys(
 
 fn bang_update_to_root(
     to_root: &ToBehaviourRoot,
-    root_q: &mut Query<&mut RootBang>,
+    root_q: &mut Query<&mut ResetBang>,
 ) {
-    ref_caravan!(to_root::root_q(mut root););
+    ref_caravan!(to_root::root_q(mut reset););
 
-    root.update();
+    reset.bang();
 }
