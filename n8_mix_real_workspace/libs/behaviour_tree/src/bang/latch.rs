@@ -44,7 +44,7 @@ pub(crate) fn latch_set_bang<F>(
     
     // (Latches should not attempt activation, when the parent node is not active.)
     // (Latches only need to update, when their parent node has changed.)
-    if !parent_bang.is_active() || !propagator.propagating() {
+    if !parent_bang.is_active() || !propagator.is_propagating() {
         return;
     }
 
@@ -79,7 +79,7 @@ fn basic_latch_set_bang(
 
     // (Latches should not attempt activation, when the parent node is not active.)
     // (Latches only need to update, when their parent node has changed.)
-    if !parent_bang.is_active() || !propagator.propagating() {
+    if !parent_bang.is_active() || !propagator.is_propagating() {
         return;
     }
 
@@ -101,7 +101,7 @@ impl LatchPropagator {
         return Self(false)
     }
 
-    fn propagating(&self) -> bool {
+    fn is_propagating(&self) -> bool {
         return self.0
     }
 }

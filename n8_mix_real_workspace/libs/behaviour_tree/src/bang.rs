@@ -1,5 +1,5 @@
 pub mod latch;
-pub mod export;
+pub mod reference;
 
 use ref_caravan::ref_caravan;
 use ref_paths::*;
@@ -13,7 +13,7 @@ use crate::{root::ResetBang, ToBehaviourRoot};
 /// Sends internal changes to the root
 pub(crate) struct Bang {
     active: bool,
-    update_to_root: bool, // change to root
+    update_to_root: bool, // Causes a tree reset (re-exporting all bang references)
 }
 impl Default for Bang {
     fn default() -> Self {
