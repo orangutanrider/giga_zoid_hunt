@@ -1,3 +1,9 @@
+//! A bang latch is a classification of component.
+//! It will flag system(s) that can activate the local bang terminal.
+//! The systems are expected to do this via reading the parent node's state, and deciding using their own logic.
+//! They are not expected to switch on their latch, if the parent's bang is inactive.
+//! They only need to run when their parent node changes, which is inferred through the latch propagator component.
+
 use bevy::{
     ecs::system::SystemParam, 
     prelude::*
@@ -5,12 +11,6 @@ use bevy::{
 
 use super::*;
 use crate::{state::terminal::TState, ToParentNode};
-
-// A bang latch is a classification of component.
-// It will flag system(s) that can activate the local bang terminal.
-// The systems are expected to do this via reading the parent node's state, and deciding using their own logic.
-// They are not expected to switch on their latch, if the parent's bang is inactive.
-// They only need to run when their parent node changes, which is inferred through the latch propagator component.
 
 #[derive(SystemParam)]
 /// Standard query set for bang latch systems

@@ -1,3 +1,6 @@
+//! A RefBang is a classification of component, that as of recieving a bang signal, will send that bang value to be exported in the root.
+//! In the root, the export is recieved by a matching component, which waits to recieve an export signal, to export its recieved bang state.
+
 use bevy::prelude::*;
 
 use ref_caravan::ref_caravan;
@@ -5,9 +8,6 @@ use ref_paths::*;
 use crate::{root::export::RefBangExporter, ToBehaviourRoot};
 
 use super::Bang;
-
-// A RefBang is a classification of component, that as of recieving a bang signal, will send that bang value to be exported in the root.
-// In the root, the export is recieved by a matching component, which waits to recieve an export signal, to export its recieved bang state.
 
 /// This system will export a bang value to its exporter, when the propogation wave has reached that ref-bang.
 pub fn ref_bang_to_export_sys<RefBang: Component, Exporter: RefBangExporter>(

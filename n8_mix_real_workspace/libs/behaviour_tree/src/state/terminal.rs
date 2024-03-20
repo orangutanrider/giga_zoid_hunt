@@ -5,8 +5,8 @@ use super::State;
 use super::Key;
 
 #[derive(Component)]
-/// Behaviour State Terminal
-/// Collects and stores key'd behaviour state.
+/// Behaviour state terminal.
+/// Collects and stores key'd behaviour state input.
 pub struct TState {
     /// True if the held state has changed
     changed: bool, 
