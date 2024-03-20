@@ -14,14 +14,14 @@ use crate::{state::terminal::TState, ToParentNode};
 
 #[derive(SystemParam)]
 /// Standard query set for bang latch systems
-pub(crate) struct LatchQueries<'w, 's, Latch: Component> {
+pub struct LatchQueries<'w, 's, Latch: Component> {
     pub node_q: Query<'w, 's, (&'static mut Bang, &'static LatchPropagator, &'static ToParentNode), (With<Latch>, Changed<LatchPropagator>)>,
     pub parent_q:  Query<'w, 's, (&'static TState, &'static Bang)>,
 }
 
 /// Prefab system for bang latches that are flagged by a single component
-pub(crate) fn bang_latch_sys<F, Latch: Component>(
-    mut latch_qs: LatchQueries<Latch>,
+pub fn bang_latch_sys<F, Latch: Component>(
+    latch_qs: LatchQueries<Latch>,
     latch_logic: F
 ) where F: Fn(&TState, &Bang) -> bool { 
     let mut node_q = latch_qs.node_q;
@@ -33,7 +33,7 @@ pub(crate) fn bang_latch_sys<F, Latch: Component>(
 }
 
 /// Prefab function for bang latch systems
-pub(crate) fn latch_set_bang<F>(
+pub fn latch_set_bang<F>(
     mut local_bang: Mut<Bang>,
     propagator: &LatchPropagator,
     to_parent: &ToParentNode,
@@ -60,7 +60,9 @@ pub(crate) fn latch_set_bang<F>(
 /// It does not care about the parent's state.
 pub struct BasicLatch;
 
-fn basic_latch_sys(
+/// On components that have a basic latch, this system will activate the bang of that node.
+/// If the parent's bang is active.
+pub fn basic_latch_sys(
     mut node_q: Query<(&mut Bang, &LatchPropagator, &ToParentNode), (With<BasicLatch>, Changed<LatchPropagator>)>,
     parent_q: Query<&Bang>,
 ) {
@@ -69,7 +71,7 @@ fn basic_latch_sys(
     }
 }
 
-fn basic_latch_set_bang(
+pub fn basic_latch_set_bang(
     mut local_bang: Mut<Bang>,
     propagator: &LatchPropagator,
     to_parent: &ToParentNode,
@@ -90,7 +92,7 @@ fn basic_latch_set_bang(
 /// When a bang terminal is changed to true, the  latch propagators, on the children of that entity, get activated, by a system.
 /// When a latch propagator is activated, the latch systems can check to see if their bang terminal should be activated now.
 /// (And activate it, if it should.) (Restarting the cycle of propagation.)
-pub(crate) struct LatchPropagator(bool);
+pub struct LatchPropagator(bool);
 impl Default for LatchPropagator {
     fn default() -> Self {
         return Self::new()
@@ -106,7 +108,10 @@ impl LatchPropagator {
     }
 }
 
-fn latch_propagation_sys(
+/// Propogates from bang terminals to LatchPropagator(s)
+/// The LatchPropagator signals latches to check if they can activate their bang terminal. 
+/// (If they activate their bang terminal, it'll cause that terminal to propogate to child LatchPropagator(s))
+pub fn latch_propagation_sys(
     mut node_q: Query<(&Bang, &Children, &mut LatchPropagator), Changed<Bang>>,
     mut child_q: Query<&mut LatchPropagator>
 ) {
@@ -122,7 +127,7 @@ fn latch_propagation_sys(
     }
 }
 
-fn latch_propagation(
+pub fn latch_propagation(
     child: &Entity,
     child_q: &mut Query<&mut LatchPropagator>
 ) {

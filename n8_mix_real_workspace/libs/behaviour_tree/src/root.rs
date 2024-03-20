@@ -2,9 +2,23 @@ pub mod export;
 
 use bevy::prelude::*;
 
+use self::export::signal::*;
+
+pub struct RootPlugin;
+impl Plugin for RootPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, (
+            export_when_count_sys,
+            export_for_count_sys,
+            reset_behaviour_sys::<ExportWhenCount>,
+            reset_behaviour_sys::<ExportForCount>,
+        ));
+    }
+}
+
 #[derive(Component)]
 /// Signal to reset and send propogation wave for reference export
-pub(crate) struct ResetBang(bool);
+pub struct ResetBang(bool);
 impl Default for ResetBang {
     fn default() -> Self {
         return Self::new()
@@ -26,13 +40,13 @@ impl ResetBang {
 
 /// A component, that can be used with the reset_behaviour_sys system.
 /// The system will ping the component, when the reset signal has been recieved.
-pub(crate) trait ResetBehaviour: Component {
+pub trait ResetBehaviour: Component {
     fn go(&mut self);
 }
 
 /// Prefab system for reset_behaviour traited components
 /// It will call .go() on a behaviour tree reset/update
-pub(crate) fn reset_behaviour_sys<R: ResetBehaviour>(
+pub fn reset_behaviour_sys<R: ResetBehaviour>(
     mut root_q: Query<(&ResetBang, &mut R), Changed<ResetBang>>
 ) {
     for (reset, mut export) in root_q.iter_mut() {

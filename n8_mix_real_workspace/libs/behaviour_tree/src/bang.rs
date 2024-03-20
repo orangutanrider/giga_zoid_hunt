@@ -6,12 +6,26 @@ use ref_paths::*;
 use bevy::prelude::*;
 
 use crate::{root::ResetBang, ToBehaviourRoot};
+use self::{latch::{basic_latch_sys, latch_propagation_sys}, reference::export_propogation_sys};
+
+pub struct BangPlugin;
+impl Plugin for BangPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, (
+            bang_propogation_sys,
+            bang_update_to_root_sys,
+            latch_propagation_sys,
+            basic_latch_sys,
+            export_propogation_sys,
+        ));
+    }
+}
 
 #[derive(Component)]
 /// Bang terminal
 /// Holds the active/inactive state of a node
 /// Sends internal changes to the root
-pub(crate) struct Bang {
+pub struct Bang {
     active: bool,
     update_to_root: bool, // Causes a tree reset (re-exporting all bang references)
 }
@@ -58,8 +72,8 @@ impl Bang { //! Internal
     }
 }
 
-/// Deactivation propogation
-fn bang_propogation_sys(
+/// Will propogate any deactivated bang, to deactivate its children.
+pub fn bang_propogation_sys(
     node_q: Query<(&Bang, &Children), Changed<Bang>>,
     mut child_q: Query<&mut Bang>,
 ) {
@@ -74,7 +88,7 @@ fn bang_propogation_sys(
     }
 }
 
-fn bang_propogation(
+pub fn bang_propogation(
     child_q: &mut Query<&mut Bang>,
     child: &Entity
 ) {
@@ -84,7 +98,9 @@ fn bang_propogation(
     terminal.propogate_bang();
 }
 
-fn bang_update_to_root_sys(
+/// When a bang is flagged as updated, this system will lower the flag and send the signal to root
+/// (Causing a reset)
+pub fn bang_update_to_root_sys(
     mut node_q: Query<(&mut Bang, &ToBehaviourRoot), Changed<Bang>>,
     mut root_q: Query<&mut ResetBang>
 ) {
@@ -98,7 +114,7 @@ fn bang_update_to_root_sys(
     }
 }
 
-fn bang_update_to_root(
+pub fn bang_update_to_root(
     to_root: &ToBehaviourRoot,
     root_q: &mut Query<&mut ResetBang>,
 ) {

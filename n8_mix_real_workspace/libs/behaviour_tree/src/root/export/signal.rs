@@ -4,7 +4,7 @@ use super::*;
 
 #[derive(Component)]
 /// Signal to export bang values to references
-pub(crate) struct ExportBang(bool);
+pub struct ExportBang(bool);
 impl Default for ExportBang {
     fn default() -> Self {
         return Self::new()
@@ -32,7 +32,7 @@ impl ExportBang {
 /// 
 /// Effect: Upon recieving the reset signal, exports will recieve their value from the tree, and then one export will happen.
 /// Upon change in the tree, after the delay, the tree is exported all at once.
-pub(crate) struct ExportWhenCount{
+pub struct ExportWhenCount{
     active: bool,
     when_count_eq: u32,
     count: u32,
@@ -47,7 +47,7 @@ impl ExportWhenCount {
     }
 
     /// Increments, and returns true, if the count has been reached.
-    fn count(&mut self) -> bool {
+    pub fn count(&mut self) -> bool {
         self.count = self.count + 1;
         if self.count >= self.when_count_eq {
             self.count = 0;
@@ -59,11 +59,14 @@ impl ExportWhenCount {
 }
 impl ResetBehaviour for ExportWhenCount {
     fn go(&mut self) {
+        self.count = 0;
         self.active = true;
     }
 }
 
-fn export_when_count_sys(
+/// When a ExportWhenCount component is set to active, this system will start incrementing its count every frame.
+/// Once the count ends, it'll activate the export bang.
+pub fn export_when_count_sys(
     mut root_q: Query<(&mut ExportBang, &mut ExportWhenCount), Changed<ExportWhenCount>>,
 ) {
     for (mut bang, mut when_c) in root_q.iter_mut() {
@@ -87,7 +90,7 @@ fn export_when_count_sys(
 /// 
 /// Effect: Upon recieving the reset signal, all exports will export inactive, and then the tree will export the bangs, as the propagation wave travels across it.
 /// Upon change in the tree, all are reset, and then exported in steps, causing a flicker of inactivty.
-pub(crate) struct ExportForCount{
+pub struct ExportForCount{
     active: bool,
     for_count_eq: u32,
     count: u32,
@@ -102,7 +105,7 @@ impl ExportForCount {
     }
 
     /// Increments, returning true, until the count has been surpassed.
-    fn count(&mut self) -> bool {
+    pub fn count(&mut self) -> bool {
         self.count = self.count + 1;
         if self.count > self.for_count_eq {
             self.count = 0;
@@ -114,11 +117,14 @@ impl ExportForCount {
 }
 impl ResetBehaviour for ExportForCount {
     fn go(&mut self) {
+        self.count = 0;
         self.active = true;
     }
 }
 
-fn export_for_count_sys(
+/// When a ExportForCount component is set to active, this system will start incrementing its count every frame.
+/// It'll signal the export bang every every time, until the count ends.
+pub fn export_for_count_sys(
     mut root_q: Query<(&mut ExportBang, &mut ExportWhenCount), Changed<ExportWhenCount>>,
 ) {
     for (mut bang, mut for_c) in root_q.iter_mut() {
