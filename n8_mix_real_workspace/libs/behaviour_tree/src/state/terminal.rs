@@ -7,7 +7,7 @@ use super::Key;
 #[derive(Component)]
 /// Behaviour State Terminal
 /// Collects and stores key'd behaviour state.
-pub(crate) struct TState {
+pub struct TState {
     /// True if the held state has changed
     changed: bool, 
     /// Overall held state, collected from all registered state input

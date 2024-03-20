@@ -4,9 +4,22 @@ pub mod output;
 use std::any::TypeId;
 use bevy::prelude::*;
 
+use self::output::state_output_sys;
+
+/// Adds the state_output_sys
+/// Which handles nodes outputting state to their parent node, by utallising StateOutput components.
+pub struct StatePlugin;
+impl Plugin for StatePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, (
+            state_output_sys,
+        ));
+    }
+}
+
 /// A bit mask identifying behaviour state flags.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-pub(crate) struct State(u32);
+pub struct State(u32);
 impl Default for State {
     fn default() -> Self {
         State::ALL
@@ -15,7 +28,7 @@ impl Default for State {
 
 /// Identification types for anything trying to input state into a state terminal.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-pub(crate) enum Key{
+pub enum Key{
     ExternalEntity(Entity),
     LocalComponent(TypeId)
 }

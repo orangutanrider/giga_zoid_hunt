@@ -1,4 +1,4 @@
-use bevy::{ prelude::*};
+use bevy::prelude::*;
 
 use ref_caravan::ref_caravan;
 use ref_paths::*;
@@ -9,9 +9,10 @@ use super::Bang;
 // A RefBang is a classification of component, that as of recieving a bang signal, will send that bang value to be exported in the root.
 // In the root, the export is recieved by a matching component, which waits to recieve an export signal, to export its recieved bang state.
 
-pub(crate) fn ref_bang_to_export_sys<RefBang: Component, Export: RefBangExporter>(
+/// This system will export a bang value to its exporter, when the propogation wave has reached that ref-bang.
+pub fn ref_bang_to_export_sys<RefBang: Component, Exporter: RefBangExporter>(
     node_q: Query<(&ToBehaviourRoot, &ExportPropagator), (Changed<ExportPropagator>, With<RefBang>)>,
-    mut root_q: Query<&mut Export>
+    mut root_q: Query<&mut Exporter>
 ) {
     for (to_root, propagator) in node_q.iter() {
         if !propagator.is_propagating() {
@@ -21,7 +22,8 @@ pub(crate) fn ref_bang_to_export_sys<RefBang: Component, Export: RefBangExporter
     }
 }
 
-pub(crate) fn ref_bang_to_export<Export: RefBangExporter>(
+/// Internal function to the ref_bang_to_export_sys system
+pub fn ref_bang_to_export<Export: RefBangExporter>(
     to_root: &ToBehaviourRoot,
     root_q: &mut Query<&mut Export>
 ) {
@@ -30,7 +32,7 @@ pub(crate) fn ref_bang_to_export<Export: RefBangExporter>(
 }
 
 #[derive(Component)]
-pub(crate) struct ExportPropagator(bool);
+pub struct ExportPropagator(bool);
 impl Default for ExportPropagator {
     fn default() -> Self {
         return Self::new()
@@ -46,11 +48,15 @@ impl ExportPropagator {
     }
 }
 
-fn export_propogation_sys(
-    mut node_q: Query<(&Bang, &mut ExportPropagator, &Children), Changed<ExportPropagator>>,
+/// Handles the propogation of ExportPropagator(s) to child ExportPropagator(s)
+/// When a tree reset happens, it causes the propogation out from the root.
+/// Each propogator propogates to children with activated bangs.
+/// They signal to the bang references, to send their reference to the exporter at the root.
+pub fn export_propogation_sys(
+    mut node_q: Query<(&mut ExportPropagator, &Children), Changed<ExportPropagator>>,
     mut child_q: Query<(&mut ExportPropagator, &Bang)>
 ) {
-    for (bang, mut propagator, children) in node_q.iter_mut() {
+    for (mut propagator, children) in node_q.iter_mut() {
         if !propagator.is_propagating() {
             continue;
         }
@@ -62,7 +68,7 @@ fn export_propogation_sys(
     }
 }
 
-fn export_propogation(
+pub fn export_propogation(
     child: &Entity,
     child_q: &mut Query<(&mut ExportPropagator, &Bang)>
 ) {

@@ -14,7 +14,7 @@ use terminal::TState;
 #[derive(Component)]
 /// Collects local state inputs and outputs it as a single HashMap entry
 /// To the parent node's state terminal, key'd via entity
-pub(crate) struct StateOutput {
+pub struct StateOutput {
     /// True if the held state has changed, on change output to parent
     changed: bool, 
     /// Overall held state, collected from all registered state input
@@ -87,7 +87,9 @@ impl StateOutput { //! Internal
     }
 }
 
-fn state_output_sys (
+/// Will take the inputs of StateOutput components and input them into the parent's state terminal.
+/// Key'd via entity.
+pub fn state_output_sys (
     mut node_q: Query<(&mut StateOutput, &ToParentNode, Entity), Changed<StateOutput>>,
     mut parent_q: Query<&mut TState>,
 ) {
@@ -103,7 +105,7 @@ fn state_output_sys (
     }
 }
 
-fn state_output(
+pub fn state_output(
     output: Mut<StateOutput>, to_parent: &ToParentNode, id: Entity,
     parent_q: &mut Query<&mut TState>,
 ) {
