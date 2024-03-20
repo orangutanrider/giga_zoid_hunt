@@ -4,7 +4,7 @@ use bevy::{ecs::system::SystemParam, prelude::*};
 
 use crate::BehaviourTreeExit;
 
-use super::*;
+use super::{*, reset::*};
 
 pub trait BehaviourTreeIntegrated: Component {
     fn bang(&mut self, v: bool);

@@ -5,7 +5,7 @@ use ref_caravan::ref_caravan;
 use ref_paths::*;
 use bevy::prelude::*;
 
-use crate::{root::ResetBang, ToBehaviourRoot};
+use crate::{root::reset::ResetBang, ToBehaviourRoot};
 use self::{latch::{basic_latch_sys, latch_propagation_sys}, reference::export_propogation_sys};
 
 pub struct BangPlugin;
@@ -44,16 +44,15 @@ impl Bang { //! Constructor
 }
 
 impl Bang { //! Set
-    /// Bang activation, should only be done by latches, that are doing via reading the parent node
-    pub fn activate(&mut self) {
+    /// For nodes utallising state terminals, only the latches should activate the bang.
+    /// Do not activate a bang, that the parent of, is not active.
+    pub fn latch_activate(&mut self) {
         if self.active == true { return; }
         self.update_to_root = true;
         self.active = true;
     }
 
-    /// Bang decativation, should only be done internally, by behaviour managing systems, that do not read beyond their node.
-    /// They should only execute, when their bang is active.
-    pub fn deactivate(&mut self) {
+    pub fn fizzler_deactivate(&mut self) {
         if self.active == false { return; }
         self.update_to_root = true;
         self.active = false;
@@ -66,8 +65,13 @@ impl Bang { //! Get
 }
 
 impl Bang { //! Internal
+    pub(crate) fn from_root(&mut self, bang: bool) {
+        // Sets without flagging a change
+        self.active = bang;
+    }
+
     fn propogate_bang(&mut self) {
-        // deactivates without flagging a change
+        // Deactivates without flagging a change
         self.active = false
     }
 }
