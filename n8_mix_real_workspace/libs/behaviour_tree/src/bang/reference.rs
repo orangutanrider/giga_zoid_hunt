@@ -2,29 +2,31 @@ use bevy::{ prelude::*};
 
 use ref_caravan::ref_caravan;
 use ref_paths::*;
-use crate::ToBehaviourRoot;
+use crate::{root::export::RefBangExporter, ToBehaviourRoot};
 
 use super::Bang;
 
-pub(crate) trait RefBangExport {
+// A RefBang is a classification of component, that as of recieving a bang signal, will send that bang value to be exported in the root.
+// In the root, the export is recieved by a matching component, which waits to recieve an export signal, to export its recieved bang state.
 
-}
-
-pub(crate) fn ref_bang_export_sys<RefBang: Component, RefBangExport: Component>(
-    node_q: Query<&ToBehaviourRoot, (Changed<ExportPropagator>, With<RefBang>)>,
-    mut root_q: Query<&mut RefBangExport>
+pub(crate) fn ref_bang_to_export_sys<RefBang: Component, Export: RefBangExporter>(
+    node_q: Query<(&ToBehaviourRoot, &ExportPropagator), (Changed<ExportPropagator>, With<RefBang>)>,
+    mut root_q: Query<&mut Export>
 ) {
-    for to_root in node_q.iter() {
-        ref_bang_export(to_root, &mut root_q)
+    for (to_root, propagator) in node_q.iter() {
+        if !propagator.is_propagating() {
+            continue;
+        }
+        ref_bang_to_export(to_root, &mut root_q);
     }
 }
 
-pub(crate) fn ref_bang_export<RefBangExport: Component>(
+pub(crate) fn ref_bang_to_export<Export: RefBangExporter>(
     to_root: &ToBehaviourRoot,
-    root_q: &mut Query<&mut RefBangExport>
+    root_q: &mut Query<&mut Export>
 ) {
-    ref_caravan!(to_root::root_q(export););
-    
+    ref_caravan!(to_root::root_q(mut export););
+    export.activate();
 }
 
 #[derive(Component)]
@@ -39,7 +41,7 @@ impl ExportPropagator {
         return Self(false)
     }
 
-    fn propagating(&self) -> bool {
+    fn is_propagating(&self) -> bool {
         return self.0
     }
 }
@@ -49,7 +51,7 @@ fn export_propogation_sys(
     mut child_q: Query<(&mut ExportPropagator, &Bang)>
 ) {
     for (bang, mut propagator, children) in node_q.iter_mut() {
-        if !propagator.propagating() {
+        if !propagator.is_propagating() {
             continue;
         }
         propagator.0 = false;

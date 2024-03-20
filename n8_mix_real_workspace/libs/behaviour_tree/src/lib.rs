@@ -13,3 +13,6 @@ waymark!(ToParentNode);
 pub struct ToBehaviourRoot(Entity);
 waymark!(ToBehaviourRoot);
 
+#[derive(Component)]
+pub struct BehaviourTreeExit(Entity);
+waymark!(BehaviourTreeExit);

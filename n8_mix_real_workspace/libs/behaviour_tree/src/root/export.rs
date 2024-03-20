@@ -1,128 +1,71 @@
-use bevy::prelude::*;
+pub mod signal;
+
+use bevy::{ecs::system::SystemParam, prelude::*};
+
+use crate::BehaviourTreeExit;
+
+use self::signal::ExportBang;
 
 use super::*;
 
-#[derive(Component)]
-/// Signal to export bang values to references
-pub(crate) struct ExportBang(bool);
-impl Default for ExportBang {
-    fn default() -> Self {
-        return Self::new()
-    }
-}
-impl ExportBang { 
-    pub fn new() -> Self {
-        return Self(false)
-    }
-
-    pub fn bang(&mut self) {
-        self.0 = true;
-    }
+pub(crate) trait BehaviourTreeIntegrated: Component {
+    fn bang(&mut self, v: bool);
 }
 
-#[derive(Component)]
-/// Upon recieving the reset signal, it will start counting.
-/// When the count reaches the internal value, it will signal the export bang, to signal to export.
-/// 
-/// Usage: The internal count, is usually set to the longest branch in the tree.
-/// 
-/// Effect: Upon recieving the reset signal, exports will recieve their value from the tree, and then one export will happen.
-/// Upon change in the tree, after the delay, the tree is exported all at once.
-pub(crate) struct ExportWhenCount{
-    active: bool,
-    when_count_eq: u32,
-    count: u32,
+pub(crate) trait RefBangExporter: Component {
+    fn export(&mut self);
+    fn activate(&mut self);
+    fn reset(&mut self);
 }
-impl ExportWhenCount {
-    pub fn new(when_count_eq: u32) -> Self {
-        Self {
-            active: false,
-            when_count_eq,
-            count: 0,
+#[macro_export]
+macro_rules! ref_bang_exporter {($t:ty) => {
+    impl RefBangExporter for $t {
+        fn export(&mut self) {
+            self.export = true;
+        }
+        fn activate(&mut self) {
+            self.bang = true;
+        }
+        fn reset(&mut self) {
+            self.bang = false;
         }
     }
+};}
 
-    /// Increments, and returns true, if the count has been reached.
-    fn count(&mut self) -> bool {
-        self.count = self.count + 1;
-        if self.count >= self.when_count_eq {
-            self.count = 0;
-            self.active = false;
-            return true;
-        }
-        return false;
-    }
-}
-impl ResetBehaviour for ExportWhenCount {
-    fn go(&mut self) {
-        self.active = true;
-    }
-}
-
-fn export_when_count_sys(
-    mut root_q: Query<(&mut ExportBang, &mut ExportWhenCount), Changed<ExportWhenCount>>,
+// This could be replaced by the reset_behaviour_sys, having the RefBangExport require ResetBehaviour trait implementation.
+// I decided to not do that though. It is the same either way, but this way keeps the two traits seperate, which should be more flexible.
+/// Prefab system for resetting an exporter, whenever the behaviour tree updates.
+/// (Inferred through reset bang on the root)
+pub(crate) fn export_reset_sys<Exporter: RefBangExporter>(
+    mut root_q: Query<(&mut Exporter, &ResetBang), Changed<ResetBang>>
 ) {
-    for (mut bang, mut when_c) in root_q.iter_mut() {
-        if !when_c.active {
+    for (mut export, reset) in root_q.iter_mut() {
+        if !reset.is_active() {
             continue;
         }
 
-        if !when_c.count() { // If count hasn't ended
-            continue;
-        }
-        // If count has ended
-        bang.bang();
+        export.reset();
     }
 }
 
-#[derive(Component)]
-/// Upon recieving the reset signal, it will start counting.
-/// For each count (until the count reaches the internal value) it will signal the export bang, to signal to export.
-/// 
-/// Usage: The internal count, is usually set to the longest branch in the tree.
-/// 
-/// Effect: Upon recieving the reset signal, all exports will export inactive, and then the tree will export the bangs, as the propagation wave travels across it.
-/// Upon change in the tree, all are reset, and then exported in steps, causing a flicker of inactivty.
-pub(crate) struct ExportForCount{
-    active: bool,
-    for_count_eq: u32,
-    count: u32,
-}
-impl ExportForCount {
-    pub fn new(for_count_eq: u32) -> Self {
-        Self {
-            active: false,
-            for_count_eq,
-            count: 0,
-        }
-    }
-
-    /// Increments, returning true, until the count has been surpassed.
-    fn count(&mut self) -> bool {
-        self.count = self.count + 1;
-        if self.count > self.for_count_eq {
-            self.count = 0;
-            self.active = false;
-            return false;
-        }
-        return true;
-    }
-}
-impl ResetBehaviour for ExportForCount {
-    fn go(&mut self) {
-        self.active = true;
-    }
-}
-
-fn export_for_count_sys(
-    mut root_q: Query<(&mut ExportBang, &mut ExportWhenCount), Changed<ExportWhenCount>>,
+/// Prefab system for telling the exporter to export, whenever the behaviour tree updates.
+/// (Inferred through export bang on the root)
+/// Does not export the bang value itself, it can only flag an exporter to export, other systems have to handle the exporting themselves.
+pub(crate) fn export_bang_sys<Exporter: RefBangExporter>(
+    mut root_q: Query<(&mut Exporter, &ExportBang), Changed<ExportBang>>
 ) {
-    for (mut bang, mut for_c) in root_q.iter_mut() {
-        if !for_c.active {
+    for (mut export, signal) in root_q.iter_mut() {
+        if !signal.is_active() {
             continue;
         }
 
-        bang.bang();
-        for_c.count();
+        export.export();
     }
 }
+
+#[derive(SystemParam)]
+/// The exporting system is expected to check whatever value in the export component, that acts as the flag to export the bang.
+/// Then lower the flag, once the bang has been exported.
+pub(crate) struct ExportExitQuery<'w, 's, Exporter: Component>(
+    pub Query<'w, 's, (&'static mut Exporter, &'static BehaviourTreeExit), (Changed<Exporter>, Changed<ExportBang>)>
+);
