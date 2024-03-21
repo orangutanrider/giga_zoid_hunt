@@ -3,6 +3,7 @@
 //! The systems are expected to do this via reading the parent node's state, and deciding using their own logic.
 //! They are not expected to switch on their latch, if the parent's bang is inactive.
 //! They only need to run when their parent node changes, which is inferred through the latch propagator component.
+//! The parent bang being active can also be inferred through the fact that the propagator got activated.
 
 use bevy::{
     ecs::system::SystemParam, 
@@ -31,12 +32,12 @@ pub fn bang_latch_sys<F, Latch: Component>(
         if !propagator.is_propagating() {
             continue;
         }
-        latch_set_bang(local_bang, to_parent, parent_q, &latch_logic)
+        latch_to_bang(local_bang, to_parent, parent_q, &latch_logic)
     }
 }
 
 /// Prefab function for bang latch systems
-pub fn latch_set_bang<F>(
+pub fn latch_to_bang<F>(
     mut local_bang: Mut<Bang>,
     to_parent: &ToParentNode,
     parent_q: &Query<&TState>,
