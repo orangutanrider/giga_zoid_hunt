@@ -52,14 +52,14 @@ pub struct Bang {
 }
 impl Default for Bang {
     fn default() -> Self {
-        return Self::new()
+        return Self::new(false)
     }
 }
 impl Bang { //! Constructor
-    pub fn new() -> Self {
+    pub fn new(bang: bool) -> Self {
         return Self {
-            active: false,
-            update_to_root: false,
+            active: bang,
+            update_to_root: bang,
         }
     }
 }
