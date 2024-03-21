@@ -1,5 +1,9 @@
+pub mod actuator;
 pub mod latch;
+pub mod release;
+
 pub mod reference;
+pub mod fizzler;
 
 use ref_caravan::ref_caravan;
 use ref_paths::*;
@@ -53,6 +57,15 @@ impl Bang { //! Constructor
 }
 
 impl Bang { //! Set
+    /// An actuator is a classification of component, that activates or deactivates a Bang based on the parent node's state.
+    /// It does not need to check if the parent Bang is active, if it uses the LatchPropagator.
+    /// (As a latch propagator, will only propagate if the parent is active).
+    pub fn actuator_set(&mut self, bang: bool) {
+        if self.active == bang { return; }
+        self.update_to_root = true;
+        self.active = bang;
+    }
+
     /// A latch is a classification of component, that activates a Bang based on the parent node's state.
     /// It does not need to check if the parent Bang is active, if it uses the LatchPropagator.
     /// (As a latch propagator, will only propagate if the parent is active).

@@ -1,4 +1,4 @@
-//! If you want to define your own plugins, go to tree_systems.
+//! If you want to define your own plugins, go to internal_systems.
 
 use bevy::prelude::*;
 
