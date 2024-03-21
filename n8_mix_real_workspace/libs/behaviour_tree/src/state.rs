@@ -1,5 +1,7 @@
 pub mod terminal;
 pub mod output;
+pub mod custom;
+pub mod auxiliary;
 
 use std::any::TypeId;
 use bevy::prelude::*;
