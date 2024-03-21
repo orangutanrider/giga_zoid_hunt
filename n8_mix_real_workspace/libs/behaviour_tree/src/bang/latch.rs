@@ -16,43 +16,39 @@ use crate::{state::terminal::TState, ToParentNode};
 /// Standard query set for bang latch systems
 pub struct LatchQueries<'w, 's, Latch: Component> {
     pub node_q: Query<'w, 's, (&'static mut Bang, &'static LatchPropagator, &'static ToParentNode), (With<Latch>, Changed<LatchPropagator>)>,
-    pub parent_q:  Query<'w, 's, (&'static TState, &'static Bang)>,
+    pub parent_q:  Query<'w, 's, &'static TState>,
 }
 
 /// Prefab system for bang latches that are flagged by a single component
 pub fn bang_latch_sys<F, Latch: Component>(
     latch_qs: LatchQueries<Latch>,
     latch_logic: F
-) where F: Fn(&TState, &Bang) -> bool { 
+) where F: Fn(&TState) -> bool { 
     let mut node_q = latch_qs.node_q;
     let parent_q = &latch_qs.parent_q;
 
     for (local_bang, propagator, to_parent) in node_q.iter_mut() {
-        latch_set_bang(local_bang, propagator, to_parent, parent_q, &latch_logic)
+        if !propagator.is_propagating() {
+            continue;
+        }
+        latch_set_bang(local_bang, to_parent, parent_q, &latch_logic)
     }
 }
 
 /// Prefab function for bang latch systems
 pub fn latch_set_bang<F>(
     mut local_bang: Mut<Bang>,
-    propagator: &LatchPropagator,
     to_parent: &ToParentNode,
-    parent_q: &Query<(&TState, &Bang)>,
+    parent_q: &Query<&TState>,
     latch_logic: F
-) where F: Fn(&TState, &Bang) -> bool { 
-    ref_caravan!(to_parent::parent_q((parent_state, parent_bang)););
+) where F: Fn(&TState) -> bool { 
+    ref_caravan!(to_parent::parent_q((parent_state)););
     
-    // (Latches should not attempt activation, when the parent node is not active.)
-    // (Latches only need to update, when their parent node has changed.)
-    if !parent_bang.is_active() || !propagator.is_propagating() {
+    if !latch_logic(parent_state) {
         return;
     }
 
-    if !latch_logic(parent_state, parent_bang) {
-        return;
-    }
-
-    local_bang.activate();
+    local_bang.latch_activate();
 }
 
 #[derive(Component)]
@@ -63,29 +59,14 @@ pub struct BasicLatch;
 /// On components that have a basic latch, this system will activate the bang of that node.
 /// If the parent's bang is active.
 pub fn basic_latch_sys(
-    mut node_q: Query<(&mut Bang, &LatchPropagator, &ToParentNode), (With<BasicLatch>, Changed<LatchPropagator>)>,
-    parent_q: Query<&Bang>,
+    mut node_q: Query<(&mut Bang, &LatchPropagator), (With<BasicLatch>, Changed<LatchPropagator>)>,
 ) {
-    for (local_bang, propagator, to_parent) in node_q.iter_mut() {
-        basic_latch_set_bang(local_bang, propagator, to_parent, &parent_q)
+    for (mut local_bang, propagator) in node_q.iter_mut() {
+        if !propagator.is_propagating() {
+            continue;
+        }
+        local_bang.latch_activate();
     }
-}
-
-pub fn basic_latch_set_bang(
-    mut local_bang: Mut<Bang>,
-    propagator: &LatchPropagator,
-    to_parent: &ToParentNode,
-    parent_q: &Query<&Bang>,
-) {
-    ref_caravan!(to_parent::parent_q(parent_bang););
-
-    // (Latches should not attempt activation, when the parent node is not active.)
-    // (Latches only need to update, when their parent node has changed.)
-    if !parent_bang.is_active() || !propagator.is_propagating() {
-        return;
-    }
-
-    local_bang.activate();
 }
 
 #[derive(Component)]
@@ -108,30 +89,60 @@ impl LatchPropagator {
     }
 }
 
-/// Propogates from bang terminals to LatchPropagator(s)
-/// The LatchPropagator signals latches to check if they can activate their bang terminal. 
-/// (If they activate their bang terminal, it'll cause that terminal to propogate to child LatchPropagator(s))
-pub fn latch_propagation_sys(
-    mut node_q: Query<(&Bang, &Children, &mut LatchPropagator), Changed<Bang>>,
+/// Propogates from changed TState(s) to LatchPropagator(s).
+/// It also checks the bang, before propagating (inactive will not propagate).
+/// The LatchPropagator signals latches to check if they can activate their Bang. 
+/// (If they activate their bang, it'll cause that bang to propogate to child LatchPropagator(s)).
+pub fn state_to_latch_propagation_sys(
+    mut node_q: Query<(&TState, &Bang, &Children), Changed<TState>>,
     mut child_q: Query<&mut LatchPropagator>
 ) {
-    for (terminal, children, mut propagator) in node_q.iter_mut() {
-        if !terminal.is_active() {
+    for (state, bang, children) in node_q.iter_mut() {
+        if !bang.is_active() || !state.changed() {
             continue;
         }
 
         for child in children.iter() {
             latch_propagation(child, &mut child_q);
         }
-        propagator.0 = false;
     }
 }
 
-pub fn latch_propagation(
+/// Propogates from activated Bang(s) to LatchPropagator(s)
+/// The LatchPropagator signals latches to check if they can activate their Bang. 
+/// (If they activate their bang, it'll cause that bang to propogate to child LatchPropagator(s))
+pub fn bang_to_latch_propagation_sys(
+    mut node_q: Query<(&Bang, &Children), Changed<Bang>>,
+    mut child_q: Query<&mut LatchPropagator>
+) {
+    for (bang, children) in node_q.iter_mut() {
+        if !bang.is_active() {
+            continue;
+        }
+
+        for child in children.iter() {
+            latch_propagation(child, &mut child_q);
+        }
+    }
+}
+
+fn latch_propagation(
     child: &Entity,
     child_q: &mut Query<&mut LatchPropagator>
 ) {
     let child = *child;
     ref_caravan!(@child::child_q(mut propagator););
     propagator.0 = true;
+}
+
+/// PostUpdate system
+pub fn end_latch_propagation_sys(
+    mut node_q: Query<&mut LatchPropagator, Changed<LatchPropagator>>,
+) {
+    for mut latch in node_q.iter_mut() {
+        if !latch.is_propagating() {
+            continue;
+        }
+        latch.0 = false;
+    }
 }
