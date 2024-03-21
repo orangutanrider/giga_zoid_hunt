@@ -9,7 +9,8 @@ use crate::{root::export::RefBangExporter, ToBehaviourRoot};
 
 use super::Bang;
 
-/// This system will export a bang value to its exporter, when the propogation wave has reached that ref-bang.
+/// Prefab system.
+/// This will export a bang value to its exporter, when the propogation wave has reached that ref-bang.
 pub fn ref_bang_to_export_sys<RefBang: Component, Exporter: RefBangExporter>(
     node_q: Query<(&ToBehaviourRoot, &ExportPropagator), (Changed<ExportPropagator>, With<RefBang>)>,
     mut root_q: Query<&mut Exporter>
@@ -22,7 +23,7 @@ pub fn ref_bang_to_export_sys<RefBang: Component, Exporter: RefBangExporter>(
     }
 }
 
-/// Internal function to the ref_bang_to_export_sys system
+/// Prefab function, used with the ref_bang_to_export_sys.
 pub fn ref_bang_to_export<Export: RefBangExporter>(
     to_root: &ToBehaviourRoot,
     root_q: &mut Query<&mut Export>
@@ -60,6 +61,7 @@ pub fn export_propogation_sys(
         if !propagator.is_propagating() {
             continue;
         }
+        propagator.bypass_change_detection();
         propagator.0 = false;
 
         for child in children.iter() {
@@ -68,7 +70,7 @@ pub fn export_propogation_sys(
     }
 }
 
-pub fn export_propogation(
+fn export_propogation(
     child: &Entity,
     child_q: &mut Query<(&mut ExportPropagator, &Bang)>
 ) {

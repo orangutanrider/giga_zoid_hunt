@@ -89,23 +89,22 @@ impl StateOutput { //! Internal
 
 /// Will take the inputs of StateOutput components and input them into the parent's state terminal.
 /// Key'd via entity.
-pub fn state_output_sys (
+pub fn state_output_sys(
     mut node_q: Query<(&mut StateOutput, &ToParentNode, Entity), Changed<StateOutput>>,
     mut parent_q: Query<&mut TState>,
 ) {
     for (mut output, to_parent, id) in node_q.iter_mut() {
-        // If changed, continue
         if !output.changed {
-            output.changed = true;
             continue;
         }
-        output.changed = true;
+        output.bypass_change_detection();
+        output.changed = false;
         
         state_output(output, to_parent, id, &mut parent_q);
     }
 }
 
-pub fn state_output(
+fn state_output(
     output: Mut<StateOutput>, to_parent: &ToParentNode, id: Entity,
     parent_q: &mut Query<&mut TState>,
 ) {

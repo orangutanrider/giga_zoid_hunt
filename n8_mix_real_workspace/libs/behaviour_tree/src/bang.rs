@@ -6,23 +6,32 @@ use ref_paths::*;
 use bevy::prelude::*;
 
 use crate::{root::reset::ResetBang, ToBehaviourRoot};
-use self::{latch::{basic_latch_sys, latch_propagation_sys}, reference::export_propogation_sys};
+use self::latch::{
+    basic_latch_sys, 
+    bang_to_latch_propagation_sys,
+    state_to_latch_propagation_sys,
+    end_latch_propagation_sys,
+};
+use self::reference::export_propogation_sys;
 
 pub struct BangPlugin;
 impl Plugin for BangPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, (
-            bang_propogation_sys,
+            deactivation_propagation_sys,
             bang_update_to_root_sys,
-            latch_propagation_sys,
-            basic_latch_sys,
             export_propogation_sys,
+
+            basic_latch_sys, 
+            bang_to_latch_propagation_sys,
+            state_to_latch_propagation_sys,
+            end_latch_propagation_sys,
         ));
     }
 }
 
 #[derive(Component)]
-/// Bang terminal
+/// Bang
 /// Holds the active/inactive state of a node
 /// Sends internal changes to the root
 pub struct Bang {
@@ -44,14 +53,23 @@ impl Bang { //! Constructor
 }
 
 impl Bang { //! Set
-    /// For nodes utallising state terminals, only the latches should activate the bang.
-    /// Do not activate a bang, that the parent of, is not active.
+    /// A latch is a classification of component, that activates a Bang based on the parent node's state.
+    /// It does not need to check if the parent Bang is active, if it uses the LatchPropagator.
+    /// (As a latch propagator, will only propagate if the parent is active).
     pub fn latch_activate(&mut self) {
         if self.active == true { return; }
         self.update_to_root = true;
         self.active = true;
     }
 
+    /// A release is a classification of component, that deactivates a Bang based on the parent node's state.
+    pub fn release_deactivate(&mut self) {
+        if self.active == true { return; }
+        self.update_to_root = true;
+        self.active = true;
+    }
+
+    /// A fizzler is a classification of component, that deactivates a Bang based on local node state.
     pub fn fizzler_deactivate(&mut self) {
         if self.active == false { return; }
         self.update_to_root = true;
@@ -70,36 +88,36 @@ impl Bang { //! Internal
         self.active = bang;
     }
 
-    fn propogate_bang(&mut self) {
+    fn propagate_deactivation(&mut self) {
         // Deactivates without flagging a change
         self.active = false
     }
 }
 
-/// Will propogate any deactivated bang, to deactivate its children.
-pub fn bang_propogation_sys(
+/// Will propogate any deactivated Bang, to deactivate its children.
+pub fn deactivation_propagation_sys(
     node_q: Query<(&Bang, &Children), Changed<Bang>>,
     mut child_q: Query<&mut Bang>,
 ) {
-    for (terminal, children) in node_q.iter() {
-        if terminal.is_active() {
+    for (bang, children) in node_q.iter() {
+        if bang.is_active() {
             continue;
         }
 
         for child in children.iter() {
-            bang_propogation(&mut child_q, child);
+            deactivation_propagation(&mut child_q, child);
         }
     }
 }
 
-pub fn bang_propogation(
+fn deactivation_propagation(
     child_q: &mut Query<&mut Bang>,
     child: &Entity
 ) {
     let child = *child;
-    ref_caravan!(@child::child_q(mut terminal););
+    ref_caravan!(@child::child_q(mut bang););
 
-    terminal.propogate_bang();
+    bang.propagate_deactivation();
 }
 
 /// When a bang is flagged as updated, this system will lower the flag and send the signal to root
@@ -108,11 +126,12 @@ pub fn bang_update_to_root_sys(
     mut node_q: Query<(&mut Bang, &ToBehaviourRoot), Changed<Bang>>,
     mut root_q: Query<&mut ResetBang>
 ) {
-    for (mut terminal, to_root) in node_q.iter_mut() {
-        if !terminal.update_to_root {
+    for (mut bang, to_root) in node_q.iter_mut() {
+        if !bang.update_to_root {
             continue;
         }
-        terminal.update_to_root = false;
+        bang.bypass_change_detection();
+        bang.update_to_root = false;
 
         bang_update_to_root(to_root, &mut root_q);
     }

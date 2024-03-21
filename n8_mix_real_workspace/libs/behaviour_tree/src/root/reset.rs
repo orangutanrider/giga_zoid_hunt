@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
-/// Signal to reset and send propogation wave for reference export
+/// Signal to reset exports and send propogation wave for reference export.
 pub struct ResetBang(bool);
 impl Default for ResetBang {
     fn default() -> Self {
@@ -28,8 +28,8 @@ pub trait ResetBehaviour: Component {
     fn go(&mut self);
 }
 
-/// Prefab system for reset_behaviour traited components
-/// It will call .go() on a behaviour tree reset/update
+/// Prefab system for reset_behaviour traited components.
+/// It will call .go() on a behaviour tree reset/update.
 pub fn reset_behaviour_sys<R: ResetBehaviour>(
     mut root_q: Query<(&ResetBang, &mut R), Changed<ResetBang>>
 ) {

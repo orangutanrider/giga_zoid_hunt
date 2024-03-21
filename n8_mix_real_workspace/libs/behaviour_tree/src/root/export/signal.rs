@@ -78,6 +78,7 @@ pub fn export_when_count_sys(
             continue;
         }
         // If count has ended
+        when_c.bypass_change_detection();
         bang.bang();
     }
 }
@@ -125,7 +126,7 @@ impl ResetBehaviour for ExportForCount {
 /// When a ExportForCount component is set to active, this system will start incrementing its count every frame.
 /// It'll signal the export bang every every time, until the count ends.
 pub fn export_for_count_sys(
-    mut root_q: Query<(&mut ExportBang, &mut ExportWhenCount), Changed<ExportWhenCount>>,
+    mut root_q: Query<(&mut ExportBang, &mut ExportForCount), Changed<ExportForCount>>,
 ) {
     for (mut bang, mut for_c) in root_q.iter_mut() {
         if !for_c.active {
@@ -133,6 +134,8 @@ pub fn export_for_count_sys(
         }
 
         bang.bang();
-        for_c.count();
+        if !for_c.count() {
+            for_c.bypass_change_detection();
+        }
     }
 }
