@@ -12,6 +12,8 @@ impl Plugin for RootPlugin {
         app.add_systems(Update, (
             export_when_count_sys,
             export_for_count_sys,
+        ));
+        app.add_systems(PostUpdate, (
             reset_behaviour_sys::<ExportWhenCount>,
             reset_behaviour_sys::<ExportForCount>,
         ));

@@ -49,7 +49,7 @@ impl ExportPropagator {
     }
 }
 
-/// Handles the propogation of ExportPropagator(s) to child ExportPropagator(s)
+/// Handles the propogation of ExportPropagator(s) to child ExportPropagator(s).
 /// When a tree reset happens, it causes the propogation out from the root.
 /// Each propogator propogates to children with activated bangs.
 /// They signal to the bang references, to send their reference to the exporter at the root.
