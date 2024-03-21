@@ -47,6 +47,7 @@ pub fn propagate_root_bang_sys(
         if !root_bang.changed {
             continue;
         }
+        root_bang.bypass_change_detection();
         root_bang.changed = false;
 
         reset_bang.bang();
@@ -57,7 +58,7 @@ pub fn propagate_root_bang_sys(
     }
 }
 
-pub fn propagate_root_bang(
+fn propagate_root_bang(
     root_bang: bool,
     child: &Entity,
     child_q: &mut Query<&mut Bang>,

@@ -89,6 +89,7 @@ impl LatchPropagator {
     }
 }
 
+/// PreUpdate System.
 /// Propogates from changed TState(s) to LatchPropagator(s).
 /// It also checks the bang, before propagating (inactive will not propagate).
 /// The LatchPropagator signals latches to check if they can activate their Bang. 
@@ -108,6 +109,7 @@ pub fn state_to_latch_propagation_sys(
     }
 }
 
+/// PreUpdate System.
 /// Propogates from activated Bang(s) to LatchPropagator(s)
 /// The LatchPropagator signals latches to check if they can activate their Bang. 
 /// (If they activate their bang, it'll cause that bang to propogate to child LatchPropagator(s))
@@ -135,14 +137,13 @@ fn latch_propagation(
     propagator.0 = true;
 }
 
-/// PostUpdate system
+/// PostUpdate system.
+/// Deactivates active propagators.
 pub fn end_latch_propagation_sys(
     mut node_q: Query<&mut LatchPropagator, Changed<LatchPropagator>>,
 ) {
     for mut latch in node_q.iter_mut() {
-        if !latch.is_propagating() {
-            continue;
-        }
+        latch.bypass_change_detection();
         latch.0 = false;
     }
 }
