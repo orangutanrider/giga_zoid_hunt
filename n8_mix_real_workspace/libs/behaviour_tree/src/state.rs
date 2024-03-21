@@ -13,7 +13,7 @@ use self::output::state_output_sys;
 pub struct StatePlugin;
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (
+        app.add_systems(PostUpdate, (
             state_output_sys,
         ));
     }

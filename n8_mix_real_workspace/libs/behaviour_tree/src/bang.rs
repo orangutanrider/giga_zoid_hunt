@@ -9,27 +9,35 @@ use ref_caravan::ref_caravan;
 use ref_paths::*;
 use bevy::prelude::*;
 
-use crate::{root::reset::ResetBang, ToBehaviourRoot};
-use self::latch::{
-    basic_latch_sys, 
-    bang_to_latch_propagation_sys,
-    state_to_latch_propagation_sys,
-    end_latch_propagation_sys,
-};
-use self::reference::export_propogation_sys;
+use crate::root::reset::ResetBang;
+use crate::ToBehaviourRoot;
+use self::latch::*;
+use self::reference::*;
+use self::actuator::*;
+use self::release::*;
 
 pub struct BangPlugin;
 impl Plugin for BangPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (
-            deactivation_propagation_sys,
-            bang_update_to_root_sys,
-            export_propogation_sys,
-
-            basic_latch_sys, 
-            bang_to_latch_propagation_sys,
+        app.add_systems(PreUpdate, (
+            // actuator
+            state_to_actuator_propagation_sys,
+            bang_to_actuator_propagation_sys,
+            // latch
             state_to_latch_propagation_sys,
-            end_latch_propagation_sys,
+            bang_to_latch_propagation_sys,
+        ));
+        app.add_systems(Update,(
+            basic_latch_sys, // latch
+            export_propogation_sys, // reference
+            release_propagation_sys, // release
+            bang_update_to_root_sys, // bang
+        ));
+        app.add_systems(PostUpdate, (
+            end_actuator_propagation_sys, // actuator
+            end_latch_propagation_sys, // latch
+            end_release_propagation_sys, // release
+            deactivation_propagation_sys // bang
         ));
     }
 }
@@ -150,7 +158,7 @@ pub fn bang_update_to_root_sys(
     }
 }
 
-pub fn bang_update_to_root(
+fn bang_update_to_root(
     to_root: &ToBehaviourRoot,
     root_q: &mut Query<&mut ResetBang>,
 ) {
