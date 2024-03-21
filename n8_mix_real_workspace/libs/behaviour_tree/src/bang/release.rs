@@ -15,6 +15,7 @@ pub struct ReleaseQueries<'w, 's, Release: Component> {
     pub parent_q:  Query<'w, 's, &'static TState>,
 }
 
+/// Prefab system for bang releases that are flagged by a single component
 pub fn bang_release_sys<F, Release: Component>(
     release_qs: ReleaseQueries<Release>,
     release_logic: F

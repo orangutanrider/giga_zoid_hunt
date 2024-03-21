@@ -15,6 +15,7 @@ pub struct ActuatorQueries<'w, 's, Actuator: Component> {
     pub parent_q:  Query<'w, 's, &'static TState>,
 }
 
+/// Prefab system for bang actuators that are flagged by a single component
 pub fn bang_actuator_sys<F, Actuator: Component>(
     actuator_qs: ActuatorQueries<Actuator>,
     actuator_logic: F
