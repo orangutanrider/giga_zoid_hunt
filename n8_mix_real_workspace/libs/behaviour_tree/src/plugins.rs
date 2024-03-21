@@ -1,5 +1,7 @@
 //! If you want to define your own plugins, go to internal_systems.
 
+pub mod internal_systems;
+
 use bevy::prelude::*;
 
 pub use crate::state::StatePlugin;
