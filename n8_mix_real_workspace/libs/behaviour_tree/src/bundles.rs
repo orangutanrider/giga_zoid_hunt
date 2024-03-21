@@ -18,28 +18,30 @@ use crate::{
 use self::prelude::{ActuatorPropagator, ReleasePropagator, RootBang};
 
 #[derive(Bundle)]
+#[derive(Default)]
 pub struct NodeBundle {
-    bang: Bang,
-    state: TState, // State terminal
-    state_output: StateOutput,
+    pub bang: Bang,
+    pub state: TState, // State terminal
+    pub state_output: StateOutput,
 
-    latch_propagator: LatchPropagator,
-    release_propagator: ReleasePropagator,
-    actuator_propagator: ActuatorPropagator,
-    export_propagator: ExportPropagator,
+    pub latch_propagator: LatchPropagator,
+    pub release_propagator: ReleasePropagator,
+    pub actuator_propagator: ActuatorPropagator,
+    pub export_propagator: ExportPropagator,
 
     // Waymarks
-    to_parent: ToParentNode,
-    to_root: ToBehaviourRoot,
+    pub to_parent: ToParentNode,
+    pub to_root: ToBehaviourRoot,
 }
 
 #[derive(Bundle)]
+#[derive(Default)]
 /// Additionally, add either one of these: ExportWhenCount, ExportForCount.
 pub struct RootBundle {
-    tree_bang: RootBang,
-    reset_bang: ResetBang,
-    export_bang: ExportBang,
+    pub tree_bang: RootBang,
+    pub reset_bang: ResetBang,
+    pub export_bang: ExportBang,
 
     // Waymarks
-    tree_exit: BehaviourTreeExit
+    pub tree_exit: BehaviourTreeExit
 }
