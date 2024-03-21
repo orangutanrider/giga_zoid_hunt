@@ -5,8 +5,9 @@ pub mod root;
 use bevy::prelude::*;
 use ref_paths::*;
 
-//pub mod prelude;
-//pub mod bundles;
+pub mod prelude;
+pub mod plugins;
+pub mod bundles;
 
 #[derive(Component)]
 pub struct ToParentNode(Entity);

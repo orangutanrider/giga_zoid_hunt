@@ -28,23 +28,40 @@ pub use crate::bang::{
         ref_bang_to_export_sys,
         export_propogation_sys
     },
+    release::{
+        ReleaseQueries,
+        ReleasePropagator,
+        bang_release_sys,
+    },
+    fizzler::{
+        FizzlerQuery,
+        bang_fizzler_sys,
+    },
+    actuator::{
+        ActuatorQueries,
+        ActuatorPropagator,
+        bang_actuator_sys,
+    },
 };
 
 pub use crate::ref_bang_exporter;
 pub use crate::root::{
-    ResetBehaviour,
-    ResetBang,
-    reset_behaviour_sys,
+    reset::{
+        ResetBang,
+        ResetBehaviour,
+        reset_behaviour_sys,
+    },
     export::{
-        ExportExitQuery,
         BehaviourTreeIntegrated,
         RefBangExporter,
-        export_bang_sys,
+        ExportExitQuery,
         export_reset_sys,
+        export_bang_sys,
         signal::{
             ExportBang,
-            ExportForCount,
             ExportWhenCount,
+            ExportForCount,
         }
-    }
+    },
+    bang::RootBang,
 };
