@@ -6,6 +6,9 @@ use bevy::prelude::*;
 use behaviour_tree::prelude::*;
 use behaviour_tree::plugins::internal_systems::*;
 
+#[derive(Resource)]
+struct RunStep1(bool);
+
 #[derive(Component)]
 struct Depth1Node;
 
@@ -56,19 +59,34 @@ fn deactivation_propagation_test() {
     assert_eq!(bang.is_active(), false, "Asserting that node1 was fizzled");
 
     println!("Frame step 1");
+    app.insert_resource(RunStep1(true));
     app.add_systems(PostUpdate, (
         depth1_validator::<false>,
         depth2_validator::<true>,
-    ));
+    ).run_if(run_if_step_1));
     app.update();
 
     println!("Frame step 2");
+    app.add_systems(PreUpdate, set_step_2);
     app.add_systems(PostUpdate, (
         depth1_validator::<false>,
         depth2_validator::<false>,
     ));
     app.update();
 }
+
+fn run_if_step_1(
+    flag: Res<RunStep1>,
+) -> bool {
+    return flag.0
+}
+
+fn set_step_2( 
+    mut flag: ResMut<RunStep1>,
+ ) {
+    flag.0 = false;
+}
+
 
 fn depth1_validator<const BANG: bool>(
     q: Query<&Bang, With<Depth1Node>>
