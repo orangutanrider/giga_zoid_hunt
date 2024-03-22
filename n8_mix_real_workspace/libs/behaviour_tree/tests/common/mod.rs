@@ -27,7 +27,7 @@ pub fn spawn_empty_node(
         to_parent: ToParentNode::new(parent),
         to_root: ToBehaviourRoot::new(root),
         ..default()
-    }).id()
+    }).set_parent(parent).id()
 }
 
 pub fn spawn_x_empty_nodes(
