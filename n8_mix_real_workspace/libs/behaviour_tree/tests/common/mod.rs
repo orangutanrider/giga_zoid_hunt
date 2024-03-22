@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use behaviour_tree::bundles::{
-    NodeBundle,
-    RootBundle,
+    TreeNodeBundle,
+    TreeRootBundle,
 };
 use behaviour_tree::prelude::*;
 
@@ -11,7 +11,7 @@ pub fn spawn_empty_root(
     world: &mut World
 ) -> Entity {
     return 
-    world.spawn(RootBundle{
+    world.spawn(TreeRootBundle{
         tree_bang: RootBang::new(bang),
         ..default()
     }).id()
@@ -22,7 +22,7 @@ pub fn spawn_empty_node(
     root: Entity, parent: Entity, world: &mut World
 ) -> Entity {
     return 
-    world.spawn(NodeBundle{
+    world.spawn(TreeNodeBundle{
         bang: Bang::new(bang),
         to_parent: ToParentNode::new(parent),
         to_root: ToBehaviourRoot::new(root),

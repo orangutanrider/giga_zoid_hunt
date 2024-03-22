@@ -17,7 +17,10 @@ fn deactivation_propagation_test() {
     let mut app = App::new();
 
     // Add systems
-    app.add_systems(Update, deactivation_propagation_sys);
+    app.add_systems(Update, (
+        auto_release_propagation_sys,
+        auto_release_sys.after(auto_release_propagation_sys)
+    ));
 
     // Spawn
     let world = &mut app.world;
@@ -46,20 +49,28 @@ fn deactivation_propagation_test() {
 
     // Deactivate node1
     let Some(mut bang) = world.get_mut::<Bang>(node1) else {
+        println!("Failed to get node1's bang");
         return;
     };
     bang.fizzler_deactivate();
+    assert_eq!(bang.is_active(), false, "Asserting that node1 was fizzled");
 
-    // Depth1 validate
-    app.add_systems(PostUpdate, depth1_validator);
+    println!("Frame step 1");
+    app.add_systems(PostUpdate, (
+        depth1_validator::<false>,
+        depth2_validator::<true>,
+    ));
     app.update();
 
-    // Depth2 validate
-    app.add_systems(PostUpdate, depth2_validator);
+    println!("Frame step 2");
+    app.add_systems(PostUpdate, (
+        depth1_validator::<false>,
+        depth2_validator::<false>,
+    ));
     app.update();
 }
 
-fn depth1_validator(
+fn depth1_validator<const BANG: bool>(
     q: Query<&Bang, With<Depth1Node>>
 ) {
     let mut depth1_bang = false;
@@ -68,10 +79,11 @@ fn depth1_validator(
             depth1_bang = true;
         }
     }
-    assert_eq!(depth1_bang, false);
+    println!("Asserting that depth1 nodes are {}", BANG);
+    assert_eq!(depth1_bang, BANG);
 }
 
-fn depth2_validator(
+fn depth2_validator<const BANG: bool>(
     q: Query<&Bang, With<Depth2Node>>
 ) {
     let mut depth2_bang = false;
@@ -80,5 +92,6 @@ fn depth2_validator(
             depth2_bang = true;
         }
     }
-    assert_eq!(depth2_bang, false);
+    println!("Asserting that depth2 nodes are {}", BANG);
+    assert_eq!(depth2_bang, BANG, "Asserting depth2 nodes are {}", BANG);
 }

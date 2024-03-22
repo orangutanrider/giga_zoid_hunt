@@ -17,6 +17,7 @@ pub use crate::state::{
 
 pub use crate::bang::{
     Bang,
+    AutoRelease,
     latch::{
         LatchQueries,
         LatchPropagator,
