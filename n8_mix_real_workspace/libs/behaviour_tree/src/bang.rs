@@ -37,7 +37,8 @@ impl Plugin for BangPlugin {
             end_actuator_propagation_sys, // actuator
             end_latch_propagation_sys, // latch
             end_release_propagation_sys, // release
-            deactivation_propagation_sys // bang
+            auto_release_propagation_sys, // bang
+            auto_release_sys.after(auto_release_propagation_sys), // bang
         ));
     }
 }
@@ -104,21 +105,60 @@ impl Bang { //! Get
 }
 
 impl Bang { //! Internal
+    /// Used by RootBang
     pub(crate) fn from_root(&mut self, bang: bool) {
         // Sets without flagging a change
         self.active = bang;
     }
 
-    fn propagate_deactivation(&mut self) {
+    /// Used by AutoRelease
+    fn auto_deactivation(&mut self) {
         // Deactivates without flagging a change
         self.active = false
     }
 }
 
-/// Will propogate any deactivated Bang, to deactivate its children.
-pub fn deactivation_propagation_sys(
+#[derive(Component)]
+/// Will cause a node's bang to automatically dis-engage when the parent bang becomes inactive.
+pub struct AutoRelease(bool); 
+impl Default for AutoRelease {
+    fn default() -> Self {
+        return Self(false)
+    }
+}
+impl AutoRelease {
+    pub fn new() -> Self {
+        return Self(false)
+    }
+
+    pub fn spark(&mut self) {
+        self.0 = true;
+    }
+
+    pub fn is_active(&self) -> bool {
+        return self.0
+    }
+}
+
+/// Get 'sparked' AutoRelease(s), reset them, and deactivate their local Bang.
+pub fn auto_release_sys(
+    mut node_q: Query<(&mut AutoRelease, &mut Bang), Changed<AutoRelease>>,
+) {
+    for (mut auto_release, mut bang) in node_q.iter_mut() {
+        if !auto_release.is_active() {
+            continue;
+        }
+        auto_release.bypass_change_detection();
+        bang.auto_deactivation();
+        auto_release.0 = false;
+    }
+}
+
+/// Propagate from Bang(s) that have been deactivated, to AutoRelease(s).
+/// It flags the AutoRelease(s), so that they will deactivate their local bang, restarting the cycle of propagation.
+pub fn auto_release_propagation_sys(
     node_q: Query<(&Bang, &Children), Changed<Bang>>,
-    mut child_q: Query<&mut Bang>,
+    mut child_q: Query<&mut AutoRelease>,
 ) {
     for (bang, children) in node_q.iter() {
         if bang.is_active() {
@@ -126,19 +166,18 @@ pub fn deactivation_propagation_sys(
         }
 
         for child in children.iter() {
-            deactivation_propagation(&mut child_q, child);
+            auto_release_propagation(&mut child_q, child);
         }
     }
 }
 
-fn deactivation_propagation(
-    child_q: &mut Query<&mut Bang>,
+fn auto_release_propagation(
+    child_q: &mut Query<&mut AutoRelease>,
     child: &Entity
 ) {
     let child = *child;
-    ref_caravan!(@child::child_q(mut bang););
-
-    bang.propagate_deactivation();
+    ref_caravan!(@child::child_q(mut auto_release););
+    auto_release.spark();
 }
 
 /// When a bang is flagged as updated, this system will lower the flag and send the signal to root

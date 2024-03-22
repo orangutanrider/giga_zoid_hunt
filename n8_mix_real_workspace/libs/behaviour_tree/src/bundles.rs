@@ -8,6 +8,7 @@ use crate::{
     state::terminal::TState,
     bang::{
         Bang,
+        AutoRelease,
         latch::LatchPropagator,
         reference::ExportPropagator,
     },
@@ -19,10 +20,11 @@ use self::prelude::{ActuatorPropagator, ReleasePropagator, RootBang};
 
 #[derive(Bundle)]
 #[derive(Default)]
-pub struct NodeBundle {
+pub struct TreeNodeBundle {
     pub bang: Bang,
     pub state: TState, // State terminal
     pub state_output: StateOutput,
+    pub auto_release: AutoRelease,
 
     pub latch_propagator: LatchPropagator,
     pub release_propagator: ReleasePropagator,
@@ -37,7 +39,7 @@ pub struct NodeBundle {
 #[derive(Bundle)]
 #[derive(Default)]
 /// Additionally, add either one of these: ExportWhenCount, ExportForCount.
-pub struct RootBundle {
+pub struct TreeRootBundle {
     pub tree_bang: RootBang,
     pub reset_bang: ResetBang,
     pub export_bang: ExportBang,

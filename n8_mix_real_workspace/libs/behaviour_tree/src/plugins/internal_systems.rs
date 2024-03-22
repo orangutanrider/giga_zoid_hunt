@@ -5,7 +5,8 @@ pub use crate::state::output::state_output_sys;
 
 pub use crate::bang::{
     bang_update_to_root_sys,
-    deactivation_propagation_sys,
+    auto_release_sys,
+    auto_release_propagation_sys,
     latch::{
         basic_latch_sys,
         state_to_latch_propagation_sys,
