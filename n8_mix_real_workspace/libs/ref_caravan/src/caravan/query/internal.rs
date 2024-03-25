@@ -2,6 +2,36 @@ use proc_macro::*;
 
 use super::*;
 
+pub fn detect_mut(mut iter: TokenIter) -> bool {
+    let token = iter.next();
+    let Some(token) = token else {
+        return false;
+    };
+
+    match token {
+        TokenTree::Group(group) => {
+            let group = group.stream().into_iter();
+            if detect_mut(group) {
+                return true
+            }
+            return detect_mut(iter);
+        },
+        TokenTree::Ident(ident) => {
+            let ident = ident.to_string();
+            if ident == "mut" {
+                return true
+            }
+            return detect_mut(iter);
+        },
+        TokenTree::Punct(_) => {
+            return detect_mut(iter);
+        },
+        TokenTree::Literal(_) => {
+            return detect_mut(iter);
+        },
+    }
+}
+
 pub fn collect_query(caravan: Caravan, current: TokenTree) -> Result<(Caravan, TokenStream, Group), CaravanError> {
     let mut vec = Vec::new();
     vec.push(current);

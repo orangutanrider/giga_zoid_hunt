@@ -1,77 +1,22 @@
+pub mod terminal;
+pub mod output;
+pub mod custom;
+pub mod auxiliary;
+
 use std::any::TypeId;
-
 use bevy::prelude::*;
-use bevy::utils::HashMap;
 
-#[derive(Component)]
-/// Behaviour State Terminal
-/// Collects and stores key'd behaviour state.
-pub struct TState {
-    changed: bool, 
+use self::output::state_output_sys;
 
-    held: State,
-    registered: HashMap<Key, State>,
-}
-impl TState {
-    pub fn new() -> Self {
-        return Self {
-            changed: false,
-
-            held: State::NONE,
-            registered: HashMap::new(),
-        }
+/// Adds the state_output_sys
+/// Which handles nodes outputting state to their parent node, by utallising StateOutput components.
+pub struct StatePlugin;
+impl Plugin for StatePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(PostUpdate, (
+            state_output_sys,
+        ));
     }
-}
-impl Default for TState {
-    fn default() -> Self {
-        return Self::new()
-    }
-}
-impl TState { //! Set
-    /// Adds a new entry or updates an existing entry
-    pub fn insert(&mut self, key: Key, state: State) {
-        self.registered.insert(key, state);
-    }
-
-    /// Explicitlly remove an entry
-    pub fn remove(&mut self, key: &Key) {
-        self.registered.remove(key);
-    }
-}
-impl TState { //! Get
-    pub fn state(&self) -> State {
-        return self.held
-    }
-
-    pub fn changed(&self) -> bool {
-        return self.changed
-    }
-}
-impl TState { //! Internal
-    fn re_calculate(&mut self) {
-        // Collect new held
-        let mut new_held = State::NONE;
-        for v in self.registered.iter() {
-            new_held = new_held.union(*v.1);
-        }
-        
-        // Check if it is different
-        if new_held == self.held {
-            self.changed = false;
-            return;
-        }
-
-        // Change held if it was different
-        self.held = new_held;
-        self.changed = true;
-    }
-}
-
-/// Identification types for anything trying to input state into a state terminal.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-pub enum Key{
-    ExternalEntity(Entity),
-    LocalComponent(TypeId)
 }
 
 /// A bit mask identifying behaviour state flags.
@@ -81,6 +26,13 @@ impl Default for State {
     fn default() -> Self {
         State::ALL
     }
+}
+
+/// Identification types for anything trying to input state into a state terminal.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub enum Key{
+    ExternalEntity(Entity),
+    LocalComponent(TypeId)
 }
 
 bitflags::bitflags! {
@@ -120,14 +72,5 @@ bitflags::bitflags! {
 
         const ALL = u32::MAX;
         const NONE = 0;
-    }
-}
-
-/// TState (Behaviour State Terminal) System
-fn terminal_updates( 
-    mut node_q: Query<&mut TState, Changed<TState>>,
-) {
-    for mut terminal in node_q.iter_mut() {
-        terminal.re_calculate();
     }
 }
