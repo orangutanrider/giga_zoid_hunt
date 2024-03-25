@@ -3014,6 +3014,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rts_unit_control"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_caravan",
+ "ref_paths",
+]
+
+[[package]]
 name = "rustc-hash"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
