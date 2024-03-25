@@ -2,11 +2,26 @@ pub mod pure_move;
 pub mod attack_move;
 pub mod attack_target;
 
-use std::any::TypeId;
-
 use bevy::prelude::*;
 
-use super::{ActiveOrderTerminal, ClearOrdersBang};
+use self::{
+    attack_move::{AttackMoveOrder, TAttackMoveOrders}, 
+    attack_target::{AttackTargetOrder, TAttackTargetOrders}, 
+    pure_move::{PureMoveOrder, TPureMoveOrders}
+};
+
+use super::*;
+
+pub struct BuiltInOrdersPlugin;
+impl Plugin for BuiltInOrdersPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, (
+            t_unit_order_clear_sys::<TPureMoveOrders, PureMoveOrder>,
+            t_unit_order_clear_sys::<TAttackMoveOrders, AttackMoveOrder>,
+            t_unit_order_clear_sys::<TAttackTargetOrders, AttackTargetOrder>,
+        ));
+    }
+}
 
 /// Unit order terminal blueprint.
 /// Typically, an order terminal is a wrapper/tuple for a vec of the order type.
@@ -68,44 +83,35 @@ pub fn t_unit_order_clear_sys<Terminal, OrderType>(
     }
 }
 
-pub fn order_processing_sys<Processor, Logic, Terminal, OrderType>(
-    mut control_q: Query<(&mut Terminal, &mut ActiveOrderTerminal), With<Processor>>,
-    mut logic: Logic,
-) where 
-    Processor: Component,
-    Logic: FnMut(&OrderType) -> bool,
-    Terminal: Component + TUnitOrder<OrderType>
-{
-    for (unit_orders, types) in control_q.iter_mut() {
-        // Validate that the current terminal is active.
-        let Some(current_type) = types.current() else {
-            continue;
-        };
-        if current_type != TypeId::of::<Terminal>() {
-            continue;
-        }
-
-        processs_order::<Processor, Logic, Terminal, OrderType>(unit_orders, types, &mut logic);
+#[macro_export]
+macro_rules! validate_active_terminal_c { ($data_terminal:ty, $type_terminal:ident) => {
+    let Some(current_type) = $type_terminal.current() else {
+        continue;
+    };
+    if current_type != TypeId::of::<$data_terminal>() {
+        continue;
     }
-}
+};}
 
-pub fn processs_order<Processor, Logic, Terminal, OrderType>(
-    mut unit_orders: Mut<'_, Terminal>,
-    mut types: Mut<'_, ActiveOrderTerminal>,
-    logic: &mut Logic,
-) where 
-    Processor: Component,
-    Logic: FnMut(&OrderType) -> bool,
-    Terminal: Component + TUnitOrder<OrderType>
-{
-    let Some(current) = unit_orders.current() else {
-        types.clear_current();
+#[macro_export]
+macro_rules! validate_active_terminal_r { ($data_terminal:ty, $type_terminal:ident) => {
+    let Some(current_type) = $type_terminal.current() else {
         return;
     };
-
-    if !logic(&current) {
+    if current_type != TypeId::of::<$data_terminal>() {
         return;
     }
+};}
 
-    unit_orders.clear_current();
+
+pub fn process_signal_to_terminal_sys<Processor, Terminal, OrderType>(
+    mut control_q: Query<(&mut Terminal, &mut ActiveOrderTerminal), (With<Processor>, Changed<ProcessCurrentOrderBang>)>,
+) where 
+    Processor: Component,
+    Terminal: Component + TUnitOrder<OrderType>
+{
+    for (mut unit_orders, types) in control_q.iter_mut() {
+        validate_active_terminal_c!(Terminal, types);
+        unit_orders.clear_current();
+    }
 }

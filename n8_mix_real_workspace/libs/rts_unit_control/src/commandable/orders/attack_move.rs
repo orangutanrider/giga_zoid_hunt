@@ -1,3 +1,5 @@
+pub mod processing;
+
 use crate::unit_order_terminal;
 use super::*;
 
