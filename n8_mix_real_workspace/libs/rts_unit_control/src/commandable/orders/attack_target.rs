@@ -1,21 +1,18 @@
+pub mod processing;
+
+use std::collections::HashSet;
+
 use crate::unit_order_terminal;
 use super::*;
 
 #[derive(Clone, Copy)]
 pub struct AttackTargetOrder {
-    pub target: Option<Entity>,
-}
-impl Default for AttackTargetOrder {
-    fn default() -> Self {
-        return Self {
-            target: None, 
-        }
-    }
+    pub target: Entity,
 }
 impl AttackTargetOrder {
     pub fn new(target: Entity) -> Self {
         return Self {
-            target: Some(target), 
+            target, 
         }
     }
 }
