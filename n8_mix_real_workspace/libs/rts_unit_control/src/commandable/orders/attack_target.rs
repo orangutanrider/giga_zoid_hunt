@@ -18,6 +18,12 @@ impl AttackTargetOrder {
 }
 
 #[derive(Component)]
-/// Pure movement order terminal
+/// Attack target order terminal
 pub struct TAttackTargetOrders(Vec<AttackTargetOrder>);
+impl TAttackTargetOrders {
+    pub fn move_current(&mut self) -> Option<AttackTargetOrder> {
+        return self.0.pop()        
+    }
+}
+
 unit_order_terminal!(TAttackTargetOrders, AttackTargetOrder);
