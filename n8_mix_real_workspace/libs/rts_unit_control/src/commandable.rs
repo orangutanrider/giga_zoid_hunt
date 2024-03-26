@@ -7,10 +7,7 @@ use bevy::prelude::*;
 pub struct CommandablePlugin;
 impl Plugin for CommandablePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PreUpdate, (
-            clear_bang_reset_sys,
-            process_bang_reset_sys
-        ));
+        app.add_systems(PreUpdate, clear_bang_reset_sys);
         app.add_systems(Update, active_terminal_clear_sys);
     }
 }
@@ -97,35 +94,6 @@ impl ClearOrdersBang {
 /// Pre-Update
 fn clear_bang_reset_sys(
     mut control_q: Query<&mut ClearOrdersBang, Changed<ClearOrdersBang>>
-) {
-    for mut bang in control_q.iter_mut() {
-        bang.bypass_change_detection();
-        bang.0 = false;
-    }
-}
-
-#[derive(Component)]
-/// Send the signal the entity's order terminals, to process their current order.
-/// If it is that their order is current, (inferred through ActiveOrderTerminal).
-pub struct ProcessCurrentOrderBang(bool);
-impl Default for ProcessCurrentOrderBang {
-    fn default() -> Self {
-        return Self(false)
-    }
-}
-impl ProcessCurrentOrderBang {
-    pub fn new() -> Self{
-        return Self(false)
-    }
-
-    pub fn bang(&mut self) {
-        self.0 = true;
-    }
-}
-
-/// Pre-Update
-fn process_bang_reset_sys(
-    mut control_q: Query<&mut ProcessCurrentOrderBang, Changed<ProcessCurrentOrderBang>>
 ) {
     for mut bang in control_q.iter_mut() {
         bang.bypass_change_detection();

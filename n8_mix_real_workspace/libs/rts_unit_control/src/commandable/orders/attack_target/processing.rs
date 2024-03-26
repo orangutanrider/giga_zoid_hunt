@@ -7,6 +7,17 @@ use super::*;
 // TODO, respond to death, to wipe self from the targeters.
 // Plan for this is a death-terminal bang thing, and the signal will be sent here (control).
 
+// Also current target should be seperate from attack target stuff, cause it can be used by other things, like attack move.
+// Yeah, if upgraded, that's a ting.
+
+pub fn current_target_clear_sys(
+    mut control_q: Query<&mut CurrentTarget, Changed<ClearOrdersBang>>,
+) {
+    for mut target_holder in control_q.iter_mut() {
+        target_holder.0 = None;
+    }
+}
+
 pub fn abort_current_target_sys(
     mut control_q: Query<(Entity, &mut CurrentTarget), Changed<AbortCurrentTargetBang>>,
     mut target_q: Query<&mut TargetedBy>,
@@ -46,7 +57,7 @@ pub fn current_target_validation_sys(
 } 
 
 pub fn target_to_current_sys (
-    mut control_q: Query<(Entity, &mut TAttackTargetOrders, &mut CurrentTarget, &mut ActiveOrderTerminal), Or<(Changed<ActiveOrderTerminal>, Changed<CurrentTarget>)>>,
+    mut control_q: Query<(Entity, &mut TAttackTargetOrders, &mut CurrentTarget, &mut ActiveOrderTerminal), (With<UntilTargetGoneProcessor>, Or<(Changed<ActiveOrderTerminal>, Changed<CurrentTarget>)>)>,
     target_q: Query<&TargetedBy>,
 ) {
     for (control, mut orders, mut current_target, mut active_types) in control_q.iter_mut() {
@@ -88,6 +99,14 @@ pub fn abort_current_target_bang_sys(
     for mut bang in q.iter_mut() {
         bang.bypass_change_detection();
         bang.0 = false;
+    }
+}
+
+#[derive(Component)]
+pub struct UntilTargetGoneProcessor;
+impl Default for UntilTargetGoneProcessor {
+    fn default() -> Self {
+        Self {  }
     }
 }
 

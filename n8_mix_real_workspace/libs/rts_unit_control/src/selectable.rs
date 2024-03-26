@@ -9,6 +9,11 @@ use bevy::{
 #[derive(Component)]
 /// Static flag, dennoting if a unit can be selected.
 pub struct Selectable;
+impl Default for Selectable {
+    fn default() -> Self {
+        Self {  }
+    }
+}
 
 #[derive(Component)]
 /// Dynamic flag that gets added and removed from units.
