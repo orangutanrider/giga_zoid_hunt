@@ -3,10 +3,6 @@ use std::marker::PhantomData;
 use bevy::prelude::*;
 use bevy::ecs::system::SystemParam;
 
-use self::commandable::orders::TUnitOrder;
-use self::commandable::Commandable;
-use self::selectable::Selected;
-
 use super::*;
 
 #[derive(SystemParam)]
@@ -47,7 +43,7 @@ where
         }
     }
 
-    pub fn command_stop(
+    pub fn local_clear(
         &mut self,
     ) {
         for mut commandable in self.control_q.iter_mut() {

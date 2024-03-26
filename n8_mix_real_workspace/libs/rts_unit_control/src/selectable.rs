@@ -19,21 +19,21 @@ impl Default for Selectable {
 /// Dynamic flag that gets added and removed from units.
 pub struct Selected;
 
-#[derive(SystemParam)]
-pub struct SelectCommands<'w, 's>(Commands<'w, 's>);
-impl<'w, 's> SelectCommands<'w, 's> {
-    pub fn select(
-        &mut self, 
-        control: Entity
-    ) {
-        let mut commands = self.0.entity(control);
-        commands.insert(Selected);
-    }
-}
-
 /// commands.insert(Selected);
 pub fn select(
     mut commands: EntityCommands,
 ) {
     commands.insert(Selected);
+}
+
+/// for selected in q.iter() {
+///     commands.entity(selected).remove::<Selected>();
+/// }
+pub fn un_select_all(
+    commands: &mut Commands,
+    q: &Query<Entity, With<Selected>>
+) {
+    for selected in q.iter() {
+        commands.entity(selected).remove::<Selected>();
+    }
 }

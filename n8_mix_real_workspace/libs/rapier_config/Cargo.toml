@@ -1,0 +1,10 @@
+[package]
+name = "rapier_config"
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+bevy_rapier2d.workspace = true

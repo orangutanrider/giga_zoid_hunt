@@ -1,3 +1,5 @@
+pub mod prelude;
+
 pub mod commandable;
 pub mod selectable;
 pub mod commander;
