@@ -9,6 +9,7 @@
 # RELEVANT COMMANDS
 # rustup default nightly
 # rustup update
+# cargo clean
 # cargo install -f cargo-binutils
 # rustup component add llvm-tools-preview
 

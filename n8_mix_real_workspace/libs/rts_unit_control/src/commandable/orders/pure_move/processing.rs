@@ -16,10 +16,10 @@ impl PMProximityProcessor {
     }
 }
 
-pub fn am_proximity_processing_sys(
-    mut control_q: Query<(&mut ActiveOrderTerminal, &mut TPureMoveOrders, &PMProximityProcessor, &GlobalTransform, &mut ProcessCurrentOrderBang), Changed<GlobalTransform>>
+pub fn pm_proximity_processing_sys(
+    mut control_q: Query<(&mut ActiveOrderTerminal, &mut TPureMoveOrders, &PMProximityProcessor, &GlobalTransform), Changed<GlobalTransform>>
 ) {
-    for (mut order_types, unit_orders, processor, transform, mut signal) in control_q.iter_mut() {
+    for (mut order_types, mut unit_orders, processor, transform) in control_q.iter_mut() {
         validate_active_terminal_c!(TPureMoveOrders, order_types);
 
         let Some(current) = unit_orders.current() else {
@@ -32,6 +32,6 @@ pub fn am_proximity_processing_sys(
             continue;
         }
 
-        signal.bang();
+        unit_orders.clear_current();
     }
 }

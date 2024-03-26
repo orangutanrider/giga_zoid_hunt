@@ -5,9 +5,9 @@ pub mod attack_target;
 use bevy::prelude::*;
 
 use self::{
-    attack_move::{AttackMoveOrder, TAttackMoveOrders}, 
-    attack_target::{AttackTargetOrder, TAttackTargetOrders}, 
-    pure_move::{PureMoveOrder, TPureMoveOrders}
+    attack_move::{*, processing::am_proximity_processing_sys},
+    attack_target::*,
+    pure_move::{*, processing::pm_proximity_processing_sys}
 };
 
 use super::*;
@@ -15,10 +15,12 @@ use super::*;
 pub struct BuiltInOrdersPlugin;
 impl Plugin for BuiltInOrdersPlugin {
     fn build(&self, app: &mut App) {
+        app.add_plugins(AttackTargetPlugin);
         app.add_systems(Update, (
             t_unit_order_clear_sys::<TPureMoveOrders, PureMoveOrder>,
+            pm_proximity_processing_sys,
             t_unit_order_clear_sys::<TAttackMoveOrders, AttackMoveOrder>,
-            t_unit_order_clear_sys::<TAttackTargetOrders, AttackTargetOrder>,
+            am_proximity_processing_sys,
         ));
     }
 }
@@ -37,6 +39,12 @@ pub trait TUnitOrder<OrderType> {
 
 #[macro_export]
 macro_rules! unit_order_terminal { ($terminal:ty, $order:ty) => {
+    impl Default for $terminal {
+        fn default() -> Self {
+            Self(Vec::new())
+        }
+    }
+
     impl $terminal {
         pub fn new() -> Self {
             return Self(Vec::new())
@@ -102,16 +110,3 @@ macro_rules! validate_active_terminal_r { ($data_terminal:ty, $type_terminal:ide
         return;
     }
 };}
-
-
-pub fn process_signal_to_terminal_sys<Processor, Terminal, OrderType>(
-    mut control_q: Query<(&mut Terminal, &mut ActiveOrderTerminal), (With<Processor>, Changed<ProcessCurrentOrderBang>)>,
-) where 
-    Processor: Component,
-    Terminal: Component + TUnitOrder<OrderType>
-{
-    for (mut unit_orders, types) in control_q.iter_mut() {
-        validate_active_terminal_c!(Terminal, types);
-        unit_orders.clear_current();
-    }
-}
