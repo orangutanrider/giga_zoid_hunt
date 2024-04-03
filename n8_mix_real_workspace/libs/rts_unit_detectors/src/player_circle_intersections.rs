@@ -6,18 +6,18 @@ use rapier_config::*;
 use crate::*;
 
 #[derive(Component)]
-pub struct CircleIntersectionsOfEnemy{
+pub struct CircleIntersectionsOfPlayer{
     radius: f32,
 }
-impl CircleIntersectionsOfEnemy {
+impl CircleIntersectionsOfPlayer {
     pub fn new(radius: f32) -> Self {
         return Self {
             radius,
         }
     }
 }
-impl ImmutableDetector for CircleIntersectionsOfEnemy {
-    const FILTER: QueryFilter<'static> = P_DETECTABLE_FILTER;
+impl ImmutableDetector for CircleIntersectionsOfPlayer {
+    const FILTER: QueryFilter<'static> = E_DETECTABLE_FILTER;
     
     fn shape(&self) -> Collider {
         return Collider::ball(self.radius)
@@ -27,7 +27,7 @@ impl ImmutableDetector for CircleIntersectionsOfEnemy {
 /// Detection to local aggregate terminal.
 pub fn enemy_circle_intersections_sys(
     rapier: &RapierContext,
-    mut q: Query<(&mut TIntersectionsAggregate, &GlobalTransform, &CircleIntersectionsOfEnemy)>
+    mut q: Query<(&mut TIntersectionsAggregate, &GlobalTransform, &CircleIntersectionsOfPlayer)>
 ) {
     for (mut terminal, transform, params) in q.iter_mut() {
         terminal.0.clear();
@@ -39,6 +39,6 @@ pub fn enemy_circle_intersections_sys(
             return true
         };
 
-        rapier.intersections_with_shape(shape_pos, 0.0, shape, CircleIntersectionsOfEnemy::FILTER, callback)
+        rapier.intersections_with_shape(shape_pos, 0.0, shape, CircleIntersectionsOfPlayer::FILTER, callback)
     }
 }
