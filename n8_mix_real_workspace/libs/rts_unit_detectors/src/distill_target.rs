@@ -56,8 +56,8 @@ pub struct TargetAsCurrentInControl;
 pub struct TargetFromControlViaRoot;
 
 pub fn target_from_control_via_root_sys(
-    mut detector_q: Query<(&mut TDetectionTarget, Entity), (With<TargetAsCurrentInControl>, With<TargetFromControlViaRoot>)>,
-    root_q: Query<&ToRoot>,
+    mut detector_q: Query<(&mut TDetectionTarget, &ToRoot), (With<TargetAsCurrentInControl>, With<TargetFromControlViaRoot>)>,
+    root_q: Query<&ToUnitControl>,
     control_q: Query<&CurrentTarget>
 ) {
     for (terminal, entity) in detector_q.iter_mut() {
@@ -67,10 +67,10 @@ pub fn target_from_control_via_root_sys(
 
 fn target_from_control_via_root(
     mut terminal: Mut<TDetectionTarget>,
-    detector: Entity,
-    root_q: &Query<&ToRoot>,
+    to_root: &ToRoot,
+    root_q: &Query<&ToUnitControl>,
     control_q: &Query<&CurrentTarget>
 ) {
-    ref_caravan!(@detector::root_q(to_root) -> to_root::control_q(current_target););
+    ref_caravan!(to_root::root_q(to_control) -> to_control::control_q(current_target););
     terminal.0 = current_target.read();
 }
