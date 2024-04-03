@@ -7,7 +7,6 @@ impl Plugin for CursorTrackingPlugin {
     }
 }
 
-
 #[derive(Resource)]
 pub struct CursorWorldPos(Vec2);
 impl CursorWorldPos {
@@ -46,7 +45,6 @@ impl MainCamera {
         Self {  }
     }
 }
-
 
 /// https://github.com/bevyengine/bevy/discussions/7970#discussioncomment-5241020
 pub fn cursor_tracking_sys(

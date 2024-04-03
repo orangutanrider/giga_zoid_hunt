@@ -27,7 +27,7 @@ impl<'w> PureMoveInput<'w> {
     }
 }
 
-pub fn command_pure_move_sys (
+pub fn command_pure_move_sys(
     input: PureMoveInput, 
     mut commands: SelectionCommands<TPureMoveOrders, PureMoveOrder>,
 ) {

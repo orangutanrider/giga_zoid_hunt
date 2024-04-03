@@ -3251,6 +3251,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "rts_unit_detectors"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "bevy_rapier2d",
+ "rapier_config",
+]
+
+[[package]]
+name = "rts_unit_movers"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "bevy_rapier2d",
+]
+
+[[package]]
+name = "rts_unit_nav"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "rts_unit_control",
+ "rts_unit_movers",
+]
+
+[[package]]
 name = "rustc-hash"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
