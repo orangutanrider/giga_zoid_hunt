@@ -1,5 +1,5 @@
 [package]
-name = "rts_unit_nav"
+name = "rts_unit_nav_from_control"
 
 version.workspace = true
 authors.workspace = true
@@ -12,3 +12,5 @@ ref_caravan.workspace = true
 ref_paths.workspace = true
 
 rts_waymarks.workspace = true
+rts_unit_nav.workspace = true
+rts_unit_control.workspace = true
