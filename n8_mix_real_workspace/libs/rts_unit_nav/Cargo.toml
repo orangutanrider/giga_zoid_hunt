@@ -7,5 +7,10 @@ edition.workspace = true
 
 [dependencies]
 bevy.workspace = true
+
+ref_caravan.workspace = true
+ref_paths.workspace = true
+
 rts_unit_control.workspace = true
 rts_unit_movers.workspace = true
+rts_waymarks.workspace = true
