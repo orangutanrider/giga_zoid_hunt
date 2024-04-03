@@ -3257,6 +3257,10 @@ dependencies = [
  "bevy",
  "bevy_rapier2d",
  "rapier_config",
+ "ref_caravan",
+ "ref_paths",
+ "rts_unit_control",
+ "rts_waymarks",
 ]
 
 [[package]]
@@ -3274,6 +3278,14 @@ dependencies = [
  "bevy",
  "rts_unit_control",
  "rts_unit_movers",
+]
+
+[[package]]
+name = "rts_waymarks"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_paths",
 ]
 
 [[package]]

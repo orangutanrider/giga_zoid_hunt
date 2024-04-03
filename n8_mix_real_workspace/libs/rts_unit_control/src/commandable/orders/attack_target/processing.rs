@@ -141,6 +141,10 @@ impl CurrentTarget {
             None => false,
         }
     }
+
+    pub fn read(&self) -> Option<Entity> {
+        return self.0
+    }
 }
 
 #[derive(Component)]
