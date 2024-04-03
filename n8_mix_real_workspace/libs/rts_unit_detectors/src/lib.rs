@@ -1,4 +1,5 @@
 pub mod enemy_circle_intersections;
+pub mod player_circle_intersections;
 pub mod distill_closest;
 pub mod distill_target;
 
