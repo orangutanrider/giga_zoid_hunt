@@ -50,7 +50,8 @@ rts_unit_nav = { path = "libs/rts_unit_nav" }
 rts_unit_movers = { path = "libs/rts_unit_movers" }
 rts_unit_detectors = { path = "libs/rts_unit_detectors" }
 
-rts_unit_nav_from_control = { path = "libs/rts_unit_nav_from_control"}
+rts_unit_nav_from_control = { path = "libs/rts_unit_nav_from_control" }
+rts_unit_mover_from_nav = { path = "libs/rts_unit_mover_from_nav" }
 
 # ================================
 # PROFILES

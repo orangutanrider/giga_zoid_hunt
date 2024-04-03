@@ -3264,6 +3264,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "rts_unit_mover_from_nav"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_caravan",
+ "ref_paths",
+ "rts_unit_movers",
+ "rts_unit_nav",
+]
+
+[[package]]
 name = "rts_unit_movers"
 version = "0.0.1"
 dependencies = [
