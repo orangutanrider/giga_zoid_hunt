@@ -28,7 +28,7 @@ impl<'w> AttackInput<'w> {
     }
 }
 
-pub fn command_attack_sys (
+pub fn command_attack_sys(
     input: AttackInput, 
     rapier: PhysicsQueries,
     move_commands: SelectionCommands<TAttackMoveOrders, AttackMoveOrder>,

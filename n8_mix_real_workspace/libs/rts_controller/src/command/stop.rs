@@ -14,7 +14,7 @@ impl<'w> StopInput<'w> {
     }
 }
 
-pub fn command_stop_sys (
+pub fn command_stop_sys(
     input: StopInput, 
     mut q: Query<&mut ClearOrdersBang, With<Selected>>
 ) {
