@@ -3278,8 +3278,18 @@ dependencies = [
  "bevy",
  "ref_caravan",
  "ref_paths",
+ "rts_waymarks",
+]
+
+[[package]]
+name = "rts_unit_nav_from_control"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_caravan",
+ "ref_paths",
  "rts_unit_control",
- "rts_unit_movers",
+ "rts_unit_nav",
  "rts_waymarks",
 ]
 
