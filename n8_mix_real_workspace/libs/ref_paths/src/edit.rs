@@ -16,3 +16,5 @@
 
     Data pertaining to what the flag is for (what the reference gets)
 */
+
+// Theoretically, a mutable waymark could be like a turn-table.
