@@ -1,0 +1,11 @@
+[package]
+name = "rts_unit_nav"
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+rts_unit_control.workspace = true
+rts_unit_movers.workspace = true
