@@ -9,6 +9,7 @@
 # RELEVANT COMMANDS
 # rustup default nightly
 # rustup update
+# cargo clean
 # cargo install -f cargo-binutils
 # rustup component add llvm-tools-preview
 
@@ -36,8 +37,21 @@ main = { path = "bins/main"}
 # libs
 ref_paths = { path = "libs/ref_paths" }
 ref_caravan = { path = "libs/ref_caravan" }
-project_settings = { path = "libs/project_settings "}
 behaviour_tree = { path = "libs/behaviour_tree" }
+
+mouse_pos = { path = "libs/mouse_pos" }
+project_settings = { path = "libs/project_settings "}
+rapier_config = { path = "libs/rapier_config"}
+
+rts_waymarks = { path = "libs/rts_waymarks" }
+rts_unit_control = { path = "libs/rts_unit_control" }
+rts_controller = { path = "libs/rts_controller" }
+rts_unit_nav = { path = "libs/rts_unit_nav" }
+rts_unit_movers = { path = "libs/rts_unit_movers" }
+rts_unit_detectors = { path = "libs/rts_unit_detectors" }
+
+rts_unit_nav_from_control = { path = "libs/rts_unit_nav_from_control" }
+rts_unit_mover_from_nav = { path = "libs/rts_unit_mover_from_nav" }
 
 # ================================
 # PROFILES

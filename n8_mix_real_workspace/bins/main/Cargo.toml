@@ -8,5 +8,12 @@ edition.workspace = true
 [dependencies]
 bevy.workspace = true
 
+ref_paths.workspace = true
+ref_caravan.workspace = true
+behaviour_tree.workspace = true
+
+rts_unit_detectors.workspace = true
+rts_unit_control.workspace = true
+
 [features]
 dev = ["bevy/dynamic_linking",]

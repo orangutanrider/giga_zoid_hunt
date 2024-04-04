@@ -10,6 +10,15 @@ pub mod plugins;
 pub mod bundles;
 
 #[derive(Component)]
+/// Self flag
+pub struct BehaviourTreeRoot;
+
+#[derive(Component)]
+/// Self flag
+pub struct BehaviourTreeNode;
+
+
+#[derive(Component)]
 pub struct ToParentNode(Entity);
 waymark!(ToParentNode);
 
