@@ -2378,7 +2378,12 @@ dependencies = [
 name = "main"
 version = "0.0.1"
 dependencies = [
+ "behaviour_tree",
  "bevy",
+ "ref_caravan",
+ "ref_paths",
+ "rts_unit_control",
+ "rts_unit_detectors",
 ]
 
 [[package]]
