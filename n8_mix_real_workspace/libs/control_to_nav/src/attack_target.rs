@@ -4,13 +4,20 @@ use rts_unit_nav::*;
 
 use crate::*;
 
+use std::marker::*;
+use ref_marks::*;
+use ref_caravan::*;
+use ref_paths::*;
+
 #[derive(Component)]
 /// Data transimission flag.
-pub struct NavAsActiveAttackTarget; 
+pub struct NavAsActiveAttackTarget<S: RefSignature>{
+    signature: PhantomData<S>
+} 
 
 /// Nav = NavAsActiveAttackTarget + (NavIsLocal + ControlIsLocal)
-pub fn local_control_attack_target_navigation_system(
-    mut q: Query<(&mut TNavWaypoint, &ActiveOrderTerminal, &CurrentTarget), (With<NavAsActiveAttackTarget>, With<NavIsLocal>, With<ControlIsLocal>)>,
+pub fn local_control_attack_target_navigation_system<S: RefSignature>(
+    mut q: Query<(&mut TNavWaypoint, &ActiveOrderTerminal, &CurrentTarget), (With<NavAsActiveAttackTarget<S>>, With<NavIsLocal<S>>, With<ControlIsLocal<S>>)>,
     target_q: Query<&GlobalTransform>,
 ) {
     for (mut nav_input, order_type, order_data) in q.iter_mut() {

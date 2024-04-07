@@ -5,10 +5,19 @@ pub mod idle;
 
 use bevy::prelude::*;
 
-#[derive(Component)]
-/// Data-destination, reference flag.
-pub struct NavIsLocal; 
+use std::marker::*;
+use ref_marks::*;
+use ref_caravan::*;
+use ref_paths::*;
 
 #[derive(Component)]
 /// Data-destination, reference flag.
-pub struct ControlIsLocal; 
+pub struct NavIsLocal<S: RefSignature>{
+    signature: PhantomData<S>
+} 
+
+#[derive(Component)]
+/// Data-destination, reference flag.
+pub struct ControlIsLocal<S: RefSignature>{
+    signature: PhantomData<S>
+}
