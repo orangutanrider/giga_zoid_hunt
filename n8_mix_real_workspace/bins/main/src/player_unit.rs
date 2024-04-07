@@ -1,4 +1,5 @@
-use std::any::TypeId;
+use std::any::*;
+use std::marker::*;
 use bevy::prelude::*;
 
 use ref_caravan::*;
@@ -8,7 +9,9 @@ use ref_marks::*;
 use behaviour_tree::{prelude::*, state::State as TreeState};
 
 use rts_unit_control::prelude::*;
+use rts_unit_control::validate_active_terminal_c;
 use rts_unit_detectors::prelude::*;
+use rts_unit_nav::*;
 
 use nav_to_mover::*;
 
@@ -238,6 +241,77 @@ fn attack_target_detection_to_state(
 }
 
 // ================================
+// Bang to switch
+
+#[derive(Component)]
+struct BangToSwitch<S: RefSignature> {
+    signature: PhantomData<S>,
+}
+
+fn bang_to_switch_sys<Transmission: SwitchedTransmissionFlag, Flag: Component, S: RefSignature>(
+    mut q: Query<(&Bang, &mut Transmission), (Changed<Bang>, With<Flag>)>
+) {
+    for (bang, mut switch) in q.iter_mut() {
+        switch.set(bang.is_active());
+    }
+}
+
+// Bang to switch bundles
+#[derive(Bundle)]
+struct BangToSwitchedMoveAsNav {
+    pub flag: BangToSwitch<BangToSwitchedMoveAsNav>,
+}
+impl Plugin for BangToSwitchedMoveAsNav {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, (
+            bang_to_switch_sys::<SwitchedMoveAsNav<BangToSwitchedMoveAsNav>, BangToSwitch<BangToSwitchedMoveAsNav>, BangToSwitchedMoveAsNav>,
+        ));
+    }
+}
+ref_signature!(BangToSwitchedMoveAsNav);
+
+// ================================
+// Aggro to nav
+
+#[derive(Component)]
+struct AggroIsReference<S: RefSignature> {
+    signature: PhantomData<S>,
+}
+
+#[derive(Component)]
+struct SwitchedNavAsAggroDetectorClosest<S: RefSignature> {
+    pub switch: bool,
+    signature: PhantomData<S>,
+}
+
+fn referenced_aggro_to_referenced_nav_sys<S: RefSignature>(
+    q: Query<&ToBehaviourRoot, (With<AggroIsReference<S>>, With<NavIsReference<S>>)>,
+    mut root_q: Query<(&mut TNavWaypoint, &AggroDetectorClosest)>,
+    target_q: Query<&GlobalTransform>,
+) {
+    for (to_root) in q.iter() {
+        referenced_aggro_to_referenced_nav::<S>(to_root, &mut root_q, &target_q);
+    }
+} 
+
+fn referenced_aggro_to_referenced_nav<S: RefSignature>( 
+    to_root: &ToBehaviourRoot,
+    root_q: &mut Query<(&mut TNavWaypoint, &AggroDetectorClosest)>,
+    target_q: &Query<&GlobalTransform>,
+) {
+    ref_caravan!(to_root::root_q((mut nav, aggro)));
+
+    let Some(target) = aggro.0 else {
+        return; 
+    };
+    let Ok(transform) = target_q.get(target) else {
+        return;
+    };
+    let waypoint = transform.translation().truncate();
+    nav.0 = waypoint;
+}
+
+// ================================
 // MOVE
 
 fn move_aggro_logic_sys(
@@ -245,21 +319,29 @@ fn move_aggro_logic_sys(
     mut root_q: Query<(&mut TUnitMCAMapper, &TState)>,
 ) {
     for (bang, to_root) in move_q.iter() {
-        if !bang.is_active() {
-            continue;
-        }
-        
-        ref_caravan!(to_root::root_q((mut unit_mca, state)));
-
-        let state = state.state();
-
-        const CHASE_SWITCH_STATE_REQUIREMENTS: TreeState = ATTACK_MOVE.union(IN_AGGRO); // If attack move order and enemy is in aggro.
-        if !state.contains(CHASE_SWITCH_STATE_REQUIREMENTS) {
-            continue;
-        }
-
-        unit_mca.0 = unit_mca.0 + 1; // Move to chase state
+        move_aggro_logic(bang, to_root, &mut root_q);
     }
+}
+
+fn move_aggro_logic(
+    bang: &Bang,
+    to_root: &ToBehaviourRoot,
+    root_q: &mut Query<(&mut TUnitMCAMapper, &TState)>,
+) {
+    if !bang.is_active() {
+        return;
+    }
+    
+    ref_caravan!(to_root::root_q((mut unit_mca, state)));
+
+    let state = state.state();
+
+    const MOVE_SWITCH_STATE_REQUIREMENTS: TreeState = ATTACK_MOVE.union(IN_AGGRO); // If attack move order and enemy is in aggro.
+    if !state.contains(MOVE_SWITCH_STATE_REQUIREMENTS) {
+        return;
+    }
+
+    unit_mca.0 = unit_mca.0 + 1; // Move to chase state
 }
 
 #[derive(Component)]
@@ -295,23 +377,97 @@ fn move_actuator(
     local_bang.actuator_set(acutation);
 }
 
-struct MoveRefToHubNavToRootMover;
-ref_signature!(MoveRefToHubNavToRootMover);
-
 #[derive(Bundle)]
 struct BMoveNavToMover {
-    pub move_as_nav: SwitchedMoveAsNav<MoveRefToHubNavToRootMover>,
-    pub nav_is: NavIsReference<MoveRefToHubNavToRootMover>,
-    pub move_is: MoveIsReference<MoveRefToHubNavToRootMover>,
+    pub bang_link: BangToSwitchedMoveAsNav,
+    pub move_as_nav: SwitchedMoveAsNav<BMoveNavToMover>,
+    pub nav_is: NavIsReference<BMoveNavToMover>,
+    pub move_is: MoveIsReference<BMoveNavToMover>,
 }
-pub struct MoveNavToMover;
-impl Plugin for MoveNavToMover {
+ref_signature!(BMoveNavToMover);
+impl Plugin for BMoveNavToMover {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, (
-            switched_reference_move_as_reference_nav_sys::<MoveRefToHubNavToRootMover>,
+            switched_reference_move_as_reference_nav_sys::<BMoveNavToMover>,
         ));
     }
 }
 
 // ================================
-// Bang to switch
+// CHASE
+
+fn chase_attack_logic_sys(
+    chase_q: Query<(&Bang, &ToBehaviourRoot), With<Chase>>,
+    mut root_q: Query<(&mut TUnitMCAMapper, &TState)>,
+) {
+    for (bang, to_root) in chase_q.iter() {
+        chase_attack_logic(bang, to_root, &mut root_q)
+    }
+}
+
+fn chase_attack_logic(
+    bang: &Bang,
+    to_root: &ToBehaviourRoot,
+    root_q: &mut Query<(&mut TUnitMCAMapper, &TState)>,
+) {
+    if !bang.is_active() {
+        return;
+    }
+    
+    ref_caravan!(to_root::root_q((mut unit_mca, state)));
+
+    let state = state.state();
+
+    const CHASE_SWITCH_STATE_REQUIREMENTS: TreeState = ATTACK_MOVE.union(IN_ATTACK);
+    if !state.contains(CHASE_SWITCH_STATE_REQUIREMENTS) {
+        return;
+    }
+
+    unit_mca.0 = unit_mca.0 + 1; // Move to attacking state
+}
+
+#[derive(Component)]
+struct ChaseActuator;
+
+fn chase_actuator_sys(
+    q: ActuatorQueries<ChaseActuator>,
+) {
+    let mut node_q = q.node_q;
+    let parent_q = &q.parent_q;
+    
+    for (local_bang, propagator, to_parent) in node_q.iter_mut() {
+        if !propagator.is_propagating() {
+            continue;
+        }
+        move_actuator(local_bang, to_parent, parent_q)
+    }
+}
+
+fn chase_actuator(
+    mut local_bang: Mut<Bang>,
+    to_parent: &ToParentNode,
+    parent_q: &Query<&TState>,
+) { 
+    ref_caravan!(to_parent::parent_q((parent_state)););
+
+    let actuation: TreeState = parent_state.state();
+    let acutation = actuation.contains(CHASE);
+
+    local_bang.actuator_set(acutation);
+}
+
+#[derive(Bundle)]
+struct BChaseNavToMover {
+    pub bang_link: BangToSwitchedMoveAsNav,
+    pub move_as_nav: SwitchedMoveAsNav<BChaseNavToMover>,
+    pub nav_is: NavIsReference<BChaseNavToMover>,
+    pub move_is: MoveIsReference<BChaseNavToMover>,
+}
+ref_signature!(BChaseNavToMover);
+impl Plugin for BChaseNavToMover {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, (
+            switched_reference_move_as_reference_nav_sys::<BChaseNavToMover>,
+        ));
+    }
+}

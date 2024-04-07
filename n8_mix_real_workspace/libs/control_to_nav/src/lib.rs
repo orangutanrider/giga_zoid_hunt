@@ -7,9 +7,8 @@ use bevy::prelude::*;
 
 use std::marker::*;
 use ref_marks::*;
-use ref_caravan::*;
-use ref_paths::*;
 
+/* 
 #[derive(Component)]
 /// Data-destination, reference flag.
 pub struct NavIsLocal<S: RefSignature>{
@@ -17,7 +16,20 @@ pub struct NavIsLocal<S: RefSignature>{
 } 
 
 #[derive(Component)]
-/// Data-destination, reference flag.
+/// Data-source, reference flag.
 pub struct ControlIsLocal<S: RefSignature>{
+    signature: PhantomData<S>
+}
+*/
+
+#[derive(Component)]
+/// Data-destination, reference flag.
+pub struct NavIsReference<S: RefSignature>{
+    signature: PhantomData<S>
+}
+
+#[derive(Component)]
+/// Data-source, reference flag.
+pub struct ControlIsReference<S: RefSignature>{
     signature: PhantomData<S>
 }

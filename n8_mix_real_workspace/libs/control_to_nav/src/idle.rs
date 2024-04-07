@@ -9,6 +9,7 @@ use ref_marks::*;
 use ref_caravan::*;
 use ref_paths::*;
 
+/* 
 #[derive(Component)]
 /// Data transimission flag.
 pub struct NavWhenIdleControl<S: RefSignature>{
@@ -25,3 +26,4 @@ pub fn local_control_attack_target_navigation_system<S: RefSignature>(
         }
     }
 } 
+*/

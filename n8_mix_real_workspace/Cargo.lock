@@ -2410,6 +2410,7 @@ dependencies = [
  "ref_paths",
  "rts_unit_control",
  "rts_unit_detectors",
+ "rts_unit_nav",
 ]
 
 [[package]]
@@ -3191,6 +3192,9 @@ dependencies = [
 [[package]]
 name = "ref_marks"
 version = "0.0.1"
+dependencies = [
+ "bevy",
+]
 
 [[package]]
 name = "ref_paths"
