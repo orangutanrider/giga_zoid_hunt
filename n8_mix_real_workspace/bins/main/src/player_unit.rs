@@ -1,12 +1,36 @@
 use std::any::TypeId;
-
 use bevy::prelude::*;
 
-use behaviour_tree::{prelude::*, state::State};
-use ref_caravan::ref_caravan;
+use ref_caravan::*;
 use ref_paths::*;
-use rts_unit_control::commandable::{orders::{attack_move::TAttackMoveOrders, attack_target::processing::CurrentTarget, pure_move::TPureMoveOrders, TUnitOrder}, ActiveOrderTerminal};
-use rts_unit_detectors::{*, distill_closest::DistillationForClosest};
+use ref_marks::*;
+
+use behaviour_tree::{prelude::*, state::State as TreeState};
+
+use rts_unit_control::prelude::*;
+use rts_unit_detectors::prelude::*;
+
+use nav_to_mover::*;
+
+// Note:
+// There are reference definitions in this that could be upgraded to be more flexible.
+
+// ================================
+// Unit Structure
+
+#[derive(Component)]
+struct Hub;
+#[derive(Bundle)]
+struct BHub {
+    
+}
+
+#[derive(Component)]
+struct Root;
+#[derive(Bundle)]
+struct BRoot {
+    
+}
 
 #[derive(Component)]
 struct AggroDetection;
@@ -43,9 +67,12 @@ struct BAttacking {
     
 }
 
-const MOVE: State = State::N1;
-const CHASE: State = State::N2;
-const ATTACK: State = State::N3;
+// ================================
+// Data to root state
+
+const MOVE: TreeState = TreeState::N1;
+const CHASE: TreeState = TreeState::N2;
+const ATTACK: TreeState = TreeState::N3;
 
 #[derive(Component)]
 /// (0-2)
@@ -95,7 +122,7 @@ fn aggro_to_tree_root_sys(
 fn aggro_to_tree_root(
     root_q: &mut Query<&mut AggroDetectorClosest>,
     closest: &DistillationForClosest,
-    to_root: &ToBehaviourRoot,
+    to_root: &ToBehaviourRoot, 
 ) {
     ref_caravan!(to_root::root_q(mut terminal));
     terminal.0 = closest.read_detection();
@@ -135,13 +162,13 @@ fn attack_target_to_tree_root(
     terminal.0 = closest.read_detection();
 }
 
-const PURE_MOVE: State = State::N4;
-const ATTACK_MOVE: State = State::N5;
-const ATTACK_TARGET: State = State::N6;
-const IDLE: State = State::N7;
+const PURE_MOVE: TreeState = TreeState::N4;
+const ATTACK_MOVE: TreeState = TreeState::N5;
+const ATTACK_TARGET: TreeState = TreeState::N6;
+const IDLE: TreeState = TreeState::N7;
 
 trait GenericStateBox {
-    const STATE: State;
+    const STATE: TreeState;
 }
 
 #[derive(Component)]
@@ -166,8 +193,8 @@ fn control_orders_to_state_sys<OrderTerminalType: 'static, StateBox: GenericStat
     }
 }
 
-const IN_AGGRO: State = State::N8;
-const IN_ATTACK: State = State::N9.union(IN_AGGRO);
+const IN_AGGRO: TreeState = TreeState::N8;
+const IN_ATTACK: TreeState = TreeState::N9.union(IN_AGGRO);
 
 #[derive(Component)]
 struct DetectionToState;
@@ -176,7 +203,7 @@ fn detection_to_state_sys(
     mut q: Query<(&mut TState, &AggroDetectorClosest, &AttackDetectorClosest, &AttackDetectorTargeted), With<DetectionToState>>,
 ) {
     for (mut state, aggro_close, attack_close, attack_targeted) in q.iter_mut() {
-        let held: State = state.state();
+        let held: TreeState = state.state();
  
         let type_id = TypeId::of::<DetectionToState>();
 
@@ -209,3 +236,82 @@ fn attack_target_detection_to_state(
 
     state.insert(Key::LocalComponent(type_id), IN_ATTACK);
 }
+
+// ================================
+// MOVE
+
+fn move_aggro_logic_sys(
+    move_q: Query<(&Bang, &ToBehaviourRoot), With<Move>>,
+    mut root_q: Query<(&mut TUnitMCAMapper, &TState)>,
+) {
+    for (bang, to_root) in move_q.iter() {
+        if !bang.is_active() {
+            continue;
+        }
+        
+        ref_caravan!(to_root::root_q((mut unit_mca, state)));
+
+        let state = state.state();
+
+        const CHASE_SWITCH_STATE_REQUIREMENTS: TreeState = ATTACK_MOVE.union(IN_AGGRO); // If attack move order and enemy is in aggro.
+        if !state.contains(CHASE_SWITCH_STATE_REQUIREMENTS) {
+            continue;
+        }
+
+        unit_mca.0 = unit_mca.0 + 1; // Move to chase state
+    }
+}
+
+#[derive(Component)]
+struct MoveActuator;
+
+// The prefab systems for actuators have an oversight in how they're designed, so they don't work.
+// It's cause the logic is tied to a function implementation, when it needs to be tied to a system param definition.
+// Not upgrading it though, I'll just write it out manually.
+fn move_actuator_sys(
+    q: ActuatorQueries<MoveActuator>,
+) {
+    let mut node_q = q.node_q;
+    let parent_q = &q.parent_q;
+    
+    for (local_bang, propagator, to_parent) in node_q.iter_mut() {
+        if !propagator.is_propagating() {
+            continue;
+        }
+        move_actuator(local_bang, to_parent, parent_q)
+    }
+}
+
+fn move_actuator(
+    mut local_bang: Mut<Bang>,
+    to_parent: &ToParentNode,
+    parent_q: &Query<&TState>,
+) { 
+    ref_caravan!(to_parent::parent_q((parent_state)););
+
+    let actuation: TreeState = parent_state.state();
+    let acutation = actuation.contains(MOVE);
+
+    local_bang.actuator_set(acutation);
+}
+
+struct MoveRefToHubNavToRootMover;
+ref_signature!(MoveRefToHubNavToRootMover);
+
+#[derive(Bundle)]
+struct BMoveNavToMover {
+    pub move_as_nav: SwitchedMoveAsNav<MoveRefToHubNavToRootMover>,
+    pub nav_is: NavIsReference<MoveRefToHubNavToRootMover>,
+    pub move_is: MoveIsReference<MoveRefToHubNavToRootMover>,
+}
+pub struct MoveNavToMover;
+impl Plugin for MoveNavToMover {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, (
+            switched_reference_move_as_reference_nav_sys::<MoveRefToHubNavToRootMover>,
+        ));
+    }
+}
+
+// ================================
+// Bang to switch
