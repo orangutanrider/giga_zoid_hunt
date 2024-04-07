@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use behaviour_tree::{prelude::*, state::State};
 use ref_caravan::ref_caravan;
 use ref_paths::*;
-use rts_unit_control::commandable::ActiveOrderTerminal;
+use rts_unit_control::commandable::{orders::{attack_move::TAttackMoveOrders, attack_target::processing::CurrentTarget, pure_move::TPureMoveOrders, TUnitOrder}, ActiveOrderTerminal};
 use rts_unit_detectors::{*, distill_closest::DistillationForClosest};
 
 #[derive(Component)]
@@ -208,18 +208,4 @@ fn attack_target_detection_to_state(
     }
 
     state.insert(Key::LocalComponent(type_id), IN_ATTACK);
-}
-
-
-#[derive(Component)]
-struct BehaviourTarget(Option<Entity>);
-
-/// If attack target, copy that target here.
-/// If attack move, target is closest enemy in aggro range.
-fn behaviour_target_assignation(
-    mut q: Query<(&mut BehaviourTarget, &TState, &AggroDetectorClosest, &AttackDetectorTargeted)>
-) {
-    for (behav_target, state, closest_detect, targeted_detect) in q.iter_mut() {
-        
-    }
 }

@@ -29,7 +29,7 @@ impl Plugin for ControlPlugin {
 #[derive(Default)]
 #[derive(Bundle)]
 pub struct ControlCoreBundle {
-    pub flag: UnitControl,
+    pub flag: Control,
     pub transform: TransformBundle,
 
     pub selectable: Selectable,
@@ -56,13 +56,13 @@ pub struct ControlBundle {
 
 #[derive(Component)]
 /// Self flag
-pub struct UnitControl;
-impl Default for UnitControl {
+pub struct Control;
+impl Default for Control {
     fn default() -> Self {
         Self {  }
     }
 }
 
 #[derive(Component)]
-pub struct ToUnitControl(Entity);
-waymark!(ToUnitControl);
+pub struct ToControl(Entity);
+waymark!(ToControl);

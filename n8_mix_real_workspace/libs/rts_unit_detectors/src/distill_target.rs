@@ -1,11 +1,6 @@
 use bevy::prelude::*;
 use crate::*;
 
-use ref_paths::*;
-use ref_caravan::*;
-use rts_waymarks::*;
-use rts_unit_control::prelude::*;
-
 #[derive(Component)]
 pub struct DistillationForTarget(Option<Entity>);
 impl DistillationColumn for DistillationForTarget {
@@ -18,9 +13,8 @@ impl DistillationColumn for DistillationForTarget {
     }
 }
 
-// Data terminal
-
 #[derive(Component)]
+/// Data terminal. Input.
 pub struct TDetectionTarget(pub Option<Entity>);
 
 pub fn target_detection_distillation_sys(
@@ -41,36 +35,4 @@ pub fn target_detection_distillation_sys(
 
         distill(column, aggregate, distillation_logic);
     }
-}
-
-
-#[derive(Component)]
-/// Data Transfer Flag.
-/// Combine with reference flag.
-pub struct TargetAsCurrentInControl;
-
-#[derive(Component)]
-/// Reference Flag.
-/// Combine with data transfer flag.
-/// (Detector -> Root -> Control)
-pub struct TargetFromControlViaRoot;
-
-pub fn target_from_control_via_root_sys(
-    mut detector_q: Query<(&mut TDetectionTarget, &ToRoot), (With<TargetAsCurrentInControl>, With<TargetFromControlViaRoot>)>,
-    root_q: Query<&ToUnitControl>,
-    control_q: Query<&CurrentTarget>
-) {
-    for (terminal, entity) in detector_q.iter_mut() {
-        target_from_control_via_root(terminal, entity, &root_q, &control_q)
-    }
-}
-
-fn target_from_control_via_root(
-    mut terminal: Mut<TDetectionTarget>,
-    to_root: &ToRoot,
-    root_q: &Query<&ToUnitControl>,
-    control_q: &Query<&CurrentTarget>
-) {
-    ref_caravan!(to_root::root_q(to_control) -> to_control::control_q(current_target););
-    terminal.0 = current_target.read();
 }

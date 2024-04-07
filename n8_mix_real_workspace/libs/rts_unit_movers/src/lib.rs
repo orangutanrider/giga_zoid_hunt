@@ -1,6 +1,11 @@
 pub mod transform;
 
 use bevy::prelude::*;
+use ref_paths::*;
+
+#[derive(Component)]
+pub struct ToMover(Entity);
+waymark!(ToMover);
 
 #[derive(Component)]
 /// Data terminal.

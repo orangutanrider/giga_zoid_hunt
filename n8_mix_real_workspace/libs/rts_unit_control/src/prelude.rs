@@ -2,8 +2,8 @@ pub use crate::{
     ControlPlugin,
     ControlBundle,
     ControlCoreBundle,
-    UnitControl,
-    ToUnitControl,
+    Control,
+    ToControl,
 };
 
 pub use crate::commandable::{

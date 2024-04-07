@@ -8,3 +8,5 @@ edition.workspace = true
 [dependencies]
 bevy.workspace = true
 bevy_rapier2d.workspace = true
+
+ref_paths.workspace = true
