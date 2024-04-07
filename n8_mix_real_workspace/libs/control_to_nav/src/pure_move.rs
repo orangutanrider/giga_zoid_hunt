@@ -4,13 +4,20 @@ use rts_unit_nav::*;
 
 use crate::*;
 
+use std::marker::*;
+use ref_marks::*;
+use ref_caravan::*;
+use ref_paths::*;
+
 #[derive(Component)]
 /// Data transimission flag.
-pub struct NavAsActivePureMove; 
+pub struct NavAsActivePureMove<S: RefSignature>{
+    signature: PhantomData<S>
+}
 
 /// Nav = NavAsPureMove + (NavIsLocal + ControlIsLocal)
-pub fn local_control_pure_move_navigation_system(
-    mut q: Query<(&mut TNavWaypoint, &ActiveOrderTerminal, &TPureMoveOrders), (With<NavAsActivePureMove>, With<NavIsLocal>, With<ControlIsLocal>)>
+pub fn local_control_pure_move_navigation_system<S: RefSignature>(
+    mut q: Query<(&mut TNavWaypoint, &ActiveOrderTerminal, &TPureMoveOrders), (With<NavAsActivePureMove<S>>, With<NavIsLocal<S>>, With<ControlIsLocal<S>>)>
 ) {
     for (mut nav_input, order_type, order_data) in q.iter_mut() {
         validate_active_terminal_c!(TPureMoveOrders, order_type);

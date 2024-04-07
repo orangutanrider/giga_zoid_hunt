@@ -2,24 +2,32 @@ use bevy::prelude::*;
 use rts_unit_control::prelude::*;
 use rts_unit_detectors::prelude::*;
 
+use std::marker::*;
+use ref_marks::*;
 use ref_caravan::*;
 use ref_paths::*;
 
 #[derive(Component)]
 /// Data transmission flag.
-pub struct TargetAsCurrentInControl;
+pub struct TargetAsCurrentInControl<S: RefSignature>{
+    signature: PhantomData<S>
+}
 
 #[derive(Component)]
 /// Data-delivery, reference flag.
-pub struct TargetIsLocal;
+pub struct TargetIsLocal<S: RefSignature>{
+    signature: PhantomData<S>
+}
 
 #[derive(Component)]
 /// Data-source, reference flag.
-pub struct ControlIsReference;
+pub struct ControlIsReference<S: RefSignature>{
+    signature: PhantomData<S>
+}
 
 /// target = TargetAsCurrentInControl + (TargetAsLocal, ControlAsReference)
-pub fn target_from_control_via_reference_sys(
-    mut detector_q: Query<(&mut TDetectionTarget, &ToControl), (With<TargetIsLocal>, With<ControlIsReference>)>,
+pub fn target_from_control_via_reference_sys<S: RefSignature>(
+    mut detector_q: Query<(&mut TDetectionTarget, &ToControl), (With<TargetIsLocal<S>>, With<ControlIsReference<S>>)>,
     control_q: Query<&CurrentTarget>
 ) {
     for (terminal, to_control) in detector_q.iter_mut() {

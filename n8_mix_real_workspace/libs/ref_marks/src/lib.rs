@@ -6,6 +6,7 @@ use std::marker::*;
     // Data-destination, reference flag.
     // Data-source, reference flag.
     // Data-transformation, transmission flag.
+    // Transmission system.
 // Each part of the composition, signed by a type signature, denoting the reference.
 
 pub trait RefSignature: Sync + Send + 'static { }

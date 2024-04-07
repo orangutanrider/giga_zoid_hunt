@@ -10,6 +10,7 @@ bevy.workspace = true
 
 ref_caravan.workspace = true
 ref_paths.workspace = true
+ref_marks.workspace = true
 
 rts_unit_control.workspace = true
 rts_unit_detectors.workspace = true
