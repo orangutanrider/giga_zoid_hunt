@@ -2404,7 +2404,9 @@ version = "0.0.1"
 dependencies = [
  "behaviour_tree",
  "bevy",
+ "nav_to_mover",
  "ref_caravan",
+ "ref_marks",
  "ref_paths",
  "rts_unit_control",
  "rts_unit_detectors",
@@ -3303,6 +3305,7 @@ dependencies = [
  "bevy_rapier2d",
  "rapier_config",
  "ref_caravan",
+ "ref_marks",
  "ref_paths",
  "rts_unit_control",
 ]

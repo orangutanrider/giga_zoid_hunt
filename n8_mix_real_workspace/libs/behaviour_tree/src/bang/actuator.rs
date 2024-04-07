@@ -54,7 +54,7 @@ impl ActuatorPropagator {
         return Self(false)
     }
 
-    fn is_propagating(&self) -> bool {
+    pub fn is_propagating(&self) -> bool {
         return self.0
     }
 }
