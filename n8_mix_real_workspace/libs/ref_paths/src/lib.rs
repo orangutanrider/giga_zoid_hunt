@@ -3,11 +3,7 @@ mod edit;
 
 use bevy::prelude::*;
 
-// A self entity reference or "Cairn" (W.I.P. naming)
-// Is simply a classifcation of a component's purpose
-// It requires no implementation
 
-/// An internal (internal to an entity heirarchy) entity reference.
 pub trait Waymark {
     fn go(&self) -> Entity;
 }

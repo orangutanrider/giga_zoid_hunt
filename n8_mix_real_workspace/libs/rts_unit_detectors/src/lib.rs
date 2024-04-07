@@ -7,6 +7,22 @@ pub mod prelude;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use core::slice::Iter;
+use std::marker::*;
+
+use ref_marks::*;
+use ref_paths::*;
+
+#[derive(Component)]
+/// Signed waymark.
+pub struct ToDetector<S: RefSignature>{
+    waymark: Entity,
+    signature: PhantomData<S>
+}
+impl<S: RefSignature> Waymark for ToDetector<S> {
+    fn go(&self) -> Entity {
+        return self.waymark
+    }
+}
 
 #[derive(Component)]
 pub struct TIntersectionsAggregate(pub Vec<Entity>);
