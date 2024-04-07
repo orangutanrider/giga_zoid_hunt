@@ -1,5 +1,5 @@
 [package]
-name = "rts_unit_mover_from_nav"
+name = "nav_to_mover"
 
 version.workspace = true
 authors.workspace = true
@@ -10,6 +10,7 @@ bevy.workspace = true
 
 ref_caravan.workspace = true
 ref_paths.workspace = true
+ref_marks.workspace = true
 
 rts_unit_nav.workspace = true
 rts_unit_movers.workspace = true 

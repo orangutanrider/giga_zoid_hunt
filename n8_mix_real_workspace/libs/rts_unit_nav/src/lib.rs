@@ -1,45 +1,23 @@
-//! Navigation = Order to mover vector
+/// Navigation = Waypoint to movement vector.
 
-pub mod follow_attack_move;
-pub mod follow_attack_target;
-pub mod follow_pure_move;
+pub mod direct_nav;
 
-use std::any::TypeId;
 use bevy::prelude::*;
-
 use ref_paths::*;
 
 #[derive(Component)]
+/// Cairn.
+pub struct Nav;
+
+#[derive(Component)]
+/// Waymark.
 pub struct ToNav(Entity);
 waymark!(ToNav);
 
-// Type terminal
+#[derive(Component)]
+/// Input
+pub struct TNavWaypoint(pub Vec2);
 
 #[derive(Component)]
-pub struct TNavType(pub TypeId);
-
-// Data terminals
-
-#[derive(Component)]
-/// Waypoint Data terminal.
-pub struct TNavPureMove(pub Vec2);
-
-#[derive(Component)]
-/// Waypoint Data terminal.
-pub struct TNavAttackMove(pub Vec2);
-
-#[derive(Component)]
-/// Waypoint Data terminal.
-pub struct TNavAttackTarget(pub Vec2);
-
-#[macro_export]
-macro_rules! c_validate_data_terminal { ($nav_type:ty, $type_terminal:ident) => {
-    if $type_terminal.0 != TypeId::of::<$nav_type>() {
-        continue;
-    }
-};}
-
-// Output
-
-#[derive(Component)]
+/// Output
 pub struct NavVectorOutput(pub Vec2);

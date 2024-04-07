@@ -1,5 +1,5 @@
 [package]
-name = "rts_unit_detectors"
+name = "control_to_nav"
 
 version.workspace = true
 authors.workspace = true
@@ -7,10 +7,10 @@ edition.workspace = true
 
 [dependencies]
 bevy.workspace = true
-bevy_rapier2d.workspace = true
 
-ref_paths.workspace = true
-ref_caravan.workspace = true
-rapier_config.workspace = true
+#ref_caravan.workspace = true
+#ref_paths.workspace = true
+#rts_waymarks.workspace = true
 
+rts_unit_nav.workspace = true
 rts_unit_control.workspace = true

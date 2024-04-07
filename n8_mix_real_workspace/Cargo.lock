@@ -1416,6 +1416,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "control_to_detector"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_caravan",
+ "ref_paths",
+ "rts_unit_control",
+ "rts_unit_detectors",
+]
+
+[[package]]
+name = "control_to_nav"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "rts_unit_control",
+ "rts_unit_nav",
+]
+
+[[package]]
 name = "core-foundation"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2529,6 +2549,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "nav_to_mover"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_caravan",
+ "ref_marks",
+ "ref_paths",
+ "rts_unit_movers",
+ "rts_unit_nav",
+]
+
+[[package]]
 name = "ndk"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3151,6 +3183,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "ref_marks"
+version = "0.0.1"
+
+[[package]]
 name = "ref_paths"
 version = "0.0.1"
 dependencies = [
@@ -3265,18 +3301,6 @@ dependencies = [
  "ref_caravan",
  "ref_paths",
  "rts_unit_control",
- "rts_waymarks",
-]
-
-[[package]]
-name = "rts_unit_mover_from_nav"
-version = "0.0.1"
-dependencies = [
- "bevy",
- "ref_caravan",
- "ref_paths",
- "rts_unit_movers",
- "rts_unit_nav",
 ]
 
 [[package]]
@@ -3285,6 +3309,7 @@ version = "0.0.1"
 dependencies = [
  "bevy",
  "bevy_rapier2d",
+ "ref_paths",
 ]
 
 [[package]]
@@ -3293,27 +3318,6 @@ version = "0.0.1"
 dependencies = [
  "bevy",
  "ref_caravan",
- "ref_paths",
- "rts_waymarks",
-]
-
-[[package]]
-name = "rts_unit_nav_from_control"
-version = "0.0.1"
-dependencies = [
- "bevy",
- "ref_caravan",
- "ref_paths",
- "rts_unit_control",
- "rts_unit_nav",
- "rts_waymarks",
-]
-
-[[package]]
-name = "rts_waymarks"
-version = "0.0.1"
-dependencies = [
- "bevy",
  "ref_paths",
 ]
 

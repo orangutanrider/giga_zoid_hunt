@@ -93,6 +93,7 @@ pub fn t_unit_order_clear_sys<Terminal, OrderType>(
 
 #[macro_export]
 macro_rules! validate_active_terminal_c { ($data_terminal:ty, $type_terminal:ident) => {
+    use std::any::TypeId;
     let Some(current_type) = $type_terminal.current() else {
         continue;
     };
@@ -103,6 +104,7 @@ macro_rules! validate_active_terminal_c { ($data_terminal:ty, $type_terminal:ide
 
 #[macro_export]
 macro_rules! validate_active_terminal_r { ($data_terminal:ty, $type_terminal:ident) => {
+    use std::any::TypeId;
     let Some(current_type) = $type_terminal.current() else {
         return;
     };

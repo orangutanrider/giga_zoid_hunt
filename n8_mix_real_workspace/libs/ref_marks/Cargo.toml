@@ -1,10 +1,9 @@
 [package]
-name = "rts_waymarks"
+name = "ref_marks"
 
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
 
-[dependencies]
-bevy.workspace = true
-ref_paths.workspace = true
+#[dependencies]
+#bevy.workspace = true
