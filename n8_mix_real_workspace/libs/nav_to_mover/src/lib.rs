@@ -17,9 +17,18 @@ pub struct MoveAsNav;
 
 #[derive(Component)]
 /// Data transmission flag.
-pub struct SwitchedMoveAsNav<Signature: RefSignature>{
+pub struct SwitchedMoveAsNav<S: RefSignature>{
     pub switch: bool,
-    signature: PhantomData<Signature>
+    signature: PhantomData<S>
+}
+impl<S: RefSignature> SwitchedTransmissionFlag for SwitchedMoveAsNav<S> {
+    fn set(&mut self, v: bool) {
+        self.switch = v;
+    }
+
+    fn read(&self) -> bool {
+        return self.switch;
+    }
 }
 
 // Data-source, reference flags.

@@ -1,4 +1,4 @@
-//use bevy::prelude::*;
+use bevy::prelude::*;
 use std::marker::*;
 
 // Reference composition
@@ -15,3 +15,8 @@ pub trait RefSignature: Sync + Send + 'static { }
 macro_rules! ref_signature {($ty:ty) => {
     impl RefSignature for $ty { }
 };}
+
+pub trait SwitchedTransmissionFlag: Component {
+    fn set(&mut self, v: bool);
+    fn read(&self) -> bool;
+}
