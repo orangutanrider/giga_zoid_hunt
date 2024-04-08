@@ -1,0 +1,45 @@
+use bevy::prelude::*;
+
+use ref_paths::*;
+
+#[derive(Component)]
+pub struct DeathBang(bool);
+impl DeathBang {
+    pub fn new() -> Self {
+        return Self(false);
+    }
+
+    pub fn bang(&mut self) {
+        self.0 = true;
+    }
+}
+
+#[derive(Component)]
+/// Data transformation flag.
+pub struct DeathToEntityDespawn;
+
+#[derive(Component)]
+/// Data destination, reference flag.
+pub struct DespawnTargetIsReference;
+
+#[derive(Component)]
+pub struct ToDespawnTarget(Entity);
+waymark!(ToDespawnTarget);
+
+// If you wanted, you could instead add a component to the entity and recursivley to its children.
+// That component acting as a flag for another system to despawn the entities.
+// That way, stuff can respond to the imminent despawn.
+// They can still do that here though anyways, just pay attention to the death bang.
+pub fn referenced_entity_destruction_on_death_sys(
+    q: Query<&ToDespawnTarget, (Changed<DeathBang>, With<DeathToEntityDespawn>, With<DespawnTargetIsReference>)>,
+    mut commands: Commands
+) {
+    for target in q.iter() {
+        let target = target.go();
+        let Some(commands) = commands.get_entity(target) else {
+            continue; // Invalid destruction target
+        };
+
+        commands.despawn_recursive();
+    }
+}
