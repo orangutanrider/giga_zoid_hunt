@@ -1,0 +1,11 @@
+[package]
+name = "rts_direct_attack"
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+
+rts_unit_health.workspace = true

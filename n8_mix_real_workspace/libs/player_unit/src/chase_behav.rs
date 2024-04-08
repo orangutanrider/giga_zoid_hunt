@@ -9,16 +9,16 @@ pub(crate) struct BChase {
 }
 
 // Behaviour
-pub(crate) fn chase_attack_logic_sys(
+pub(crate) fn chase_logic_sys(
     chase_q: Query<(&Bang, &ToBehaviourRoot), With<Chase>>,
     mut root_q: Query<(&mut TUnitIMCAMapper, &TState)>,
 ) {
     for (bang, to_root) in chase_q.iter() {
-        chase_attack_logic(bang, to_root, &mut root_q)
+        chase_logic(bang, to_root, &mut root_q)
     }
 }
 
-fn chase_attack_logic(
+fn chase_logic(
     bang: &Bang,
     to_root: &ToBehaviourRoot,
     root_q: &mut Query<(&mut TUnitIMCAMapper, &TState)>,
@@ -31,8 +31,8 @@ fn chase_attack_logic(
 
     let state = state.state();
 
-    const CHASE_SWITCH_STATE_REQUIREMENTS: TreeState = ATTACK_MOVE.union(IN_ATTACK);
-    if !state.contains(CHASE_SWITCH_STATE_REQUIREMENTS) {
+    const ATTACK_ORDERS: TreeState = ATTACK_MOVE.union(ATTACK_TARGET);
+    if !(state.intersects(ATTACK_ORDERS) && state.contains(IN_ATTACK)) {
         return;
     }
 
