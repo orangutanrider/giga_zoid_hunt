@@ -1,4 +1,136 @@
 use super::*;
+use rts_direct_attack::*;
+
+// Hold target locally.
+// Update target, while bang is inactive.
+// If attack move, target is closest in range from root.
+// If attack target, target is AttackDetectorTargeted.
+
+// Once active, (nothing should be updating those targets).
+// Once active, constant (0,0) to mover.
+// Once active, start timer.
+// At timer point x, bang the direct attack terminal.
+// At timer end, set march to 1. (If target got killed, then the progression of the orders will automatically bring it to an idle state.).
+
+// It could be that there is another state, ChaseTarget, that this switches to instead of switching to move.
+// The benefit of that would be that, if the unit doesn't kill their target, then they would still focus that target, and not re-assign their target when entering back into chase state.
+// This is good enough though, I don't know if that would be better either, I don't think it works like that in StarCraft.
+
+// Definition
+#[derive(Component)]
+pub(crate) struct Attack;
+#[derive(Bundle)]
+pub(crate) struct BAttack {
+    
+}
+
+// Target handling
+#[derive(Component)]
+pub struct AttackTarget(Option<Entity>);
+
+pub fn target_update_sys(
+    mut q: Query<(&mut AttackTarget, &Bang, &ToBehaviourRoot)>,
+    root_q: Query<(&TState, &AttackDetectorClosest, &AttackDetectorTargeted)>
+) {
+    for (target_terminal, bang, to_root) in q.iter_mut() {
+        if bang.is_active() { // Update target, while bang is inactive.
+            continue;
+        }
+        target_update(target_terminal, to_root, &root_q);
+    }
+}
+
+fn target_update(
+    mut target_terminal: Mut<AttackTarget>,
+    to_root: &ToBehaviourRoot,
+    root_q: &Query<(&TState, &AttackDetectorClosest, &AttackDetectorTargeted)>
+) {
+    ref_caravan!(to_root::root_q((state, closest, targeted)););
+
+    let state: TreeState = state.state();
+    if state.contains(ATTACK_MOVE) {
+        target_terminal.0 = closest.0;
+    } else if state.contains(ATTACK_TARGET) {
+        target_terminal.0 = targeted.0;
+    }
+}
+
+// Behaviour
+#[derive(Component)]
+pub struct AttackTimer(f32);
+
+#[derive(Component)]
+pub struct AttackTrigger{
+    trigger_time: f32,
+    triggered: bool,
+}
+
+#[derive(Component)]
+pub struct AttackEndTrigger(f32);
+
+pub fn attack_timer_reset_sys(
+    mut q: Query<&mut AttackTimer, Changed<Bang>>
+) {
+    for mut timer in q.iter_mut() {
+        timer.0 = 0.0;
+    }
+}
+
+// This timer stuff could be extracted to being a standardised set of bang duration components.
+pub fn attack_timer_sys(
+    mut q: Query<(&mut AttackTimer, &Bang)>,
+    time: Res<Time>,
+) {
+    for (mut timer, bang) in q.iter_mut() {
+        if !bang.is_active() {
+            continue;
+        }
+
+        timer.0 = timer.0 + time.delta_seconds();
+    }
+}
+
+/// Expects direct attack terminal to be local.
+pub fn attack_execution_sys(
+    mut q: Query<(&mut DirectAttackBang, &mut AttackTrigger, &AttackTimer, &AttackTarget), Changed<AttackTimer>>,
+) {
+    for (mut attack_bang, mut trigger, timer, target) in q.iter_mut() {
+        if trigger.triggered {
+            continue;
+        }
+
+        if !(timer.0 >= trigger.trigger_time) {
+            continue;
+        }
+
+        trigger.triggered = true;
+        let Some(target) = target.0 else {
+            continue;
+        };
+        attack_bang.bang(target);
+    }
+}
+
+pub fn attack_end_sys(
+    q: Query<(&AttackEndTrigger, &AttackTimer, &ToBehaviourRoot), Changed<AttackTimer>>,
+    mut root_q: Query<&mut TUnitIMCAMapper>,
+) {
+    for (trigger, timer, to_root) in q.iter() {
+        if !(timer.0 >= trigger.0) {
+            continue;
+        }
+
+        attack_end(to_root, &mut root_q)
+    }
+}
+
+pub fn attack_end(
+    to_root: &ToBehaviourRoot,
+    root_q: &mut Query<&mut TUnitIMCAMapper>,
+) {
+    ref_caravan!(to_root::root_q(mut imca_mapper););
+    imca_mapper.0 = 1; // to Move
+}
 
 #[derive(Component)]
 pub(crate) struct AttackActuator;

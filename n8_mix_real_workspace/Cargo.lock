@@ -3018,6 +3018,7 @@ dependencies = [
  "ref_caravan",
  "ref_marks",
  "ref_paths",
+ "rts_direct_attack",
  "rts_unit_control",
  "rts_unit_detectors",
  "rts_unit_nav",
@@ -3307,6 +3308,14 @@ dependencies = [
  "mouse_pos",
  "rapier_config",
  "rts_unit_control",
+]
+
+[[package]]
+name = "rts_direct_attack"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "rts_unit_health",
 ]
 
 [[package]]

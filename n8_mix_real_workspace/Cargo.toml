@@ -44,7 +44,6 @@ mouse_pos = { path = "libs/mouse_pos" }
 project_settings = { path = "libs/project_settings "}
 rapier_config = { path = "libs/rapier_config"}
 
-rts_unit_visible = { path = "libs/rts_unit_visible" }
 rts_unit_death = { path = "libs/rts_unit_death" }
 rts_unit_soul = { path = "libs/rts_unit_soul" }
 rts_unit_team = { path = "libs/rts_unit_team" }
@@ -54,6 +53,7 @@ rts_controller = { path = "libs/rts_controller" }
 rts_unit_nav = { path = "libs/rts_unit_nav" }
 rts_unit_movers = { path = "libs/rts_unit_movers" }
 rts_unit_detectors = { path = "libs/rts_unit_detectors" }
+rts_direct_attack = { path = "libs/rts_direct_attack" }
 
 control_to_detector = { path = "libs/control_to_detector" }
 control_to_nav = { path = "libs/control_to_nav" }
