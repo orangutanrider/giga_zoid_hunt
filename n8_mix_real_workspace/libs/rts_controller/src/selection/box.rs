@@ -70,5 +70,5 @@ pub fn box_selection_sys(
         select(entity_commands); 
         return true;
     };
-    rapier.cast_for_p_selectable(origin.0, input.pos(), callback)
+    rapier.cast_for_selectable(origin.0, input.pos(), callback)
 }

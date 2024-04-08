@@ -17,7 +17,7 @@ impl CircleIntersectionsOfEnemy {
     }
 }
 impl ImmutableDetector for CircleIntersectionsOfEnemy {
-    const FILTER: QueryFilter<'static> = P_DETECTABLE_FILTER;
+    const FILTER: QueryFilter<'static> = DETECTABLE_PLAYER_UNITS_FILTER;
     
     fn shape(&self) -> Collider {
         return Collider::ball(self.radius)

@@ -44,6 +44,9 @@ mouse_pos = { path = "libs/mouse_pos" }
 project_settings = { path = "libs/project_settings "}
 rapier_config = { path = "libs/rapier_config"}
 
+rts_unit_visible = { path = "libs/rts_unit_visible" }
+rts_unit_death = { path = "libs/rts_unit_death" }
+rts_unit_soul = { path = "libs/rts_unit_soul" }
 rts_unit_team = { path = "libs/rts_unit_team" }
 rts_unit_health = { path = "libs/rts_unit_health" }
 rts_unit_control = { path = "libs/rts_unit_control" }
@@ -55,6 +58,7 @@ rts_unit_detectors = { path = "libs/rts_unit_detectors" }
 control_to_detector = { path = "libs/control_to_detector" }
 control_to_nav = { path = "libs/control_to_nav" }
 nav_to_mover = { path = "libs/nav_to_mover" }
+health_to_death = { path = "libs/health_to_death" }
 
 player_unit = { path = "libs/player_unit" }
 

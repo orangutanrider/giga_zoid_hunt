@@ -1,0 +1,14 @@
+[package]
+name = "health_to_death"
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+
+ref_marks.workspace = true
+
+rts_unit_health.workspace = true
+rts_unit_death.workspace = true

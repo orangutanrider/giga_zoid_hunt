@@ -2106,6 +2106,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "health_to_death"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_marks",
+ "rts_unit_death",
+ "rts_unit_health",
+]
+
+[[package]]
 name = "hexasphere"
 version = "10.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3309,6 +3319,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rts_unit_death"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_caravan",
+ "ref_paths",
+]
+
+[[package]]
 name = "rts_unit_detectors"
 version = "0.0.1"
 dependencies = [
@@ -3344,6 +3363,19 @@ dependencies = [
  "bevy",
  "ref_caravan",
  "ref_paths",
+]
+
+[[package]]
+name = "rts_unit_soul"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "bevy_rapier2d",
+ "health_to_death",
+ "rapier_config",
+ "rts_unit_death",
+ "rts_unit_health",
+ "rts_unit_team",
 ]
 
 [[package]]

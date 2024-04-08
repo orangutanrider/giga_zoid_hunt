@@ -1,0 +1,9 @@
+[package]
+name = "rts_unit_team"
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
