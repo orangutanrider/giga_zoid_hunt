@@ -2402,15 +2402,7 @@ dependencies = [
 name = "main"
 version = "0.0.1"
 dependencies = [
- "behaviour_tree",
  "bevy",
- "nav_to_mover",
- "ref_caravan",
- "ref_marks",
- "ref_paths",
- "rts_unit_control",
- "rts_unit_detectors",
- "rts_unit_nav",
 ]
 
 [[package]]
@@ -3007,6 +2999,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 
 [[package]]
+name = "player_unit"
+version = "0.0.1"
+dependencies = [
+ "behaviour_tree",
+ "bevy",
+ "nav_to_mover",
+ "ref_caravan",
+ "ref_marks",
+ "ref_paths",
+ "rts_unit_control",
+ "rts_unit_detectors",
+ "rts_unit_nav",
+]
+
+[[package]]
 name = "png"
 version = "0.17.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3315,6 +3322,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "rts_unit_health"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "rts_unit_movers"
 version = "0.0.1"
 dependencies = [
@@ -3330,6 +3344,13 @@ dependencies = [
  "bevy",
  "ref_caravan",
  "ref_paths",
+]
+
+[[package]]
+name = "rts_unit_team"
+version = "0.0.1"
+dependencies = [
+ "bevy",
 ]
 
 [[package]]

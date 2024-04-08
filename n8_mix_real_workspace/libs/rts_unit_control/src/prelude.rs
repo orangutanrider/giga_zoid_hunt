@@ -1,4 +1,6 @@
 pub use crate::{
+    validate_active_terminal_c,
+    validate_active_terminal_r,
     ControlPlugin,
     ControlBundle,
     ControlCoreBundle,
