@@ -150,7 +150,7 @@ struct BHub {
 }
 
 #[derive(Component, Default)]
-struct Root;
+pub struct Root;
 #[derive(Bundle, Default)]
 struct BRoot {
     pub flag: Root,
@@ -205,9 +205,10 @@ pub struct SpawnPlayerUnitEvent(pub Vec2); // spawn location
 pub fn spawn_player_unit_event_sys(
     mut event: EventReader<SpawnPlayerUnitEvent>,
     mut commands: Commands,
+    asset_server: Res<AssetServer>, 
 ) {
     for ev in event.read() {
-        spawn_player_unit(ev.0, &mut commands);
+        spawn_player_unit(ev.0, &mut commands, &asset_server);
     }
 }
 
@@ -231,7 +232,10 @@ pub const NODES_X_OFFSET: f32 = 1.0;
 pub fn spawn_player_unit(
     location: Vec2,
     commands: &mut Commands,
+    asset_server: &Res<AssetServer>, 
 ) {
+    let square: Handle<Image> = asset_server.load("sprite\\primitive\\64px_square.png");
+
     // Root
     let root = commands.spawn((
         BRoot{
@@ -240,8 +244,9 @@ pub fn spawn_player_unit(
             grouping: RTS_UNIT_PHYSICS_BODY_CGROUP,
             ..Default::default()
         },
-        TransformBundle{
-            local: Transform { translation: location.extend(0.0), ..Default::default()},
+        SpriteBundle {
+            texture: square.clone_weak(),
+            transform: Transform { translation: location.extend(0.0), ..Default::default()},
             ..Default::default()
         }
     )).id();
@@ -260,10 +265,11 @@ pub fn spawn_player_unit(
             to_despawn_target: ToDespawnTarget::new(root),
             ..Default::default()
         },
-        TransformBundle{
-            local: Transform { translation: (location + HUB_OFFSET).extend(0.0), ..Default::default()},
+        SpriteBundle {
+            texture: square.clone_weak(),
+            transform: Transform { translation: (location + HUB_OFFSET).extend(0.0), ..Default::default()},
             ..Default::default()
-        }
+        },
     )).id();
 
     // Aggro detector
@@ -273,8 +279,9 @@ pub fn spawn_player_unit(
             to_root: ToBehaviourRoot::new(hub),
             ..Default::default()
         },
-        TransformBundle{
-            local: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * -2.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
+        SpriteBundle {
+            texture: square.clone_weak(),
+            transform: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * -2.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
             ..Default::default()
         }
     )).id();
@@ -286,8 +293,9 @@ pub fn spawn_player_unit(
             to_root: ToBehaviourRoot::new(hub),
             ..Default::default()
         },
-        TransformBundle{
-            local: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * -1.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
+        SpriteBundle {
+            texture: square.clone_weak(),
+            transform: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * -1.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
             ..Default::default()
         }
     )).id();
@@ -299,8 +307,9 @@ pub fn spawn_player_unit(
             to_parent: ToParentNode::new(hub),
             ..Default::default()
         },
-        TransformBundle{
-            local: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * -0.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
+        SpriteBundle {
+            texture: square.clone_weak(),
+            transform: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * -0.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
             ..Default::default()
         }
     )).id();
@@ -312,8 +321,9 @@ pub fn spawn_player_unit(
             to_parent: ToParentNode::new(hub),
             ..Default::default()
         },
-        TransformBundle{
-            local: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * 0.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
+        SpriteBundle {
+            texture: square.clone_weak(),
+            transform: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * 0.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
             ..Default::default()
         }
     )).id();
@@ -325,8 +335,9 @@ pub fn spawn_player_unit(
             to_parent: ToParentNode::new(hub),
             ..Default::default()
         },
-        TransformBundle{
-            local: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * 1.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
+        SpriteBundle {
+            texture: square.clone_weak(),
+            transform: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * 1.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
             ..Default::default()
         }
     )).id();
@@ -341,8 +352,9 @@ pub fn spawn_player_unit(
             damage: DirectAttackPower::new(ATTACK_POWER),
             ..Default::default()
         },
-        TransformBundle{
-            local: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * 2.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
+        SpriteBundle {
+            texture: square,
+            transform: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * 2.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
             ..Default::default()
         }
     )).id();
