@@ -10,7 +10,16 @@ use super::*;
 pub struct AMProximityProcessor{
     threshold: f32
 }
+impl Default for AMProximityProcessor {
+    fn default() -> Self {
+        Self { threshold: 0.0 }
+    }
+}
 impl AMProximityProcessor {
+    pub fn new(threshold:f32) -> Self {
+        return Self{threshold}
+    }
+    
     pub fn threshold(&self) -> f32 {
         return self.threshold
     }

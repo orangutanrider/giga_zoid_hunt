@@ -7,7 +7,7 @@ pub mod prelude;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use core::slice::Iter;
-use std::marker::*;
+use std::{default, marker::*};
 
 use ref_marks::*;
 use ref_paths::*;
@@ -44,7 +44,15 @@ impl<S: RefSignature> Waymark for ToDetector<S> {
 
 #[derive(Component)]
 pub struct TIntersectionsAggregate(pub Vec<Entity>);
+impl Default for TIntersectionsAggregate {
+    fn default() -> Self {
+        Self(Vec::new())
+    }
+}
 impl TIntersectionsAggregate {
+    pub fn new() -> Self {
+        return Self(Vec::new())
+    }
     pub fn iter(&self) -> Iter<Entity> {
         return self.0.iter();
     }

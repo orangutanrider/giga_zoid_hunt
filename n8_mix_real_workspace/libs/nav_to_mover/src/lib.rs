@@ -21,6 +21,11 @@ pub struct SwitchedMoveAsNav<S: RefSignature>{
     pub switch: bool,
     signature: PhantomData<S>
 }
+impl<S: RefSignature> Default for SwitchedMoveAsNav<S> {
+    fn default() -> Self {
+        Self { switch: false, signature: Default::default() }
+    }
+}
 impl<S: RefSignature> SwitchedTransmissionFlag for SwitchedMoveAsNav<S> {
     fn set(&mut self, v: bool) {
         self.switch = v;
@@ -38,7 +43,7 @@ impl<S: RefSignature> SwitchedTransmissionFlag for SwitchedMoveAsNav<S> {
 pub struct NavIsLocal;
 */
 
-#[derive(Component)]
+#[derive(Component, Default)]
 /// Data-source, reference flag.
 pub struct NavIsReference<Signature: RefSignature>{
     signature: PhantomData<Signature>
@@ -51,7 +56,7 @@ pub struct NavIsReference<Signature: RefSignature>{
 pub struct MoveIsLocal;
 */
 
-#[derive(Component)]
+#[derive(Component, Default)]
 /// Data-delivery, reference flag.
 pub struct MoveIsReference<Signature: RefSignature>{
     signature: PhantomData<Signature>

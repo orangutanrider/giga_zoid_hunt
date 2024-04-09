@@ -10,6 +10,11 @@ pub(crate) const IDLE: TreeState = TreeState::N7; // Unimplemented
 /// Idle, Move, Chase, Attack;
 /// Mutually exclusive.
 pub(crate)struct TUnitIMCAMapper(pub u8);
+impl Default for TUnitIMCAMapper {
+    fn default() -> Self {
+        Self(0)
+    }
+}
 
 pub(crate) fn imca_mapper_sys(
     mut q: Query<(&mut TState, &mut TUnitIMCAMapper), Changed<TUnitIMCAMapper>>,
@@ -38,12 +43,27 @@ pub(crate) fn imca_mapper_sys(
 
 #[derive(Component)]
 pub(crate) struct AggroDetectorClosest(pub Option<Entity>);
+impl Default for AggroDetectorClosest {
+    fn default() -> Self {
+        Self(None)
+    }
+}
 
 #[derive(Component)]
 pub(crate) struct AttackDetectorClosest(pub Option<Entity>);
+impl Default for AttackDetectorClosest {
+    fn default() -> Self {
+        Self(None)
+    }
+}
 
 #[derive(Component)]
 pub(crate) struct AttackDetectorTargeted(pub Option<Entity>);
+impl Default for AttackDetectorTargeted {
+    fn default() -> Self {
+        Self(None)
+    }
+}
 
 pub(crate) fn aggro_to_tree_root_sys(
     aggro_q: Query<(&DistillationForClosest, &ToBehaviourRoot), With<AggroDetection>>,
@@ -104,7 +124,7 @@ pub(crate) trait GenericStateBox {
     const STATE: TreeState;
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 /// Local transfer.
 pub(crate) struct ControlOrdersToState;
 
@@ -153,7 +173,7 @@ impl Plugin for ControlOrdersToStatePlugin {
 pub(crate) const IN_AGGRO: TreeState = TreeState::N8;
 pub(crate) const IN_ATTACK: TreeState = TreeState::N9.union(IN_AGGRO);
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub(crate) struct DetectionToState;
 
 pub(crate) fn detection_to_state_sys(

@@ -102,13 +102,8 @@ pub fn abort_current_target_bang_sys(
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct UntilTargetGoneProcessor;
-impl Default for UntilTargetGoneProcessor {
-    fn default() -> Self {
-        Self {  }
-    }
-}
 
 #[derive(Component)]
 pub struct AbortCurrentTargetBang(bool);

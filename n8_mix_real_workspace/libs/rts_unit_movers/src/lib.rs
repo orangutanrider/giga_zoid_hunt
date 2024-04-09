@@ -19,3 +19,8 @@ waymark!(ToMover);
 #[derive(Component)]
 /// Data terminal.
 pub struct TMoveVector(pub Vec2);
+impl Default for TMoveVector {
+    fn default() -> Self {
+        Self(Vec2::ZERO)
+    }
+}

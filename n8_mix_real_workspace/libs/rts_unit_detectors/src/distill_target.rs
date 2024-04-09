@@ -3,6 +3,11 @@ use crate::*;
 
 #[derive(Component)]
 pub struct DistillationForTarget(Option<Entity>);
+impl Default for DistillationForTarget {
+    fn default() -> Self {
+        Self(None)
+    }
+}
 impl DistillationColumn for DistillationForTarget {
     fn read_detection(&self) -> Option<Entity> {
         return self.0
@@ -16,6 +21,11 @@ impl DistillationColumn for DistillationForTarget {
 #[derive(Component)]
 /// Data terminal. Input.
 pub struct TDetectionTarget(pub Option<Entity>);
+impl Default for TDetectionTarget {
+    fn default() -> Self {
+        Self(None)
+    }
+}
 
 pub fn target_detection_distillation_sys(
     mut q: Query<(&mut DistillationForTarget, &TDetectionTarget, &TIntersectionsAggregate)>,

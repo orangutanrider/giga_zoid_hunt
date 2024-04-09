@@ -26,9 +26,9 @@ use control_to_nav::{
 };
 
 // Definition
-#[derive(Component)]
+#[derive(Component, Default)]
 pub(crate) struct Move;
-#[derive(Bundle)]
+#[derive(Bundle, Default)]
 pub(crate) struct BMoveB {
     pub flag: Move,
 
@@ -73,7 +73,7 @@ pub(crate) fn move_aggro_logic(
     unit_mca.0 = unit_mca.0 + 1; // Move to chase state
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub(crate) struct MoveActuator;
 
 // The prefab systems for actuators have an oversight in how they're designed, so they don't work.
@@ -106,7 +106,7 @@ fn move_actuator(
     local_bang.actuator_set(acutation);
 }
 
-#[derive(Bundle)]
+#[derive(Bundle, Default)]
 pub(crate) struct BMoveNavToMover {
     pub bang_link: BangToSwitchedMoveAsNav,
     pub move_as_nav: SwitchedMoveAsNav<BMoveNavToMover>,
@@ -123,7 +123,7 @@ impl Plugin for BMoveNavToMoverPlugin {
     }
 }
 
-#[derive(Bundle)]
+#[derive(Bundle, Default)]
 pub(crate) struct BMoveControlToNav {
     pub bang_link: BangToSwitchedControlAsNav,
     pub nav_is_ref: NavIsReferenceControl<BMoveControlToNav>,

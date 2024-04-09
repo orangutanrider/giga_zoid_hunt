@@ -17,9 +17,9 @@ use rts_direct_attack::*;
 // This is good enough though, I don't know if that would be better either, I don't think it works like that in StarCraft.
 
 // Definition
-#[derive(Component)]
+#[derive(Component, Default)]
 pub(crate) struct Attack;
-#[derive(Bundle)]
+#[derive(Bundle, Default)]
 pub(crate) struct BAttack {
     pub flag: Attack,
 
@@ -41,6 +41,11 @@ pub(crate) struct BAttack {
 // Target handling
 #[derive(Component)]
 pub struct AttackTarget(Option<Entity>);
+impl Default for AttackTarget {
+    fn default() -> Self {
+        Self(None)
+    }
+}
 
 pub fn target_update_sys(
     mut q: Query<(&mut AttackTarget, &Bang, &ToBehaviourRoot)>,
@@ -72,15 +77,49 @@ fn target_update(
 // Behaviour
 #[derive(Component)]
 pub struct AttackTimer(f32);
+impl Default for AttackTimer {
+    fn default() -> Self {
+        Self(0.0)
+    }
+}
 
 #[derive(Component)]
 pub struct AttackTrigger{
     trigger_time: f32,
     triggered: bool,
 }
+impl AttackTrigger {
+    pub fn new(trigger_at_time: f32) -> Self {
+        return Self{
+            trigger_time: trigger_at_time,
+            triggered: false,
+        }
+    }
+}
+impl Default for AttackTrigger {
+    fn default() -> Self {
+        // Should not be defaulted
+        Self { triggered: false, trigger_time: 0.0 }
+    }
+}
 
 #[derive(Component)]
 pub struct AttackEndTrigger(f32);
+impl AttackEndTrigger {
+    pub fn new(trigger_at_time: f32) -> Self {
+        return Self(
+            trigger_at_time
+        )
+    }
+}
+impl Default for AttackEndTrigger {
+    fn default() -> Self {
+        // Should not be defaulted
+        Self(
+            0.0
+        )
+    }
+}
 
 pub fn attack_timer_reset_sys(
     mut q: Query<&mut AttackTimer, Changed<Bang>>
@@ -143,10 +182,10 @@ pub fn attack_end(
     root_q: &mut Query<&mut TUnitIMCAMapper>,
 ) {
     ref_caravan!(to_root::root_q(mut imca_mapper););
-    imca_mapper.0 = 1; // to Move
+    imca_mapper.0 = 0; // to Idle
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub(crate) struct AttackActuator;
 
 pub(crate) fn attack_actuator_sys(

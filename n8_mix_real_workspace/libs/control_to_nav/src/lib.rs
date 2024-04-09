@@ -22,13 +22,13 @@ pub struct ControlIsLocal<S: RefSignature>{
 }
 */
 
-#[derive(Component)]
+#[derive(Component, Default)]
 /// Data-destination, reference flag.
 pub struct NavIsReference<S: RefSignature>{
     signature: PhantomData<S>
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 /// Data-source, reference flag.
 pub struct ControlIsReference<S: RefSignature>{
     signature: PhantomData<S>

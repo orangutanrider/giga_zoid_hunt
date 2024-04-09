@@ -12,6 +12,11 @@ impl Plugin for DeathPlugin {
 
 #[derive(Component)]
 pub struct DeathBang(bool);
+impl Default for DeathBang {
+    fn default() -> Self {
+        Self(false)
+    }
+}
 impl DeathBang {
     pub fn new() -> Self {
         return Self(false);
@@ -22,11 +27,11 @@ impl DeathBang {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 /// Data transformation flag.
 pub struct DeathToEntityDespawn;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 /// Data destination, reference flag.
 pub struct DespawnTargetIsReference;
 
