@@ -3,6 +3,8 @@ use bevy::prelude::*;
 pub struct CursorTrackingPlugin;
 impl Plugin for CursorTrackingPlugin {
     fn build(&self, app: &mut App) {
+        app.init_resource::<CursorWorldPos>();
+        app.init_resource::<CursorIsLocated>();
         app.add_systems(PreUpdate, cursor_tracking_sys);
     }
 }

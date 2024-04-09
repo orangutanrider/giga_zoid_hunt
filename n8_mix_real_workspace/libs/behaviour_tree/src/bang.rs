@@ -20,6 +20,7 @@ pub struct BangPlugin;
 impl Plugin for BangPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(PreUpdate, (
+            export_signal_propagation_sys, // reference
             // actuator
             state_to_actuator_propagation_sys,
             bang_to_actuator_propagation_sys,
@@ -39,6 +40,7 @@ impl Plugin for BangPlugin {
             end_release_propagation_sys, // release
             auto_release_propagation_sys, // bang
             auto_release_sys.after(auto_release_propagation_sys), // bang
+            export_propogation_end_sys // reference
         ));
     }
 }

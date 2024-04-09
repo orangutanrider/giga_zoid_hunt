@@ -2412,7 +2412,19 @@ dependencies = [
 name = "main"
 version = "0.0.1"
 dependencies = [
+ "behaviour_tree",
  "bevy",
+ "bevy_rapier2d",
+ "health_to_death",
+ "mouse_pos",
+ "player_unit",
+ "rts_controller",
+ "rts_direct_attack",
+ "rts_unit_control",
+ "rts_unit_death",
+ "rts_unit_detectors",
+ "rts_unit_movers",
+ "rts_unit_nav",
 ]
 
 [[package]]

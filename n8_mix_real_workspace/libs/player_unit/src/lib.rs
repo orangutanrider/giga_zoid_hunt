@@ -31,6 +31,55 @@ use health_to_death::*;
 // Note:
 // There are reference definitions in this that could be upgraded to be more flexible.
 
+pub struct PlayerUnitPlugin;
+
+impl Plugin for PlayerUnitPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update,(
+            // state_to_root
+            imca_mapper_sys,
+            aggro_to_tree_root_sys,
+            attack_closest_to_tree_root_sys,
+            attack_target_to_tree_root_sys,
+            detection_to_state_sys, 
+
+            // move
+            move_aggro_logic_sys,
+            move_actuator_sys,
+
+            // chase
+            chase_logic_sys,
+            chase_actuator_sys,
+            referenced_aggro_to_referenced_nav_sys,
+
+            // attack
+            target_update_sys,
+            attack_timer_reset_sys,
+            attack_timer_sys,
+            attack_execution_sys,
+            attack_end_sys,
+            attack_actuator_sys,
+        ));
+
+        app.add_plugins((
+            // state_to_root
+            ControlOrdersToStatePlugin,
+
+            // move
+            BMoveNavToMoverPlugin,
+            BMoveControlToNavPlugin,
+
+            // chase
+            BChaseNavToMoverPlugin,
+
+            // common
+            BangToSwitchedMoveAsNavPlugin,
+            BangToSwitchedControlAsNavPlugin,
+        ));
+    }
+}
+
+
 // ================================
 // Unit Structure
 

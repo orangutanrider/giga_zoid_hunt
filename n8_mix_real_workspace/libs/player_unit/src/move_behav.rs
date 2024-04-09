@@ -114,7 +114,8 @@ pub(crate) struct BMoveNavToMover {
     pub move_is: MoveIsReference<BMoveNavToMover>,
 }
 ref_signature!(BMoveNavToMover);
-impl Plugin for BMoveNavToMover {
+pub struct BMoveNavToMoverPlugin;
+impl Plugin for BMoveNavToMoverPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, (
             switched_reference_move_as_reference_nav_sys::<BMoveNavToMover>,
@@ -131,6 +132,15 @@ pub(crate) struct BMoveControlToNav {
     pub as_pure_move: SwitchedMoveAsNav<BMoveControlToNav>,
 }
 ref_signature!(BMoveControlToNav);
+pub struct BMoveControlToNavPlugin;
+impl Plugin for BMoveControlToNavPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, (
+            reference_attack_move_as_reference_nav_sys::<BMoveControlToNav>,
+            reference_pure_move_as_reference_nav_sys::<BMoveControlToNav>
+        ));
+    }
+}
 
 /*
     The data transmission libraries have a fault.

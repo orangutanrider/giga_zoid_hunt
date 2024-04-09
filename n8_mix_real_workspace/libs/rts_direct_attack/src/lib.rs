@@ -2,6 +2,14 @@ use bevy::prelude::*;
 
 use rts_unit_health::*;
 
+pub struct DirectAttackPlugin;
+
+impl Plugin for DirectAttackPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, direct_attack_sys);
+    }
+}
+
 #[derive(Component)]
 pub struct DirectAttackBang(Option<Entity>);
 impl DirectAttackBang {

@@ -9,7 +9,7 @@ use ref_marks::*;
 use ref_caravan::*;
 use ref_paths::*;
 
-
+/* 
 #[derive(Component)]
 pub struct SwitchedNavAsAttackTarget<S: RefSignature>{
     pub switch: bool,
@@ -36,6 +36,7 @@ pub fn reference_attack_target_as_reference_nav_sys<S: RefSignature>(
         nav_input.0 = waypoint;
     }
 } 
+*/
 
 /* 
 #[derive(Component)]

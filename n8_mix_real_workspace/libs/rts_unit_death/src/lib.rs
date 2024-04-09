@@ -2,6 +2,14 @@ use bevy::prelude::*;
 
 use ref_paths::*;
 
+pub struct DeathPlugin;
+
+impl Plugin for DeathPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(PostUpdate, referenced_entity_destruction_on_death_sys);
+    }
+}
+
 #[derive(Component)]
 pub struct DeathBang(bool);
 impl DeathBang {

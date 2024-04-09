@@ -54,16 +54,10 @@ impl ExportPropagator {
 /// Each propogator propogates to children with activated bangs.
 /// They signal to the bang references, to send their reference to the exporter at the root.
 pub fn export_propogation_sys(
-    mut node_q: Query<(&mut ExportPropagator, &Children), Changed<ExportPropagator>>,
-    mut child_q: Query<(&mut ExportPropagator, &Bang)>
+    node_q: Query<&Children, Changed<ExportPropagator>>,
+    mut child_q: Query<(&mut ExportPropagationSignal, &Bang)>
 ) {
-    for (mut propagator, children) in node_q.iter_mut() {
-        if !propagator.is_propagating() {
-            continue;
-        }
-        propagator.bypass_change_detection();
-        propagator.0 = false;
-
+    for children in node_q.iter() {
         for child in children.iter() {
             export_propogation(child, &mut child_q);
         }
@@ -72,7 +66,7 @@ pub fn export_propogation_sys(
 
 fn export_propogation(
     child: &Entity,
-    child_q: &mut Query<(&mut ExportPropagator, &Bang)>
+    child_q: &mut Query<(&mut ExportPropagationSignal, &Bang)>
 ) {
     let child = *child;
     ref_caravan!(@child::child_q((mut propagator, bang)););
@@ -81,4 +75,43 @@ fn export_propogation(
         return;
     }
     propagator.0 = true;
+}
+
+pub fn export_propogation_end_sys(
+    mut node_q: Query<&mut ExportPropagator, Changed<ExportPropagator>>,
+) {
+    for mut propagator in node_q.iter_mut() {
+        propagator.bypass_change_detection();
+        propagator.0 = false;
+    }
+}
+
+// Seems kinda messy to handle the query conflict like this, but this lib is out of focus for the remainder of the project.
+// I cannot come back to address things that aren't of immediate concern.
+// (Also, currently nothing even uses the ref-bang stuff).
+pub fn export_signal_propagation_sys(
+    mut q: Query<(&mut ExportPropagationSignal, &mut ExportPropagator), Changed<ExportPropagationSignal>>
+) {
+    for (mut signal, mut propagator) in q.iter_mut() {
+        signal.bypass_change_detection();
+        signal.0 = false;
+        propagator.0 = true;
+    }
+}
+
+#[derive(Component)]
+pub struct ExportPropagationSignal(bool);
+impl Default for ExportPropagationSignal {
+    fn default() -> Self {
+        return Self::new()
+    }
+}
+impl ExportPropagationSignal { 
+    pub fn new() -> Self {
+        return Self(false)
+    }
+
+    fn is_propagating(&self) -> bool {
+        return self.0
+    }
 }

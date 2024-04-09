@@ -6,7 +6,7 @@ pub(crate) struct Chase;
 #[derive(Bundle)]
 pub(crate) struct BChase {
     pub flag: Chase,
-    
+
     pub to_root: ToBehaviourRoot,
     pub to_parent: ToParentNode,
     pub bang: Bang,
@@ -90,7 +90,8 @@ pub(crate) struct BChaseNavToMover {
     pub move_is: MoveIsReference<BChaseNavToMover>,
 }
 ref_signature!(BChaseNavToMover);
-impl Plugin for BChaseNavToMover {
+pub struct BChaseNavToMoverPlugin;
+impl Plugin for BChaseNavToMoverPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, (
             switched_reference_move_as_reference_nav_sys::<BChaseNavToMover>,
