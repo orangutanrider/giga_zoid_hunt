@@ -29,9 +29,9 @@ pub struct ZeroHealthMeansDeath;
 pub fn local_data_zero_health_means_death_sys(
     mut q: Query<(&mut DeathBang, &THealth), (With<ZeroHealthMeansDeath>, With<DeathIsLocal>, With<HealthIsLocal>)>
 ) {
-    for (mut death, health) in q.iter_mut() {
-        if health.0 <= 0.0 {
-            death.bang();
-        }
-    }
+    //for (mut death, health) in q.iter_mut() {
+    //    if health.0 <= 0.0 {
+    //        death.bang();
+    //    }
+    //}
 }

@@ -47,12 +47,12 @@ pub fn referenced_entity_destruction_on_death_sys(
     q: Query<&ToDespawnTarget, (Changed<DeathBang>, With<DeathToEntityDespawn>, With<DespawnTargetIsReference>)>,
     mut commands: Commands
 ) {
-    for target in q.iter() {
-        let target = target.go();
-        let Some(commands) = commands.get_entity(target) else {
-            continue; // Invalid destruction target
-        };
-
-        commands.despawn_recursive();
-    }
+    // for target in q.iter() {
+    //     let target = target.go();
+    //     let Some(commands) = commands.get_entity(target) else {
+    //         continue; // Invalid destruction target
+    //     };
+    // 
+    //     commands.despawn_recursive();
+    // }
 }
