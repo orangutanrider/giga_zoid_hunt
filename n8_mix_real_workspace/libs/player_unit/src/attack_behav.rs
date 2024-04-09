@@ -21,7 +21,21 @@ use rts_direct_attack::*;
 pub(crate) struct Attack;
 #[derive(Bundle)]
 pub(crate) struct BAttack {
-    
+    pub flag: Attack,
+
+    pub to_root: ToBehaviourRoot,
+    pub to_parent: ToParentNode,
+    pub bang: Bang,
+    pub propagator: ActuatorPropagator,
+    pub actuator: AttackActuator,
+
+    pub targeted: AttackTarget,
+    pub timer: AttackTimer,
+    pub trigger: AttackTrigger,
+    pub end: AttackEndTrigger,
+
+    pub attack: DirectAttackBang,
+    pub damage: DirectAttackPower,
 }
 
 // Target handling

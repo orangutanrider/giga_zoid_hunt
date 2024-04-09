@@ -1,4 +1,5 @@
 pub mod transform;
+pub use transform::*;
 
 use bevy::prelude::*;
 use ref_paths::*;

@@ -1,11 +1,45 @@
-use super::*;
+use bevy::prelude::*;
+
+use super::{
+    TUnitIMCAMapper,
+    state_to_root::{
+        ATTACK_MOVE,
+        IN_AGGRO,
+        MOVE
+    },
+    common::*,
+};
+
+pub(crate) use behaviour_tree::{prelude::*, state::State as TreeState};
+use ref_caravan::*;
+use ref_paths::*;
+use ref_marks::*;
+
+use nav_to_mover::{
+    NavIsReference as NavIsReferenceMover,
+    *
+};
+
+use control_to_nav::{
+    NavIsReference as NavIsReferenceControl,
+    *
+};
 
 // Definition
 #[derive(Component)]
 pub(crate) struct Move;
 #[derive(Bundle)]
 pub(crate) struct BMoveB {
-    
+    pub flag: Move,
+
+    pub to_root: ToBehaviourRoot,
+    pub to_parent: ToParentNode,
+    pub bang: Bang,
+    pub propagator: ActuatorPropagator,
+    pub actuator: MoveActuator,
+
+    pub nav_to_mover: BMoveNavToMover,
+    pub control_to_nav: BMoveControlToNav,
 }
 
 // Behaviour
@@ -76,7 +110,7 @@ fn move_actuator(
 pub(crate) struct BMoveNavToMover {
     pub bang_link: BangToSwitchedMoveAsNav,
     pub move_as_nav: SwitchedMoveAsNav<BMoveNavToMover>,
-    pub nav_is: NavIsReference<BMoveNavToMover>,
+    pub nav_is: NavIsReferenceMover<BMoveNavToMover>,
     pub move_is: MoveIsReference<BMoveNavToMover>,
 }
 ref_signature!(BMoveNavToMover);
@@ -87,3 +121,26 @@ impl Plugin for BMoveNavToMover {
         ));
     }
 }
+
+#[derive(Bundle)]
+pub(crate) struct BMoveControlToNav {
+    pub bang_link: BangToSwitchedControlAsNav,
+    pub nav_is_ref: NavIsReferenceControl<BMoveControlToNav>,
+    pub control_is_ref: ControlIsReference<BMoveControlToNav>,
+    pub as_attack_move: SwitchedNavAsAttackMove<BMoveControlToNav>,
+    pub as_pure_move: SwitchedMoveAsNav<BMoveControlToNav>,
+}
+ref_signature!(BMoveControlToNav);
+
+/*
+    The data transmission libraries have a fault.
+    Example:
+	    from x to y
+	    from x to z
+    If both have definitions for x as a reference (XIsReference), then you can see the issue here; Two components that are the same thing, but in different types.
+
+    So those reference flags, they need to be in seperate libs, not related to transmission.
+    Then the transmission libs, only contain flags for data transformation.
+
+    A ting, for the future. 
+*/

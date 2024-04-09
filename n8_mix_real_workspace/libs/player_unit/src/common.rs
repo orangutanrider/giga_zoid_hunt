@@ -15,6 +15,9 @@ pub(crate) fn bang_to_switch_sys<Transmission: SwitchedTransmissionFlag, Flag: C
     }
 }
 
+// Hmm...
+// The readability of these, something should be improved there.
+
 // Bang to switch bundles
 #[derive(Bundle)]
 pub(crate) struct BangToSwitchedMoveAsNav {
@@ -28,3 +31,17 @@ impl Plugin for BangToSwitchedMoveAsNav {
     }
 }
 ref_signature!(BangToSwitchedMoveAsNav);
+
+// Bang to switch bundles
+#[derive(Bundle)]
+pub(crate) struct BangToSwitchedControlAsNav {
+    pub flag: BangToSwitch<BangToSwitchedControlAsNav>,
+}
+impl Plugin for BangToSwitchedControlAsNav {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, (
+            bang_to_switch_sys::<SwitchedMoveAsNav<BangToSwitchedControlAsNav>, BangToSwitch<BangToSwitchedControlAsNav>, BangToSwitchedControlAsNav>,
+        ));
+    }
+}
+ref_signature!(BangToSwitchedControlAsNav);

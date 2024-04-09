@@ -5,6 +5,8 @@ pub mod direct_nav;
 use bevy::prelude::*;
 use ref_paths::*;
 
+pub use direct_nav::*;
+
 #[derive(Component)]
 /// Cairn.
 pub struct Nav;

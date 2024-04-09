@@ -1,7 +1,7 @@
-pub mod attack_move;
-pub mod pure_move;
-pub mod attack_target;
-pub mod idle;
+pub mod attack_move; pub use attack_move::*;
+pub mod pure_move; pub use pure_move::*;
+pub mod attack_target; pub use attack_target::*;
+pub mod idle; pub use idle::*;
 
 use bevy::prelude::*;
 
