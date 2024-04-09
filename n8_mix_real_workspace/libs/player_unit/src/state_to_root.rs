@@ -126,6 +126,30 @@ pub(crate) fn control_orders_to_state_sys<OrderTerminalType: 'static, StateBox: 
     }
 }
 
+struct AttackMoveStateBox;
+impl GenericStateBox for AttackMoveStateBox {
+    const STATE: TreeState = ATTACK_MOVE;
+}
+struct PureMoveStateBox;
+impl GenericStateBox for PureMoveStateBox {
+    const STATE: TreeState = PURE_MOVE;
+}
+struct AttackTargetStateBox;
+impl GenericStateBox for AttackTargetStateBox {
+    const STATE: TreeState = ATTACK_TARGET;
+}
+
+pub struct ControlOrdersToStatePlugin;
+impl Plugin for ControlOrdersToStatePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, (
+            control_orders_to_state_sys::<TPureMoveOrders, PureMoveStateBox>,
+            control_orders_to_state_sys::<TAttackMoveOrders, AttackMoveStateBox>,
+            control_orders_to_state_sys::<TAttackTargetOrders, AttackTargetStateBox>,
+        ));
+    }
+}
+
 pub(crate) const IN_AGGRO: TreeState = TreeState::N8;
 pub(crate) const IN_ATTACK: TreeState = TreeState::N9.union(IN_AGGRO);
 

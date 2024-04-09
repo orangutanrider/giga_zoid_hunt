@@ -7,6 +7,14 @@ use ref_paths::*;
 
 pub use direct_nav::*;
 
+pub struct NavPlugin;
+
+impl Plugin for NavPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, direct_nav_sys);
+    }
+}
+
 #[derive(Component)]
 /// Cairn.
 pub struct Nav;

@@ -12,6 +12,24 @@ use std::marker::*;
 use ref_marks::*;
 use ref_paths::*;
 
+use self::player_circle_intersections::player_circle_intersections_sys;
+use self::enemy_circle_intersections::enemy_circle_intersections_sys;
+use self::distill_target::target_detection_distillation_sys;
+use self::distill_closest::closest_detection_distillation_sys;
+
+pub struct RTSUnitDetectorsPlugin;
+
+impl Plugin for RTSUnitDetectorsPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(PreUpdate, (
+            player_circle_intersections_sys,
+            enemy_circle_intersections_sys,
+            target_detection_distillation_sys,
+            closest_detection_distillation_sys
+        ));
+    }
+}
+
 #[derive(Component)]
 /// Signed waymark.
 pub struct ToDetector<S: RefSignature>{

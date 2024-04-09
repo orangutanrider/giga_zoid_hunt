@@ -5,6 +5,14 @@ use rts_unit_health::*;
 // Ref signature is un-needed for most applications.
 // So it is un-implemented here.
 
+pub struct HealthToDeathPlugin;
+
+impl Plugin for HealthToDeathPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(PreUpdate, local_data_zero_health_means_death_sys);
+    }
+}
+
 #[derive(Component)]
 /// Data-destination, reference flag.
 pub struct DeathIsLocal;

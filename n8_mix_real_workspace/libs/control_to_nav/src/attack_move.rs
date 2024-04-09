@@ -15,7 +15,7 @@ pub struct SwitchedNavAsAttackMove<S: RefSignature>{
     signature: PhantomData<S>
 }
 
-pub fn reference_pure_move_as_reference_nav_sys<S: RefSignature>(
+pub fn reference_attack_move_as_reference_nav_sys<S: RefSignature>(
     mut q: Query<(&mut TNavWaypoint, &ActiveOrderTerminal, &TAttackMoveOrders, &SwitchedNavAsAttackMove<S>), (With<NavIsReference<S>>, With<ControlIsReference<S>>)>
 ) {
     for (mut nav_input, order_type, order_data, switch) in q.iter_mut() {

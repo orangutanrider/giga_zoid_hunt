@@ -26,7 +26,7 @@ impl ImmutableDetector for CircleIntersectionsOfEnemy {
 
 /// Detection to local aggregate terminal.
 pub fn enemy_circle_intersections_sys(
-    rapier: &RapierContext,
+    rapier: Res<RapierContext>,
     mut q: Query<(&mut TIntersectionsAggregate, &GlobalTransform, &CircleIntersectionsOfEnemy)>
 ) {
     for (mut terminal, transform, params) in q.iter_mut() {

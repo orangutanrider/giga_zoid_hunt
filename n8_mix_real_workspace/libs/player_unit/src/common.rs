@@ -23,7 +23,8 @@ pub(crate) fn bang_to_switch_sys<Transmission: SwitchedTransmissionFlag, Flag: C
 pub(crate) struct BangToSwitchedMoveAsNav {
     pub flag: BangToSwitch<BangToSwitchedMoveAsNav>,
 }
-impl Plugin for BangToSwitchedMoveAsNav {
+pub struct BangToSwitchedMoveAsNavPlugin;
+impl Plugin for BangToSwitchedMoveAsNavPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, (
             bang_to_switch_sys::<SwitchedMoveAsNav<BangToSwitchedMoveAsNav>, BangToSwitch<BangToSwitchedMoveAsNav>, BangToSwitchedMoveAsNav>,
@@ -37,7 +38,8 @@ ref_signature!(BangToSwitchedMoveAsNav);
 pub(crate) struct BangToSwitchedControlAsNav {
     pub flag: BangToSwitch<BangToSwitchedControlAsNav>,
 }
-impl Plugin for BangToSwitchedControlAsNav {
+pub struct BangToSwitchedControlAsNavPlugin;
+impl Plugin for BangToSwitchedControlAsNavPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, (
             bang_to_switch_sys::<SwitchedMoveAsNav<BangToSwitchedControlAsNav>, BangToSwitch<BangToSwitchedControlAsNav>, BangToSwitchedControlAsNav>,
