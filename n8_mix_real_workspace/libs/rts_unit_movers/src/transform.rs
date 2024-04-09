@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::TMoveVector;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct LocalTransformMovement;
 
 pub fn tranform_movement_sys(

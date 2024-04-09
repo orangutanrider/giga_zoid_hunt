@@ -13,15 +13,15 @@ impl Plugin for HealthToDeathPlugin {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 /// Data-destination, reference flag.
 pub struct DeathIsLocal;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 /// Data-source, reference flag.
 pub struct HealthIsLocal;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 /// Data transformation flag.
 pub struct ZeroHealthMeansDeath;
 

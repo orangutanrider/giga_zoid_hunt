@@ -1,9 +1,9 @@
 use super::*;
 
 // Definition
-#[derive(Component)]
+#[derive(Component, Default)]
 pub(crate) struct Chase;
-#[derive(Bundle)]
+#[derive(Bundle, Default)]
 pub(crate) struct BChase {
     pub flag: Chase,
 
@@ -52,7 +52,7 @@ fn chase_logic(
     unit_mca.0 = unit_mca.0 + 1; // Move to attacking state
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub(crate) struct ChaseActuator;
 
 pub(crate) fn chase_actuator_sys(
@@ -82,7 +82,7 @@ fn chase_actuator(
     local_bang.actuator_set(actuation);
 }
 
-#[derive(Bundle)]
+#[derive(Bundle, Default)]
 pub(crate) struct BChaseNavToMover {
     pub bang_link: BangToSwitchedMoveAsNav,
     pub move_as_nav: SwitchedMoveAsNav<BChaseNavToMover>,
@@ -101,15 +101,20 @@ impl Plugin for BChaseNavToMoverPlugin {
 
 // Aggro to nav
 // It already refers to the detector as aggro detector, so I don't think any signature is needed.
-#[derive(Component)]
+#[derive(Component, Default)]
 pub(crate) struct AggroIsReference;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub(crate) struct HubNavIsReference;
 
 #[derive(Component)]
 pub(crate) struct SwitchedNavAsAggroDetectorClosest {
     pub switch: bool,
+}
+impl Default for SwitchedNavAsAggroDetectorClosest {
+    fn default() -> Self {
+        Self { switch: false }
+    }
 }
 
 pub(crate) fn referenced_aggro_to_referenced_nav_sys(

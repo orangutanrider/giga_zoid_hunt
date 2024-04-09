@@ -9,6 +9,11 @@ use crate::*;
 pub struct CircleIntersectionsOfEnemy{
     radius: f32,
 }
+impl Default for CircleIntersectionsOfEnemy{
+    fn default() -> Self {
+        Self { radius: 0.0 }
+    }
+}
 impl CircleIntersectionsOfEnemy {
     pub fn new(radius: f32) -> Self {
         return Self {

@@ -15,6 +15,8 @@ ref_paths.workspace = true
 ref_caravan.workspace = true
 ref_marks.workspace = true
 
+rapier_config.workspace = true
+
 rts_unit_detectors.workspace = true
 rts_unit_control.workspace = true
 rts_unit_nav.workspace = true

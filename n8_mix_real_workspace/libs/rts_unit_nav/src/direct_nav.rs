@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use super::*;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 /// Data process flag.
 /// Makes the navigation vector, point directly to the waypoint input.
 pub struct DirectNav;

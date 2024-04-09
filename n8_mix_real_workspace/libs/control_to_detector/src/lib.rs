@@ -7,19 +7,19 @@ use ref_marks::*;
 use ref_caravan::*;
 use ref_paths::*;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 /// Data transmission flag.
 pub struct TargetAsCurrentInControl<S: RefSignature>{
     signature: PhantomData<S>
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 /// Data-delivery, reference flag.
 pub struct TargetIsLocal<S: RefSignature>{
     signature: PhantomData<S>
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 /// Data-source, reference flag.
 pub struct ControlIsReference<S: RefSignature>{
     signature: PhantomData<S>

@@ -2,7 +2,7 @@
 
 use super::*;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub(crate) struct BangToSwitch<S: RefSignature> {
     signature: PhantomData<S>,
 }
@@ -19,7 +19,7 @@ pub(crate) fn bang_to_switch_sys<Transmission: SwitchedTransmissionFlag, Flag: C
 // The readability of these, something should be improved there.
 
 // Bang to switch bundles
-#[derive(Bundle)]
+#[derive(Bundle, Default)]
 pub(crate) struct BangToSwitchedMoveAsNav {
     pub flag: BangToSwitch<BangToSwitchedMoveAsNav>,
 }
@@ -34,7 +34,7 @@ impl Plugin for BangToSwitchedMoveAsNavPlugin {
 ref_signature!(BangToSwitchedMoveAsNav);
 
 // Bang to switch bundles
-#[derive(Bundle)]
+#[derive(Bundle, Default)]
 pub(crate) struct BangToSwitchedControlAsNav {
     pub flag: BangToSwitch<BangToSwitchedControlAsNav>,
 }

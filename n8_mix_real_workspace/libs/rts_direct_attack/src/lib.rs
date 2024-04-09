@@ -12,6 +12,11 @@ impl Plugin for DirectAttackPlugin {
 
 #[derive(Component)]
 pub struct DirectAttackBang(Option<Entity>);
+impl Default for DirectAttackBang {
+    fn default() -> Self {
+        Self(None)
+    }
+}
 impl DirectAttackBang {
     pub fn new() -> Self {
         return Self(None)
@@ -24,6 +29,11 @@ impl DirectAttackBang {
 
 #[derive(Component)]
 pub struct DirectAttackPower(f32);
+impl Default for DirectAttackPower {
+    fn default() -> Self {
+        Self(0.0)
+    }
+}
 impl DirectAttackPower {
     pub fn new(power: f32) -> Self {
         return Self(power);

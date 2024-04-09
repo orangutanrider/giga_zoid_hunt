@@ -27,7 +27,17 @@ waymark!(ToNav);
 #[derive(Component)]
 /// Input
 pub struct TNavWaypoint(pub Vec2);
+impl Default for TNavWaypoint {
+    fn default() -> Self {
+        Self(Vec2::ZERO)
+    }
+}
 
 #[derive(Component)]
 /// Output
 pub struct NavVectorOutput(pub Vec2);
+impl Default for NavVectorOutput {
+    fn default() -> Self {
+        Self(Vec2::ZERO)
+    }
+}

@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 /// Team affiliation flag
 pub struct PlayerTeam;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 /// Team affiliation flag
 pub struct EnemyTeam;

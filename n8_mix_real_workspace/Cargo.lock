@@ -3031,6 +3031,7 @@ dependencies = [
  "control_to_nav",
  "health_to_death",
  "nav_to_mover",
+ "rapier_config",
  "ref_caravan",
  "ref_marks",
  "ref_paths",
