@@ -5,7 +5,20 @@ use super::*;
 pub(crate) struct Chase;
 #[derive(Bundle)]
 pub(crate) struct BChase {
+    pub flag: Chase,
     
+    pub to_root: ToBehaviourRoot,
+    pub to_parent: ToParentNode,
+    pub bang: Bang,
+    pub propagator: ActuatorPropagator,
+    pub actuator: ChaseActuator,
+
+    pub nav_to_mover: BChaseNavToMover,
+
+    // aggro to nav
+    pub aggro_is_ref: AggroIsReference,
+    pub nav_as_aggro: SwitchedNavAsAggroDetectorClosest,
+    pub hub_is_ref: HubNavIsReference
 }
 
 // Behaviour
@@ -86,28 +99,29 @@ impl Plugin for BChaseNavToMover {
 }
 
 // Aggro to nav
+// It already refers to the detector as aggro detector, so I don't think any signature is needed.
 #[derive(Component)]
-pub(crate) struct AggroIsReference<S: RefSignature> {
-    signature: PhantomData<S>,
-}
+pub(crate) struct AggroIsReference;
 
 #[derive(Component)]
-pub(crate) struct SwitchedNavAsAggroDetectorClosest<S: RefSignature> {
+pub(crate) struct HubNavIsReference;
+
+#[derive(Component)]
+pub(crate) struct SwitchedNavAsAggroDetectorClosest {
     pub switch: bool,
-    signature: PhantomData<S>,
 }
 
-pub(crate) fn referenced_aggro_to_referenced_nav_sys<S: RefSignature>(
-    q: Query<&ToBehaviourRoot, (With<AggroIsReference<S>>, With<NavIsReference<S>>)>,
+pub(crate) fn referenced_aggro_to_referenced_nav_sys(
+    q: Query<&ToBehaviourRoot, (With<AggroIsReference>, With<HubNavIsReference>)>,
     mut root_q: Query<(&mut TNavWaypoint, &AggroDetectorClosest)>,
     target_q: Query<&GlobalTransform>,
 ) {
     for (to_root) in q.iter() {
-        referenced_aggro_to_referenced_nav::<S>(to_root, &mut root_q, &target_q);
+        referenced_aggro_to_referenced_nav(to_root, &mut root_q, &target_q);
     }
 } 
 
-fn referenced_aggro_to_referenced_nav<S: RefSignature>( 
+fn referenced_aggro_to_referenced_nav( 
     to_root: &ToBehaviourRoot,
     root_q: &mut Query<(&mut TNavWaypoint, &AggroDetectorClosest)>,
     target_q: &Query<&GlobalTransform>,
