@@ -200,13 +200,15 @@ struct BAttackDetection {
 }
 
 #[derive(Event)]
-pub struct SpawnPlayerUnitEvent(Vec2); // spawn location 
+pub struct SpawnPlayerUnitEvent(pub Vec2); // spawn location 
 
 pub fn spawn_player_unit_event_sys(
-    mut event: EventWriter<SpawnPlayerUnitEvent>,
+    mut event: EventReader<SpawnPlayerUnitEvent>,
     mut commands: Commands,
 ) {
-
+    for ev in event.read() {
+        spawn_player_unit(ev.0, &mut commands);
+    }
 }
 
 pub const PARAM_AGGRO_RANGE: f32 = 100.0;
@@ -222,37 +224,57 @@ pub const ATTACK_POWER: f32 = 5.0;
 pub const ATTACK_SPEED: f32 = 0.75;
 pub const ATTACK_ANIMATION_TIME: f32 = 1.1;
 
-fn spawn_player_unit(
+pub const HUB_OFFSET: Vec2 = Vec2{ x: 0.0, y: 1.0 };
+pub const NODES_Y_OFFSET: f32 = 1.0;
+pub const NODES_X_OFFSET: f32 = 1.0;
+
+pub fn spawn_player_unit(
     location: Vec2,
     commands: &mut Commands,
 ) {
     // Root
-    let root = commands.spawn(BRoot{
-        collider: Collider::ball(PHYSICS_SIZE),
-        rigidbody: RigidBody::KinematicPositionBased,
-        grouping: RTS_UNIT_PHYSICS_BODY_CGROUP,
-        ..Default::default()
-    }).id();
+    let root = commands.spawn((
+        BRoot{
+            collider: Collider::ball(PHYSICS_SIZE),
+            rigidbody: RigidBody::KinematicPositionBased,
+            grouping: RTS_UNIT_PHYSICS_BODY_CGROUP,
+            ..Default::default()
+        },
+        TransformBundle{
+            local: Transform { translation: location.extend(0.0), ..Default::default()},
+            ..Default::default()
+        }
+    )).id();
 
     // Hub
-    let hub = commands.spawn((BHub{
-        pure_move_processor: PMProximityProcessor::new(ORDER_COMPLETE_DISTANCE),
-        attack_move_processor: AMProximityProcessor::new(ORDER_COMPLETE_DISTANCE),
-        collider: Collider::ball(BODY_SIZE),
-        rigidbody: RigidBody::Fixed,
-        sensor: Sensor,
-        grouping: PLAYER_SOUL_CGROUP,
-        health: THealth(HEALTH),
-        max_health: MaxHealth::new(HEALTH),
-        to_despawn_target: ToDespawnTarget::new(root),
-        ..Default::default()
-    })).id();
+    let hub = commands.spawn((
+        BHub{
+            pure_move_processor: PMProximityProcessor::new(ORDER_COMPLETE_DISTANCE),
+            attack_move_processor: AMProximityProcessor::new(ORDER_COMPLETE_DISTANCE),
+            collider: Collider::ball(BODY_SIZE),
+            rigidbody: RigidBody::Fixed,
+            sensor: Sensor,
+            grouping: PLAYER_SOUL_CGROUP,
+            health: THealth(HEALTH),
+            max_health: MaxHealth::new(HEALTH),
+            to_despawn_target: ToDespawnTarget::new(root),
+            ..Default::default()
+        },
+        TransformBundle{
+            local: Transform { translation: (location + HUB_OFFSET).extend(0.0), ..Default::default()},
+            ..Default::default()
+        }
+    )).id();
 
     // Aggro detector
     let aggro_detector = commands.spawn((
         BAggroDetection{
             detector: CircleIntersectionsOfEnemy::new(PARAM_AGGRO_RANGE),
             to_root: ToBehaviourRoot::new(hub),
+            ..Default::default()
+        },
+        TransformBundle{
+            local: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * -2.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
             ..Default::default()
         }
     )).id();
@@ -262,6 +284,10 @@ fn spawn_player_unit(
         BAttackDetection{
             detector: CircleIntersectionsOfEnemy::new(PARAM_ATTACK_RANGE),
             to_root: ToBehaviourRoot::new(hub),
+            ..Default::default()
+        },
+        TransformBundle{
+            local: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * -1.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
             ..Default::default()
         }
     )).id();
@@ -273,6 +299,10 @@ fn spawn_player_unit(
             to_parent: ToParentNode::new(hub),
             ..Default::default()
         },
+        TransformBundle{
+            local: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * -0.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
+            ..Default::default()
+        }
     )).id();
 
     // Move
@@ -282,6 +312,10 @@ fn spawn_player_unit(
             to_parent: ToParentNode::new(hub),
             ..Default::default()
         },
+        TransformBundle{
+            local: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * 0.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
+            ..Default::default()
+        }
     )).id();
 
     // Chase
@@ -291,6 +325,10 @@ fn spawn_player_unit(
             to_parent: ToParentNode::new(hub),
             ..Default::default()
         },
+        TransformBundle{
+            local: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * 1.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
+            ..Default::default()
+        }
     )).id();
 
     // Attack
@@ -303,5 +341,12 @@ fn spawn_player_unit(
             damage: DirectAttackPower::new(ATTACK_POWER),
             ..Default::default()
         },
+        TransformBundle{
+            local: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * 2.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
+            ..Default::default()
+        }
     )).id();
+
+    commands.entity(root).add_child(hub);
+    commands.entity(hub).push_children(&[aggro_detector, attack_detector, idle_behav, move_behav, chase_behav, attack_behav]);
 }
