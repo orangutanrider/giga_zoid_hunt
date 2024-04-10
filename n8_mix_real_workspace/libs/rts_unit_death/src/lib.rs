@@ -44,15 +44,19 @@ waymark!(ToDespawnTarget);
 // That way, stuff can respond to the imminent despawn.
 // They can still do that here though anyways, just pay attention to the death bang.
 pub fn referenced_entity_destruction_on_death_sys(
-    q: Query<&ToDespawnTarget, (Changed<DeathBang>, With<DeathToEntityDespawn>, With<DespawnTargetIsReference>)>,
+    q: Query<(&ToDespawnTarget, &DeathBang), (Changed<DeathBang>, With<DeathToEntityDespawn>, With<DespawnTargetIsReference>)>,
     mut commands: Commands
 ) {
-    // for target in q.iter() {
-    //     let target = target.go();
-    //     let Some(commands) = commands.get_entity(target) else {
-    //         continue; // Invalid destruction target
-    //     };
-    // 
-    //     commands.despawn_recursive();
-    // }
+    for (target, bang) in q.iter() {
+        if !bang.0 {
+            continue;
+        }
+
+        let target = target.go();
+        let Some(commands) = commands.get_entity(target) else {
+            continue; // Invalid destruction target
+        };
+    
+        commands.despawn_recursive();
+    }
 }
