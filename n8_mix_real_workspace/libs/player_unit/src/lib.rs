@@ -4,6 +4,8 @@ pub mod move_behav; pub(crate) use self::move_behav::*;
 pub mod state_to_root; pub(crate) use self::state_to_root::*;
 pub mod attack_behav; pub(crate) use self::attack_behav::*;
 pub mod idle_behav; pub use idle_behav::*;
+pub mod test_enemy;
+
 use rts_unit_control::commandable::OrderProcessedAgar;
 
 pub(crate) use std::any::*;
@@ -73,7 +75,8 @@ impl Plugin for PlayerUnitPlugin {
         ));
 
         app.add_systems(Update,(             
-            refd_mover_is_zero_when_bang_sys
+            refd_mover_is_zero_when_bang_sys,
+            attack_reset_sys
         ));
 
         app.add_plugins((
