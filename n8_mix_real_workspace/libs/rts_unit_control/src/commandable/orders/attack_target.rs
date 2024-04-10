@@ -23,7 +23,7 @@ impl Plugin for AttackTargetPlugin {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct AttackTargetOrder {
     pub target: Entity,
 }

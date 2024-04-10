@@ -1,9 +1,10 @@
-pub(crate) mod chase_behav; pub(crate) use self::chase_behav::*;
-pub(crate) mod common; pub(crate) use self::common::*;
-pub(crate) mod move_behav; pub(crate) use self::move_behav::*;
-pub(crate) mod state_to_root; pub(crate) use self::state_to_root::*;
-pub(crate) mod attack_behav; pub(crate) use self::attack_behav::*;
+pub mod chase_behav; pub(crate) use self::chase_behav::*;
+pub mod common; pub(crate) use self::common::*;
+pub mod move_behav; pub(crate) use self::move_behav::*;
+pub mod state_to_root; pub(crate) use self::state_to_root::*;
+pub mod attack_behav; pub(crate) use self::attack_behav::*;
 pub mod idle_behav; pub use idle_behav::*;
+use rts_unit_control::commandable::OrderProcessedAgar;
 
 pub(crate) use std::any::*;
 pub(crate) use std::marker::*;
@@ -61,6 +62,7 @@ impl Plugin for PlayerUnitPlugin {
             referenced_aggro_to_referenced_nav_sys,
 
             // attack
+            attack_behav_sys,
             target_update_sys,
             attack_timer_reset_sys,
             attack_timer_sys,
@@ -79,10 +81,6 @@ impl Plugin for PlayerUnitPlugin {
 
             // chase
             BChaseNavToMoverPlugin,
-
-            // common
-            BangToSwitchedMoveAsNavPlugin,
-            BangToSwitchedControlAsNavPlugin,
         ));
     }
 }
@@ -92,14 +90,25 @@ impl Plugin for PlayerUnitPlugin {
 // Unit Structure
 
 #[derive(Component, Default)]
-struct Hub;
+struct TreeRoot;
+ref_signature!(TreeRoot);
+#[derive(Bundle, Default)]
+struct BTreeRoot {
+    pub flag: TreeRoot,
+    pub tree_bang: RootBang,
+    pub reset_bang: ResetBang,
+    pub export_bang: ExportBang,
+}
+
+#[derive(Component, Default)]
+pub struct Hub;
 ref_signature!(Hub);
 #[derive(Bundle, Default)]
 struct BHub {
     pub flag: Hub,
 
     // Tree
-    pub tree_bang: RootBang,
+    pub bang: Bang,
     //pub reset_bang: ResetBang,
     //pub export_bang: ExportBang,
     pub state: TState,
@@ -115,7 +124,7 @@ struct BHub {
     // Control
     pub selectable: Selectable,
     pub commandable: Commandable,
-    pub orders: ActiveOrderTerminal,
+    pub orders: TActiveOrderType,
     pub clear: ClearOrdersBang,
     pub pure_move_orders: TPureMoveOrders,
     pub attack_move_orders: TAttackMoveOrders,
@@ -124,6 +133,7 @@ struct BHub {
     pub target_processor: UntilTargetGoneProcessor,
     pub pure_move_processor: PMProximityProcessor,
     pub attack_move_processor: AMProximityProcessor,
+    pub agar: OrderProcessedAgar, // Unused
 
     // Nav
     pub nav_terminal: TNavWaypoint,
@@ -251,6 +261,18 @@ pub fn spawn_player_unit(
         }
     )).id();
 
+    // Tree Root
+    let tree_root = commands.spawn((
+        BTreeRoot{
+            ..Default::default()
+        },
+        SpriteBundle {
+            texture: square.clone_weak(),
+            transform: Transform { translation: location.extend(0.0), ..Default::default()},
+            ..Default::default()
+        }
+    )).id();
+
     // Hub
     let hub = commands.spawn((
         BHub{
@@ -305,6 +327,9 @@ pub fn spawn_player_unit(
         BIdle{
             to_root: ToBehaviourRoot::new(hub),
             to_parent: ToParentNode::new(hub),
+            to_control: ToControl::new(hub),
+            to_nav: ToNav::new(hub),
+            to_mover: ToMover::new(root),
             ..Default::default()
         },
         SpriteBundle {
@@ -319,6 +344,9 @@ pub fn spawn_player_unit(
         BMoveB{
             to_root: ToBehaviourRoot::new(hub),
             to_parent: ToParentNode::new(hub),
+            to_control: ToControl::new(hub),
+            to_nav: ToNav::new(hub),
+            to_mover: ToMover::new(root),
             ..Default::default()
         },
         SpriteBundle {
@@ -333,6 +361,9 @@ pub fn spawn_player_unit(
         BChase{
             to_root: ToBehaviourRoot::new(hub),
             to_parent: ToParentNode::new(hub),
+            to_control: ToControl::new(hub),
+            to_nav: ToNav::new(hub),
+            to_mover: ToMover::new(root),
             ..Default::default()
         },
         SpriteBundle {
@@ -350,6 +381,9 @@ pub fn spawn_player_unit(
             trigger: AttackTrigger::new(ATTACK_SPEED),
             end: AttackEndTrigger::new(ATTACK_ANIMATION_TIME),
             damage: DirectAttackPower::new(ATTACK_POWER),
+            to_control: ToControl::new(hub),
+            to_nav: ToNav::new(hub),
+            to_mover: ToMover::new(root),
             ..Default::default()
         },
         SpriteBundle {
@@ -359,6 +393,7 @@ pub fn spawn_player_unit(
         }
     )).id();
 
-    commands.entity(root).add_child(hub);
+    commands.entity(root).add_child(tree_root);
+    commands.entity(tree_root).add_child(hub);
     commands.entity(hub).push_children(&[aggro_detector, attack_detector, idle_behav, move_behav, chase_behav, attack_behav]);
 }

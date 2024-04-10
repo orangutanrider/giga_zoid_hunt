@@ -39,6 +39,25 @@ impl RootBang { //! Get
     }
 }
 
+pub fn propagate_spawned_root_bang_sys(
+    mut root_q: Query<(&mut RootBang, &mut ResetBang, &Children), Added<RootBang>>,
+    mut child_q: Query<&mut Bang>,
+) {
+    for (mut root_bang, mut reset_bang, children) in root_q.iter_mut() {
+        if !root_bang.changed {
+            continue;
+        }
+        root_bang.bypass_change_detection();
+        root_bang.changed = false;
+
+        reset_bang.bang();
+
+        for child in children.iter() {
+            propagate_root_bang(root_bang.is_active(), child, &mut child_q)
+        }
+    }
+}
+
 pub fn propagate_root_bang_sys(
     mut root_q: Query<(&mut RootBang, &mut ResetBang, &Children), Changed<RootBang>>,
     mut child_q: Query<&mut Bang>,

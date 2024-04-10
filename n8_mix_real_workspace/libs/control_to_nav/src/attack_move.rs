@@ -14,6 +14,15 @@ pub struct SwitchedNavAsAttackMove<S: RefSignature>{
     pub switch: bool,
     signature: PhantomData<S>
 }
+impl<S: RefSignature> SwitchedTransmissionFlag for SwitchedNavAsAttackMove<S> {
+    fn set(&mut self, v: bool) {
+        self.switch = v;
+    }
+
+    fn read(&self) -> bool {
+        return self.switch
+    }
+}
 impl<S: RefSignature> Default for SwitchedNavAsAttackMove<S> {
     fn default() -> Self {
         Self { switch: false, signature: Default::default() }
@@ -21,21 +30,39 @@ impl<S: RefSignature> Default for SwitchedNavAsAttackMove<S> {
 }
 
 pub fn reference_attack_move_as_reference_nav_sys<S: RefSignature>(
-    mut q: Query<(&mut TNavWaypoint, &ActiveOrderTerminal, &TAttackMoveOrders, &SwitchedNavAsAttackMove<S>), (With<NavIsReference<S>>, With<ControlIsReference<S>>)>
+    q: Query<(&SwitchedNavAsAttackMove<S>, 
+        &ToControl, // ideally would be a signed waymark
+        &ToNav, // ideally would be a signed waymark
+    ), (With<NavIsReference<S>>, With<ControlIsReference<S>>)>,
+    attack_move_q: Query<(&TActiveOrderType, &TAttackMoveOrders)>,
+    mut nav_q: Query<&mut TNavWaypoint>,
 ) {
-    for (mut nav_input, order_type, order_data, switch) in q.iter_mut() {
+    for (switch, to_control, to_nav) in q.iter() {
         if !switch.switch {
             continue;
         }
-
-        validate_active_terminal_c!(TAttackMoveOrders, order_type);
-        let Some(order) = order_data.current() else {
-            continue; 
-        };
-        nav_input.0 = order.waypoint;
+        reference_attack_move_as_reference_nav(to_control, to_nav, &attack_move_q, &mut nav_q);
     }
 } 
 
+fn reference_attack_move_as_reference_nav(
+    to_control: &ToControl, 
+    to_nav: &ToNav, 
+    attack_move_q: &Query<(&TActiveOrderType, &TAttackMoveOrders)>,
+    nav_q: &mut Query<&mut TNavWaypoint>,
+) {
+    ref_caravan!(
+        to_control::attack_move_q((type_terminal, data_terminal));
+        to_nav::nav_q(mut nav_terminal);
+    );
+
+    validate_active_terminal_r!(TAttackMoveOrders, type_terminal);
+    
+    let Some(current) = data_terminal.current() else {
+        return;
+    };
+    nav_terminal.0 = current.waypoint;
+}
 
 /* 
 #[derive(Component)]

@@ -10,19 +10,22 @@ use super::*;
 // Also current target should be seperate from attack target stuff, cause it can be used by other things, like attack move.
 // Yeah, if upgraded, that's a ting.
 
+// Again, the agar thing, should be optional, meaning that all of these need to be double systems that're disjointed. 
+
 pub fn current_target_clear_sys(
-    mut control_q: Query<&mut CurrentTarget, Changed<ClearOrdersBang>>,
+    mut control_q: Query<(&mut CurrentTarget, &mut OrderProcessedAgar), Changed<ClearOrdersBang>>,
 ) {
-    for mut target_holder in control_q.iter_mut() {
+    for (mut target_holder, mut agar) in control_q.iter_mut() {
         target_holder.0 = None;
+        agar.bang();
     }
 }
 
 pub fn abort_current_target_sys(
-    mut control_q: Query<(Entity, &mut CurrentTarget), Changed<AbortCurrentTargetBang>>,
+    mut control_q: Query<(Entity, &mut CurrentTarget, &mut OrderProcessedAgar), Changed<AbortCurrentTargetBang>>,
     mut target_q: Query<&mut TargetedBy>,
 ) {
-    for (control, mut target_holder) in control_q.iter_mut() {
+    for (control, mut target_holder, mut agar) in control_q.iter_mut() {
         let Some(target) = target_holder.0 else {
             continue; // It isn't expected that this could happen, but it is fine if it does.
         };
@@ -33,34 +36,37 @@ pub fn abort_current_target_sys(
 
         target_holder.0 = None;
         targeters.0.remove(&control);
+        agar.bang();
     }
 }
 
 pub fn current_target_validation_sys(
-    mut control_q: Query<(Entity, &mut CurrentTarget)>,
+    mut control_q: Query<(Entity, &mut CurrentTarget, &mut OrderProcessedAgar)>,
     target_q: Query<&TargetedBy>,
 ) {
-    for (control, mut held_target) in control_q.iter_mut() {
+    for (control, mut held_target, mut agar) in control_q.iter_mut() {
         let Some(target) = held_target.0 else {
             continue;
         };
 
         let Ok(targeters) = target_q.get(target) else {
             held_target.0 = None;
+            agar.bang();
             continue;
         };
         if !targeters.0.contains(&control) { 
             held_target.0 = None;
+            agar.bang();
             continue;
         }
     } 
 } 
 
 pub fn target_to_current_sys (
-    mut control_q: Query<(Entity, &mut TAttackTargetOrders, &mut CurrentTarget, &mut ActiveOrderTerminal), (With<UntilTargetGoneProcessor>, Or<(Changed<ActiveOrderTerminal>, Changed<CurrentTarget>)>)>,
+    mut control_q: Query<(Entity, &mut TAttackTargetOrders, &mut CurrentTarget, &mut TActiveOrderType, &mut OrderProcessedAgar), (With<UntilTargetGoneProcessor>, Or<(Changed<TActiveOrderType>, Changed<CurrentTarget>)>)>,
     target_q: Query<&TargetedBy>,
 ) {
-    for (control, mut orders, mut current_target, mut active_types) in control_q.iter_mut() {
+    for (control, mut orders, mut current_target, mut active_types, mut agar) in control_q.iter_mut() {
         validate_active_terminal_c!(TAttackTargetOrders, active_types);
 
         if current_target.is_some() { 
@@ -72,18 +78,21 @@ pub fn target_to_current_sys (
         // Get new current target from stack
         let Some(new_target) = orders.move_current() else {
             active_types.clear_current();
+            agar.bang();
             continue;
         };
 
         // Validate if target still exists
         let Ok(targeters) = target_q.get(new_target.target) else {
             active_types.clear_current();
+            agar.bang();
             continue;
         };
         // Validate if the target is the same.
         // NOT: If it's a new entity (with this component by-chance), or the target has interfeered with the data itself.
         if !targeters.0.contains(&control) { 
             active_types.clear_current();
+            agar.bang();
             continue;
         }
 

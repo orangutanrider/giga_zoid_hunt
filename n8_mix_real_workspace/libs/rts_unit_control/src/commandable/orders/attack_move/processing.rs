@@ -25,10 +25,12 @@ impl AMProximityProcessor {
     }
 }
 
+// Ideally you split the system into two, so that you can have OrderProcessedAgar be optional.
+// a With one and a Without one.
 pub fn am_proximity_processing_sys(
-    mut control_q: Query<(&mut ActiveOrderTerminal, &mut TAttackMoveOrders, &AMProximityProcessor, &GlobalTransform), Changed<GlobalTransform>>
+    mut control_q: Query<(&mut TActiveOrderType, &mut TAttackMoveOrders, &AMProximityProcessor, &GlobalTransform, &mut OrderProcessedAgar), Changed<GlobalTransform>>
 ) {
-    for (mut order_types, mut unit_orders, processor, transform) in control_q.iter_mut() {
+    for (mut order_types, mut unit_orders, processor, transform, mut agar) in control_q.iter_mut() {
         validate_active_terminal_c!(TAttackMoveOrders, order_types);
 
         let Some(current) = unit_orders.current() else {
@@ -42,5 +44,6 @@ pub fn am_proximity_processing_sys(
         }
 
         unit_orders.clear_current();
+        agar.bang();
     }
 }

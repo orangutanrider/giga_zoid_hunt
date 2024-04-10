@@ -18,13 +18,17 @@ pub(crate) struct BChase {
     // aggro to nav
     pub aggro_is_ref: AggroIsReference,
     pub nav_as_aggro: SwitchedNavAsAggroDetectorClosest,
-    pub hub_is_ref: HubNavIsReference
+    pub hub_is_ref: HubNavIsReference,
+
+    pub to_control: ToControl,
+    pub to_nav: ToNav,
+    pub to_mover: ToMover,
 }
 
 // Behaviour
 pub(crate) fn chase_logic_sys(
     chase_q: Query<(&Bang, &ToBehaviourRoot), With<Chase>>,
-    mut root_q: Query<(&mut TUnitIMCAMapper, &TState)>,
+    mut root_q: Query<(&mut TUnitIMCAMapper, &TState, &OrderProcessedAgar)>,
 ) {
     for (bang, to_root) in chase_q.iter() {
         chase_logic(bang, to_root, &mut root_q)
@@ -34,15 +38,25 @@ pub(crate) fn chase_logic_sys(
 fn chase_logic(
     bang: &Bang,
     to_root: &ToBehaviourRoot,
-    root_q: &mut Query<(&mut TUnitIMCAMapper, &TState)>,
+    root_q: &mut Query<(&mut TUnitIMCAMapper, &TState, &OrderProcessedAgar)>,
 ) {
     if !bang.is_active() {
         return;
     }
     
-    ref_caravan!(to_root::root_q((mut unit_mca, state)));
+    ref_caravan!(to_root::root_q((mut unit_mca, state, agar)));
+
+    if agar.is_active() {
+        unit_mca.0 = 0; // Move to idle
+        return;
+    }
 
     let state = state.state();
+
+    if (state.contains(PURE_MOVE)) {
+        unit_mca.0 = 1; // move to move
+        return;
+    }
 
     const ATTACK_ORDERS: TreeState = ATTACK_MOVE.union(ATTACK_TARGET);
     if !(state.intersects(ATTACK_ORDERS) && state.contains(IN_ATTACK)) {
@@ -84,7 +98,7 @@ fn chase_actuator(
 
 #[derive(Bundle, Default)]
 pub(crate) struct BChaseNavToMover {
-    pub bang_link: BangToSwitchedMoveAsNav,
+    pub bang_link: BangToSwitch<BChaseNavToMover>,
     pub move_as_nav: SwitchedMoveAsNav<BChaseNavToMover>,
     pub nav_is: NavIsReference<BChaseNavToMover>,
     pub move_is: MoveIsReference<BChaseNavToMover>,

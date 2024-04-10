@@ -35,7 +35,7 @@ pub struct ControlCoreBundle {
     pub selectable: Selectable,
     pub commandable: Commandable,
 
-    pub orders: ActiveOrderTerminal,
+    pub orders: TActiveOrderType,
     pub clear: ClearOrdersBang,
 }
 

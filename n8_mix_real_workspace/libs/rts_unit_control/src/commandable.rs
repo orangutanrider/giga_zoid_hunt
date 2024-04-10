@@ -9,6 +9,7 @@ impl Plugin for CommandablePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(PreUpdate, clear_bang_reset_sys);
         app.add_systems(Update, active_terminal_clear_sys);
+        app.add_systems(PostUpdate, order_processed_agar_reset_sys);
     }
 }
 
@@ -26,15 +27,52 @@ impl Commandable {
 }
 
 #[derive(Component)]
+/// A bang that takes inputs each frame, storing them into an index.
+/// Then wipes itself, to 0.
+pub struct OrderProcessedAgar(u8);
+impl Default for OrderProcessedAgar {
+    fn default() -> Self {
+        return Self(0)
+    }
+}
+impl OrderProcessedAgar {
+    pub fn new() -> Self {
+        return Self(0)
+    }
+
+    pub fn bang(&mut self) {
+        self.0 = self.0 + 1;
+    }
+
+    pub fn read(&self) -> u8 {
+        return self.0
+    }
+
+    pub fn is_active(&self) -> bool {
+        return self.0 > 0
+    }
+}
+
+/// Post-update
+pub fn order_processed_agar_reset_sys(
+    mut q: Query<&mut OrderProcessedAgar, Changed<OrderProcessedAgar>>
+) {
+    for mut agar in q.iter_mut() {
+        agar.bypass_change_detection();
+        agar.0 = 0;
+    }
+}
+
+#[derive(Component)]
 /// Stores the stack of local order terminals (as types), that have orders.
 /// The currently active terminal, and following terminals, can be inferred through this.
-pub struct ActiveOrderTerminal(Vec<TypeId>);
-impl Default for ActiveOrderTerminal {
+pub struct TActiveOrderType(Vec<TypeId>);
+impl Default for TActiveOrderType {
     fn default() -> Self {
         return Self(Vec::new());
     }
 }
-impl ActiveOrderTerminal {
+impl TActiveOrderType {
     // It is, in a literal sense, the same blueprint as normal order terminals.
     // Except, it contains TypeID.
     // Despite that, I didn't decide to use the trait here.
@@ -66,7 +104,7 @@ impl ActiveOrderTerminal {
 }
 
 pub fn active_terminal_clear_sys(
-    mut control_q: Query<&mut ActiveOrderTerminal, Changed<ClearOrdersBang>>,
+    mut control_q: Query<&mut TActiveOrderType, Changed<ClearOrdersBang>>,
 ) {
     for mut order_types in control_q.iter_mut() {
         order_types.clear();
