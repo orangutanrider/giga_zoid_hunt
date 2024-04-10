@@ -163,9 +163,12 @@ impl Default for AttackEndTrigger {
 }
 
 pub fn attack_timer_reset_sys(
-    mut q: Query<&mut AttackTimer, Changed<Bang>>
+    mut q: Query<(&mut AttackTimer, &Bang), Changed<Bang>>
 ) {
-    for mut timer in q.iter_mut() {
+    for (mut timer, bang) in q.iter_mut() {
+        if bang.is_active() {
+            continue; // Change detection should be enough, but that isn't working for some reason. The bang is being updated every frame it seems.
+        }
         timer.0 = 0.0;
     }
 }
@@ -184,6 +187,18 @@ pub fn attack_timer_sys(
     }
 }
 
+pub fn attack_reset_sys(
+    mut q: Query<(&mut AttackTrigger, &Bang)>,
+) {
+    for (mut trigger, bang) in q.iter_mut() {
+        if bang.is_active() {
+            continue;
+        }
+
+        trigger.triggered = false;
+    }
+}
+
 /// Expects direct attack terminal to be local.
 pub fn attack_execution_sys(
     mut q: Query<(&mut DirectAttackBang, &mut AttackTrigger, &AttackTimer, &AttackTarget), Changed<AttackTimer>>,
@@ -196,11 +211,14 @@ pub fn attack_execution_sys(
         if !(timer.0 >= trigger.trigger_time) {
             continue;
         }
+        println!("Attack attempt");
 
         trigger.triggered = true;
         let Some(target) = target.0 else {
             continue;
         };
+
+        println!("Attack signal");
         attack_bang.bang(target);
     }
 }

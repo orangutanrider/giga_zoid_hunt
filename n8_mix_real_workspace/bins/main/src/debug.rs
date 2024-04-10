@@ -1,6 +1,7 @@
 use behaviour_tree::bang::Bang;
 use behaviour_tree::state::terminal::TState;
 use bevy::prelude::*;
+use player_unit::test_enemy::spawn_test_enemy;
 use player_unit::Root;
 use rts_unit_control::prelude::*;
 
@@ -8,6 +9,8 @@ pub struct DebugPlugin;
 
 impl Plugin for DebugPlugin {
     fn build(&self, app: &mut App) {
+        app.add_systems(Startup, spawn_test_enemy_dbg_sys);
+
         app.add_systems(Update, (
             //prnt_units_sys
             prnt_state_sys,
@@ -20,6 +23,13 @@ impl Plugin for DebugPlugin {
             prnt_order_data_sys::<TAttackTargetOrders, AttackTargetOrder, Targeted>,
         ));
     }
+}
+
+fn spawn_test_enemy_dbg_sys(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>, 
+) {
+    spawn_test_enemy(Vec2::new(0.0, 64.0), &mut commands, &asset_server);
 }
 
 fn prnt_units_sys(
