@@ -107,7 +107,11 @@ ref_signature!(BChaseNavToMover);
 pub struct BChaseNavToMoverPlugin;
 impl Plugin for BChaseNavToMoverPlugin {
     fn build(&self, app: &mut App) {
+        type NavAsMove = SwitchedMoveAsNav<BChaseNavToMover>;
+        type BangLink = BangToSwitch<BChaseNavToMover>;
+
         app.add_systems(Update, (
+            bang_to_switch_sys::<NavAsMove, BangLink, BChaseNavToMover>,
             switched_reference_move_as_reference_nav_sys::<BChaseNavToMover>,
         ));
     }
@@ -131,12 +135,23 @@ impl Default for SwitchedNavAsAggroDetectorClosest {
     }
 }
 
+pub fn bang_to_switched_aggro_to_nav(
+    mut q: Query<(&Bang, &mut SwitchedNavAsAggroDetectorClosest)>
+) {
+    for (bang, mut switch) in q.iter_mut(){
+        switch.switch = bang.is_active();
+    }
+}
+
 pub(crate) fn referenced_aggro_to_referenced_nav_sys(
-    q: Query<&ToBehaviourRoot, (With<AggroIsReference>, With<HubNavIsReference>)>,
+    q: Query<(&ToBehaviourRoot, &SwitchedNavAsAggroDetectorClosest), (With<AggroIsReference>, With<HubNavIsReference>)>,
     mut root_q: Query<(&mut TNavWaypoint, &AggroDetectorClosest)>,
     target_q: Query<&GlobalTransform>,
 ) {
-    for (to_root) in q.iter() {
+    for (to_root, switch) in q.iter() {
+        if !switch.switch {
+            continue;
+        }
         referenced_aggro_to_referenced_nav(to_root, &mut root_q, &target_q);
     }
 } 

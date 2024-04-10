@@ -19,6 +19,32 @@ pub(crate) fn bang_to_switch_sys<T, F, S>(
     }
 }
 
+// lazy implementation.
+#[derive(Component, Default)]
+pub struct RefdMoverIsZeroWhenBang;
+
+pub fn refd_mover_is_zero_when_bang_sys(
+    q: Query<(&Bang, &ToMover), With<RefdMoverIsZeroWhenBang>>,
+    mut mover_q: Query<&mut TMoveVector>,
+) {
+    for (bang, to_mover) in q.iter() {
+        if !bang.is_active() {
+            continue;
+        }
+
+        refd_mover_is_zero_when_bang(to_mover, &mut mover_q);
+    }
+}
+
+fn refd_mover_is_zero_when_bang(
+    to_mover: &ToMover,
+    mover_q: &mut Query<&mut TMoveVector>,
+) {
+    ref_caravan!(to_mover::mover_q(mut mover););
+    mover.0 = Vec2::ZERO;
+}
+
+
 // Hmm...
 // The readability of these, something should be improved there.
 // Yeah, whatever is going on here, it's not great.

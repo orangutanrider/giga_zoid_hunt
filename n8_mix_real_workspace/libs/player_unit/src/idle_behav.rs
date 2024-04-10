@@ -16,6 +16,8 @@ pub(crate) struct BIdle {
     pub to_control: ToControl,
     pub to_nav: ToNav,
     pub to_mover: ToMover,
+
+    pub no_move: RefdMoverIsZeroWhenBang,
 }
 
 // Behaviour

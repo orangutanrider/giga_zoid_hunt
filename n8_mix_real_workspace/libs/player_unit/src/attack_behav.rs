@@ -40,6 +40,8 @@ pub(crate) struct BAttack {
     pub to_control: ToControl,
     pub to_nav: ToNav,
     pub to_mover: ToMover,
+
+    pub no_move: RefdMoverIsZeroWhenBang,
 }
 
 pub fn attack_behav_sys(
