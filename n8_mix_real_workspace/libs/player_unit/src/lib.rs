@@ -60,6 +60,7 @@ impl Plugin for PlayerUnitPlugin {
             chase_logic_sys,
             chase_actuator_sys,
             referenced_aggro_to_referenced_nav_sys,
+            bang_to_switched_aggro_to_nav,
 
             // attack
             attack_behav_sys,
@@ -69,6 +70,10 @@ impl Plugin for PlayerUnitPlugin {
             attack_execution_sys,
             attack_end_sys,
             attack_actuator_sys,
+        ));
+
+        app.add_systems(Update,(             
+            refd_mover_is_zero_when_bang_sys
         ));
 
         app.add_plugins((
