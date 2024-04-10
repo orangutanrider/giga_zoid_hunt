@@ -7,9 +7,13 @@ pub(crate) struct BangToSwitch<S: RefSignature> {
     signature: PhantomData<S>,
 }
 
-pub(crate) fn bang_to_switch_sys<Transmission: SwitchedTransmissionFlag, Flag: Component, S: RefSignature>(
-    mut q: Query<(&Bang, &mut Transmission), (Changed<Bang>, With<Flag>)>
-) {
+pub(crate) fn bang_to_switch_sys<T, F, S>(
+    mut q: Query<(&Bang, &mut T), (Changed<Bang>, With<F>)>
+) where
+    T: SwitchedTransmissionFlag,
+    F: Component, // Bang to switch flag component
+    S: RefSignature,
+{
     for (bang, mut switch) in q.iter_mut() {
         switch.set(bang.is_active());
     }
@@ -17,7 +21,9 @@ pub(crate) fn bang_to_switch_sys<Transmission: SwitchedTransmissionFlag, Flag: C
 
 // Hmm...
 // The readability of these, something should be improved there.
+// Yeah, whatever is going on here, it's not great.
 
+/* 
 // Bang to switch bundles
 #[derive(Bundle, Default)]
 pub(crate) struct BangToSwitchedMoveAsNav {
@@ -33,7 +39,6 @@ impl Plugin for BangToSwitchedMoveAsNavPlugin {
 }
 ref_signature!(BangToSwitchedMoveAsNav);
 
-// Bang to switch bundles
 #[derive(Bundle, Default)]
 pub(crate) struct BangToSwitchedControlAsNav {
     pub flag: BangToSwitch<BangToSwitchedControlAsNav>,
@@ -47,3 +52,4 @@ impl Plugin for BangToSwitchedControlAsNavPlugin {
     }
 }
 ref_signature!(BangToSwitchedControlAsNav);
+*/

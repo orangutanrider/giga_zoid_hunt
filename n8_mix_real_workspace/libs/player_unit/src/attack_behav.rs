@@ -36,6 +36,45 @@ pub(crate) struct BAttack {
 
     pub attack: DirectAttackBang,
     pub damage: DirectAttackPower,
+
+    pub to_control: ToControl,
+    pub to_nav: ToNav,
+    pub to_mover: ToMover,
+}
+
+pub fn attack_behav_sys(
+    chase_q: Query<(&Bang, &ToBehaviourRoot), With<Attack>>,
+    mut root_q: Query<(&mut TUnitIMCAMapper, &TState, &OrderProcessedAgar)>,
+) {
+    for (bang, to_root) in chase_q.iter() {
+        attack_logic(bang, to_root, &mut root_q)
+    }
+}
+
+// While attacking.
+// Any update to the orders, should interupt the attack.
+// Also, it should exit from the attack order, when other orders are active.
+fn attack_logic(
+    bang: &Bang,
+    to_root: &ToBehaviourRoot,
+    root_q: &mut Query<(&mut TUnitIMCAMapper, &TState, &OrderProcessedAgar)>,
+) {
+    if !bang.is_active() {
+        return;
+    }
+    
+    ref_caravan!(to_root::root_q((mut unit_mca, state, agar)));
+
+    if agar.is_active() {
+        unit_mca.0 = 0; // Move to idle
+        return;
+    }
+
+    let state: TreeState = state.state();
+
+    if state.contains(PURE_MOVE) {
+        unit_mca.0 = 0; // Move to idle
+    }
 }
 
 // Target handling

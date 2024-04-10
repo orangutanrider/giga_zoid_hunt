@@ -1,22 +1,22 @@
 use super::*;
 
-pub(crate) const MOVE: TreeState = TreeState::N1;
-pub(crate) const CHASE: TreeState = TreeState::N2;
-pub(crate) const ATTACK: TreeState = TreeState::N3;
-pub(crate) const IDLE: TreeState = TreeState::N7; // Unimplemented
+pub const MOVE: TreeState = TreeState::N1;
+pub const CHASE: TreeState = TreeState::N2;
+pub const ATTACK: TreeState = TreeState::N3;
+pub const IDLE: TreeState = TreeState::N7; // Unimplemented
 
 #[derive(Component)]
 /// (0-3)
 /// Idle, Move, Chase, Attack;
 /// Mutually exclusive.
-pub(crate)struct TUnitIMCAMapper(pub u8);
+pub struct TUnitIMCAMapper(pub u8);
 impl Default for TUnitIMCAMapper {
     fn default() -> Self {
         Self(0)
     }
 }
 
-pub(crate) fn imca_mapper_sys(
+pub fn imca_mapper_sys(
     mut q: Query<(&mut TState, &mut TUnitIMCAMapper), Changed<TUnitIMCAMapper>>,
 ) {
     for (mut state, mapper) in q.iter_mut() {
@@ -42,7 +42,7 @@ pub(crate) fn imca_mapper_sys(
 }
 
 #[derive(Component)]
-pub(crate) struct AggroDetectorClosest(pub Option<Entity>);
+pub struct AggroDetectorClosest(pub Option<Entity>);
 impl Default for AggroDetectorClosest {
     fn default() -> Self {
         Self(None)
@@ -50,7 +50,7 @@ impl Default for AggroDetectorClosest {
 }
 
 #[derive(Component)]
-pub(crate) struct AttackDetectorClosest(pub Option<Entity>);
+pub struct AttackDetectorClosest(pub Option<Entity>);
 impl Default for AttackDetectorClosest {
     fn default() -> Self {
         Self(None)
@@ -58,14 +58,14 @@ impl Default for AttackDetectorClosest {
 }
 
 #[derive(Component)]
-pub(crate) struct AttackDetectorTargeted(pub Option<Entity>);
+pub struct AttackDetectorTargeted(pub Option<Entity>);
 impl Default for AttackDetectorTargeted {
     fn default() -> Self {
         Self(None)
     }
 }
 
-pub(crate) fn aggro_to_tree_root_sys(
+pub fn aggro_to_tree_root_sys(
     aggro_q: Query<(&DistillationForClosest, &ToBehaviourRoot), With<AggroDetection>>,
     mut root_q: Query<&mut AggroDetectorClosest>,
 ) {
@@ -82,7 +82,7 @@ fn aggro_to_tree_root(
     terminal.0 = closest.read_detection();
 }
 
-pub(crate) fn attack_closest_to_tree_root_sys(
+pub fn attack_closest_to_tree_root_sys(
     attack_q: Query<(&DistillationForClosest, &ToBehaviourRoot), With<AttackDetection>>,
     mut root_q: Query<&mut AttackDetectorClosest>,
 ) {
@@ -99,7 +99,7 @@ fn attack_closest_to_tree_root(
     terminal.0 = closest.read_detection();
 }
 
-pub(crate) fn attack_target_to_tree_root_sys(
+pub fn attack_target_to_tree_root_sys(
     aggro_q: Query<(&DistillationForClosest, &ToBehaviourRoot), With<AttackDetection>>,
     mut root_q: Query<&mut AttackDetectorTargeted>,
 ) {
@@ -116,20 +116,20 @@ fn attack_target_to_tree_root(
     terminal.0 = closest.read_detection();
 }
 
-pub(crate) const PURE_MOVE: TreeState = TreeState::N4;
-pub(crate) const ATTACK_MOVE: TreeState = TreeState::N5;
-pub(crate) const ATTACK_TARGET: TreeState = TreeState::N6;
+pub const PURE_MOVE: TreeState = TreeState::N4;
+pub const ATTACK_MOVE: TreeState = TreeState::N5;
+pub const ATTACK_TARGET: TreeState = TreeState::N6;
 
-pub(crate) trait GenericStateBox {
+pub trait GenericStateBox {
     const STATE: TreeState;
 }
 
 #[derive(Component, Default)]
 /// Local transfer.
-pub(crate) struct ControlOrdersToState;
+pub struct ControlOrdersToState;
 
-pub(crate) fn control_orders_to_state_sys<OrderTerminalType: 'static, StateBox: GenericStateBox>(
-    mut q: Query<(&mut TState, &ActiveOrderTerminal), With<ControlOrdersToState>>,
+pub fn control_orders_to_state_sys<OrderTerminalType: 'static, StateBox: GenericStateBox>(
+    mut q: Query<(&mut TState, &TActiveOrderType), With<ControlOrdersToState>>,
 ) {
     for (mut terminal, orders) in q.iter_mut() {
         let Some(order) = orders.current() else {
@@ -170,13 +170,13 @@ impl Plugin for ControlOrdersToStatePlugin {
     }
 }
 
-pub(crate) const IN_AGGRO: TreeState = TreeState::N8;
-pub(crate) const IN_ATTACK: TreeState = TreeState::N9.union(IN_AGGRO);
+pub const IN_AGGRO: TreeState = TreeState::N8;
+pub const IN_ATTACK: TreeState = TreeState::N9.union(IN_AGGRO);
 
 #[derive(Component, Default)]
-pub(crate) struct DetectionToState;
+pub struct DetectionToState;
 
-pub(crate) fn detection_to_state_sys(
+pub fn detection_to_state_sys(
     mut q: Query<(&mut TState, &AggroDetectorClosest, &AttackDetectorClosest, &AttackDetectorTargeted), With<DetectionToState>>,
 ) {
     for (mut state, aggro_close, attack_close, attack_targeted) in q.iter_mut() {

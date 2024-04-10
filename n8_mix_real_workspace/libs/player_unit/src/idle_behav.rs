@@ -12,6 +12,10 @@ pub(crate) struct BIdle {
     pub bang: Bang,
     pub propagator: ActuatorPropagator,
     pub actuator: IdleActuator,
+
+    pub to_control: ToControl,
+    pub to_nav: ToNav,
+    pub to_mover: ToMover,
 }
 
 // Behaviour
@@ -35,12 +39,20 @@ fn idle_logic(
     
     ref_caravan!(to_root::root_q((mut unit_mca, state)));
 
-    let state = state.state();
-    if !(state.contains(IN_ATTACK)) {
+    const MOVE_ORDERS: TreeState = PURE_MOVE.union(ATTACK_MOVE);
+
+    let state: TreeState = state.state();
+    if state.intersects(MOVE_ORDERS) {
+        unit_mca.0 = 1; // Move to move state
         return;
     }
-
-    unit_mca.0 = 3; // Move to attacking state
+    else if state.contains(ATTACK_TARGET) {
+        unit_mca.0 = 2; // Move to chase state
+    }
+    else if state.contains(IN_ATTACK) { // Hold position is default
+        unit_mca.0 = 3; // Move to attacking state
+        return;
+    }
 }
 
 #[derive(Component, Default)]

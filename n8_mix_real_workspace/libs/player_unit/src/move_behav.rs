@@ -1,4 +1,7 @@
 use bevy::prelude::*;
+use rts_unit_movers::ToMover;
+
+use crate::{ATTACK_TARGET, PURE_MOVE};
 
 use super::{
     TUnitIMCAMapper,
@@ -25,6 +28,9 @@ use control_to_nav::{
     *
 };
 
+use rts_unit_control::*;
+use rts_unit_nav::*;
+
 // Definition
 #[derive(Component, Default)]
 pub(crate) struct Move;
@@ -40,6 +46,10 @@ pub(crate) struct BMoveB {
 
     pub nav_to_mover: BMoveNavToMover,
     pub control_to_nav: BMoveControlToNav,
+
+    pub to_control: ToControl,
+    pub to_nav: ToNav,
+    pub to_mover: ToMover,
 }
 
 // Behaviour
@@ -63,14 +73,23 @@ pub(crate) fn move_aggro_logic(
     
     ref_caravan!(to_root::root_q((mut unit_mca, state)));
 
-    let state = state.state();
+    let state: TreeState = state.state();
 
-    const MOVE_SWITCH_STATE_REQUIREMENTS: TreeState = ATTACK_MOVE.union(IN_AGGRO); // If attack move order and enemy is in aggro.
-    if !state.contains(MOVE_SWITCH_STATE_REQUIREMENTS) {
+    if state.contains(ATTACK_TARGET) {
+        unit_mca.0 = 2; // move to chase 
         return;
     }
 
-    unit_mca.0 = unit_mca.0 + 1; // Move to chase state
+    const MOVE_SWITCH_STATE_REQUIREMENTS: TreeState = ATTACK_MOVE.union(IN_AGGRO); // If attack move order and enemy is in aggro.
+    if state.contains(MOVE_SWITCH_STATE_REQUIREMENTS) {
+        unit_mca.0 = unit_mca.0 + 1; // Move to chase state
+        return;
+    }
+
+    if !(state.intersects(ATTACK_MOVE.union(PURE_MOVE))) {
+        unit_mca.0 = 0;
+    }
+
 }
 
 #[derive(Component, Default)]
@@ -108,7 +127,7 @@ fn move_actuator(
 
 #[derive(Bundle, Default)]
 pub(crate) struct BMoveNavToMover {
-    pub bang_link: BangToSwitchedMoveAsNav,
+    pub bang_link: BangToSwitch<BMoveNavToMover>,
     pub move_as_nav: SwitchedMoveAsNav<BMoveNavToMover>,
     pub nav_is: NavIsReferenceMover<BMoveNavToMover>,
     pub move_is: MoveIsReference<BMoveNavToMover>,
@@ -117,7 +136,11 @@ ref_signature!(BMoveNavToMover);
 pub struct BMoveNavToMoverPlugin;
 impl Plugin for BMoveNavToMoverPlugin {
     fn build(&self, app: &mut App) {
+        type NavAsMove = SwitchedMoveAsNav<BMoveNavToMover>;
+        type BangLink = BangToSwitch<BMoveNavToMover>;
+
         app.add_systems(Update, (
+            bang_to_switch_sys::<NavAsMove, BangLink, BMoveNavToMover>,
             switched_reference_move_as_reference_nav_sys::<BMoveNavToMover>,
         ));
     }
@@ -125,17 +148,23 @@ impl Plugin for BMoveNavToMoverPlugin {
 
 #[derive(Bundle, Default)]
 pub(crate) struct BMoveControlToNav {
-    pub bang_link: BangToSwitchedControlAsNav,
+    pub bang_link: BangToSwitch<BMoveControlToNav>,
     pub nav_is_ref: NavIsReferenceControl<BMoveControlToNav>,
     pub control_is_ref: ControlIsReference<BMoveControlToNav>,
     pub as_attack_move: SwitchedNavAsAttackMove<BMoveControlToNav>,
-    pub as_pure_move: SwitchedMoveAsNav<BMoveControlToNav>,
+    pub as_pure_move: SwitchedNavAsPureMove<BMoveControlToNav>,
 }
 ref_signature!(BMoveControlToNav);
 pub struct BMoveControlToNavPlugin;
 impl Plugin for BMoveControlToNavPlugin {
     fn build(&self, app: &mut App) {
+        type PureMoveAsNav = SwitchedNavAsPureMove<BMoveControlToNav>;
+        type AttackMoveAsNav = SwitchedNavAsAttackMove<BMoveControlToNav>;
+        type BangLink = BangToSwitch<BMoveControlToNav>;
+
         app.add_systems(Update, (
+            bang_to_switch_sys::<PureMoveAsNav, BangLink, BMoveControlToNav>,
+            bang_to_switch_sys::<AttackMoveAsNav, BangLink, BMoveControlToNav>,
             reference_attack_move_as_reference_nav_sys::<BMoveControlToNav>,
             reference_pure_move_as_reference_nav_sys::<BMoveControlToNav>
         ));

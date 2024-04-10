@@ -10,7 +10,7 @@ pub use crate::{
 
 pub use crate::commandable::{
     Commandable,
-    ActiveOrderTerminal,
+    TActiveOrderType,
     ClearOrdersBang,
     orders::{
         TUnitOrder,

@@ -3,7 +3,7 @@ pub mod processing;
 use crate::unit_order_terminal;
 use super::*;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct AttackMoveOrder {
     pub waypoint: Vec2,
 }

@@ -31,16 +31,18 @@ impl<'w> AttackInput<'w> {
 pub fn command_attack_sys(
     input: AttackInput, 
     rapier: PhysicsQueries,
-    move_commands: SelectionCommands<TAttackMoveOrders, AttackMoveOrder>,
-    target_commands: SelectionCommands<TAttackTargetOrders, AttackTargetOrder>,
+    mut commands: ParamSet<(
+        SelectionCommands<TAttackMoveOrders, AttackMoveOrder>, // attack move
+        SelectionCommands<TAttackTargetOrders, AttackTargetOrder> // attack target
+    )>,
 ) {
     if !input.just_pressed() {
         return;
     }
 
     match rapier.cast_for_e_attackable(input.pos()) {
-        Some(cast) => command_attack_target(cast, input.add_mode(), target_commands),
-        None => command_attack_move(input.pos(), input.add_mode(), move_commands),
+        Some(cast) => command_attack_target(cast, input.add_mode(), commands.p1()),
+        None => command_attack_move(input.pos(), input.add_mode(), commands.p0()),
     }
 }
 
