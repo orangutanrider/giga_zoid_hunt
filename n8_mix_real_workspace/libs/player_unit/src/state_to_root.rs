@@ -196,6 +196,9 @@ pub fn detection_to_state_sys(
             state.insert(Key::LocalComponent(type_id), IN_AGGRO);
             continue;
         }
+        else {
+            state.insert(Key::LocalComponent(type_id), TreeState::empty());
+        }
     }
 }
 

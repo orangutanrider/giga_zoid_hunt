@@ -10,6 +10,8 @@ pub struct TestEnemy {
     pub sensor: Sensor,
     pub grouping: CollisionGroups,
 
+    pub at_here_targeting: TargetedBy,
+
     // Mortality
     pub health: THealth,
     pub max_health: MaxHealth,

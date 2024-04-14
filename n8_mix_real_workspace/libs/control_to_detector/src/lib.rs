@@ -28,7 +28,7 @@ pub struct ControlIsReference<S: RefSignature>{
 /// target = TargetAsCurrentInControl + (TargetAsLocal, ControlAsReference)
 pub fn target_from_control_via_reference_sys<S: RefSignature>(
     mut detector_q: Query<(&mut TDetectionTarget, &ToControl), (With<TargetIsLocal<S>>, With<ControlIsReference<S>>)>,
-    control_q: Query<&CurrentTarget>
+    control_q: Query<&TCurrentTarget>
 ) {
     for (terminal, to_control) in detector_q.iter_mut() {
         target_from_control_via_reference(terminal, to_control, &control_q);
@@ -38,7 +38,7 @@ pub fn target_from_control_via_reference_sys<S: RefSignature>(
 fn target_from_control_via_reference(
     mut terminal: Mut<TDetectionTarget>,
     to_control: &ToControl,
-    control_q: &Query<&CurrentTarget>
+    control_q: &Query<&TCurrentTarget>
 ) {
     ref_caravan!(to_control::control_q(current_target););
     terminal.0 = current_target.read();

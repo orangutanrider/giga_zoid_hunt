@@ -1,4 +1,35 @@
-use super::*;
+use bevy::prelude::*;
+use rts_unit_movers::ToMover;
+
+use crate::{AggroDetectorClosest, ATTACK_TARGET, CHASE, IN_ATTACK, PURE_MOVE};
+
+use super::{
+    TUnitIMCAMapper,
+    state_to_root::{
+        ATTACK_MOVE,
+        IN_AGGRO,
+        MOVE
+    },
+    common::*,
+};
+
+pub(crate) use behaviour_tree::{prelude::*, state::State as TreeState};
+use ref_caravan::*;
+use ref_paths::*;
+use ref_marks::*;
+
+use nav_to_mover::{
+    NavIsReference as NavIsReferenceMover,
+    *
+};
+
+use control_to_nav::{
+    NavIsReference as NavIsReferenceControl,
+    *
+};
+
+use rts_unit_control::{commandable::OrderProcessedAgar, *};
+use rts_unit_nav::*;
 
 // Definition
 #[derive(Component, Default)]
@@ -19,6 +50,9 @@ pub(crate) struct BChase {
     pub aggro_is_ref: AggroIsReference,
     pub nav_as_aggro: SwitchedNavAsAggroDetectorClosest,
     pub hub_is_ref: HubNavIsReference,
+    
+    // attack target to nav
+    pub attack_target_to_nav: BChaseControlToNav,
 
     pub to_control: ToControl,
     pub to_nav: ToNav,
@@ -51,9 +85,9 @@ fn chase_logic(
         return;
     }
 
-    let state = state.state();
+    let state: TreeState = state.state();
 
-    if (state.contains(PURE_MOVE)) {
+    if state.contains(PURE_MOVE) {
         unit_mca.0 = 1; // move to move
         return;
     }
@@ -100,7 +134,7 @@ fn chase_actuator(
 pub(crate) struct BChaseNavToMover {
     pub bang_link: BangToSwitch<BChaseNavToMover>,
     pub move_as_nav: SwitchedMoveAsNav<BChaseNavToMover>,
-    pub nav_is: NavIsReference<BChaseNavToMover>,
+    pub nav_is: NavIsReferenceMover<BChaseNavToMover>,
     pub move_is: MoveIsReference<BChaseNavToMover>,
 }
 ref_signature!(BChaseNavToMover);
@@ -171,4 +205,26 @@ fn referenced_aggro_to_referenced_nav(
     };
     let waypoint = transform.translation().truncate();
     nav.0 = waypoint;
+}
+
+
+#[derive(Bundle, Default)]
+pub(crate) struct BChaseControlToNav {
+    pub bang_link: BangToSwitch<BChaseControlToNav>,
+    pub nav_is_ref: NavIsReferenceControl<BChaseControlToNav>,
+    pub control_is_ref: ControlIsReference<BChaseControlToNav>,
+    pub as_attack_target: SwitchedNavAsAttackTarget<BChaseControlToNav>
+}
+ref_signature!(BChaseControlToNav);
+pub struct BChaseControlToNavPlugin;
+impl Plugin for BChaseControlToNavPlugin {
+    fn build(&self, app: &mut App) {
+        type AttackTargetAsNav = SwitchedNavAsAttackTarget<BChaseControlToNav>;
+        type BangLink = BangToSwitch<BChaseControlToNav>;
+
+        app.add_systems(Update, (
+            bang_to_switch_sys::<AttackTargetAsNav, BangLink, BChaseControlToNav>,
+            reference_attack_target_as_reference_nav_sys::<BChaseControlToNav>,
+        ));
+    }
 }

@@ -47,7 +47,7 @@ pub struct ControlBundle {
     pub attack_move_orders: TAttackMoveOrders,
     pub target_orders: TAttackTargetOrders,
 
-    pub current_target: CurrentTarget,
+    pub current_target: TCurrentTarget,
 
     pub target_processor: UntilTargetGoneProcessor,
     pub pure_move_processor: PMProximityProcessor,
