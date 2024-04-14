@@ -25,6 +25,7 @@ impl Plugin for BuiltInOrdersPlugin {
     }
 }
 
+use std::collections::vec_deque::Iter as DequeIter;
 /// Unit order terminal blueprint.
 /// Typically, an order terminal is a wrapper/tuple for a vec of the order type.
 pub trait TUnitOrder<OrderType> {
@@ -34,20 +35,23 @@ pub trait TUnitOrder<OrderType> {
 
     fn current(&self) -> Option<OrderType>;
     fn count(&self) -> usize;
-    fn iter(&self) -> core::slice::Iter<'_, OrderType>;
+    fn iter(&self) -> DequeIter<OrderType>;
 }
 
 #[macro_export]
 macro_rules! unit_order_terminal { ($terminal:ty, $order:ty) => {
+    use std::collections::VecDeque;
+    use std::collections::vec_deque::Iter as DequeIter;
+
     impl Default for $terminal {
         fn default() -> Self {
-            Self(Vec::new())
+            Self(VecDeque::new())
         }
     }
 
     impl $terminal {
         pub fn new() -> Self {
-            return Self(Vec::new())
+            return Self(VecDeque::new())
         }
     }
 
@@ -56,10 +60,10 @@ macro_rules! unit_order_terminal { ($terminal:ty, $order:ty) => {
             self.0.clear();
         }
         fn clear_current(&mut self) {
-            self.0.pop();
+            self.0.pop_back();
         }
         fn command(&mut self, order: $order) {
-            self.0.push(order);
+            self.0.push_front(order);
         }
 
         fn current(&self) -> Option<$order> {
@@ -69,7 +73,7 @@ macro_rules! unit_order_terminal { ($terminal:ty, $order:ty) => {
         fn count(&self) -> usize {
             return self.0.len()
         }
-        fn iter(&self) -> core::slice::Iter<'_, $order> {
+        fn iter(&self) -> DequeIter<$order> {
             return self.0.iter()
         }
     }

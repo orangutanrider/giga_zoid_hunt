@@ -31,6 +31,7 @@ use rts_unit_soul::*;
 use rts_unit_team::*;
 use rts_unit_health::*;
 use rts_unit_movers::*;
+use death_flare::*;
 
 pub(crate) use nav_to_mover::*;
 use control_to_detector::*;
@@ -171,6 +172,7 @@ struct BHub {
     pub despawn_is_ref: DespawnTargetIsReference,
     pub to_despawn_target: ToDespawnTarget,
     pub team_affiliation: PlayerTeam,
+    pub death_flare: DeathFlareOnDeath,
 }
 
 #[derive(Component, Default)]

@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use mouse_pos::MainCamera;
 use player_unit::spawn_player_unit;
+use rts_controller::selection::r#box::visuals::spawn_selection_box;
 
 fn main() {
     println!("Hello World");
@@ -16,8 +17,9 @@ fn main() {
     ));
 
     app.add_systems(Startup, (
-        spawn_main_camera,
-        spawn_player_units
+        spawn_main_camera_startup,
+        spawn_player_units_startup,
+        spawn_selection_box_startup,
     ));
 
     #[cfg(debug_assertions)]
@@ -49,11 +51,12 @@ impl Plugin for MainPlugin {
             rts_unit_detectors::RTSUnitDetectorsPlugin,
             rts_unit_movers::MoversPlugin,
             rts_unit_nav::NavPlugin,
+            death_flare::DeathFlarePlugin
         ));
     }
 }
 
-fn spawn_main_camera(
+fn spawn_main_camera_startup(
     mut commands: Commands,
 ) {
     commands.spawn((
@@ -62,7 +65,14 @@ fn spawn_main_camera(
     ));
 }
 
-fn spawn_player_units(
+fn spawn_selection_box_startup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>, 
+) {
+    spawn_selection_box(&mut commands, &asset_server);
+}
+
+fn spawn_player_units_startup(
     mut commands: Commands,
     asset_server: Res<AssetServer>, 
 ) {

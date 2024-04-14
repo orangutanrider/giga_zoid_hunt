@@ -1,0 +1,14 @@
+[package]
+name = "death_flare"
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+
+ref_paths.workspace = true
+ref_caravan.workspace = true
+
+rts_unit_death.workspace = true

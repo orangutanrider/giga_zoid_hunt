@@ -20,6 +20,7 @@ rts_unit_death.workspace = true
 rts_unit_detectors.workspace = true
 rts_unit_movers.workspace = true
 rts_unit_nav.workspace = true
+death_flare.workspace = true
 
 [features]
 dev = ["bevy/dynamic_linking",]
