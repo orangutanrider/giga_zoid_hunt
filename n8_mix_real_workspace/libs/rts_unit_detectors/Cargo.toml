@@ -9,9 +9,10 @@ edition.workspace = true
 bevy.workspace = true
 bevy_rapier2d.workspace = true
 
-ref_paths.workspace = true
-ref_caravan.workspace = true
 rapier_config.workspace = true
 
-rts_waymarks.workspace = true
+ref_paths.workspace = true
+ref_caravan.workspace = true
+ref_marks.workspace = true
+
 rts_unit_control.workspace = true

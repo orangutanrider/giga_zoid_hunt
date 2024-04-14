@@ -2,10 +2,7 @@ use bevy::prelude::*;
 use bevy::ecs::system::SystemParam;
 use bevy_rapier2d::prelude::*;
 
-use rapier_config::{
-    E_ATTACKABLE_FILTER,
-    P_SELECTABLE_FILTER,
-};
+use rapier_config::*;
 
 #[derive(SystemParam)]
 pub struct PhysicsQueries<'w>(
@@ -30,12 +27,11 @@ impl<'w> PhysicsQueries<'w> {
             &shape, 
             0.0,
             true,
-            E_ATTACKABLE_FILTER,
+            DETECTABLE_ENEMY_UNITS_FILTER,
         )
     }
 
-    /// p_selectable = a selectable unit on the player team
-    pub fn cast_for_p_selectable(
+    pub fn cast_for_selectable(
         &self,
         origin: Vec2,
         release: Vec2,
@@ -52,7 +48,7 @@ impl<'w> PhysicsQueries<'w> {
             location, 
             0.0, 
             &shape, 
-            P_SELECTABLE_FILTER, 
+            SELECTABLE_FILTER, 
             callback,
         )
     }

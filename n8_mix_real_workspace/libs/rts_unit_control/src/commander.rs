@@ -1,3 +1,4 @@
+use std::any::TypeId;
 use std::marker::PhantomData;
 
 use bevy::prelude::*;
@@ -11,7 +12,7 @@ where
     Terminal: Component + TUnitOrder<Order>,
     Order: Copy,
 {
-    control_q: Query<'w, 's, &'static mut Terminal, (With<Selected>, With<Commandable>)>,
+    control_q: Query<'w, 's, (&'static mut Terminal, &'static mut TActiveOrderType), (With<Selected>, With<Commandable>)>,
     phantom: PhantomData<Order> // This is here to satisfy the Order generic parameter
 }
 impl<'w, 's, Terminal, Order> SelectionCommands<'w, 's, Terminal, Order> 
@@ -31,23 +32,27 @@ where
     }
 
     pub fn add_command(&mut self, order: &Order) {
-        for mut commandable in self.control_q.iter_mut() {
-            commandable.command(*order);
+        for (mut data_terminal, mut type_terminal) in self.control_q.iter_mut() {
+            data_terminal.command(*order);
+            type_terminal.command(TypeId::of::<Terminal>());
         }
     }
 
     pub fn set_command(&mut self, order: &Order) {
-        for mut commandable in self.control_q.iter_mut() {
-            commandable.clear();
-            commandable.command(*order);
+        for (mut data_terminal, mut type_terminal) in self.control_q.iter_mut() {
+            data_terminal.clear();
+            type_terminal.clear();
+            data_terminal.command(*order);
+            type_terminal.command(TypeId::of::<Terminal>());
         }
     }
 
     pub fn local_clear(
         &mut self,
     ) {
-        for mut commandable in self.control_q.iter_mut() {
-            commandable.clear();
+        for (mut data_terminal, mut type_terminal) in self.control_q.iter_mut() {
+            data_terminal.clear();
+            type_terminal.clear();
         }
     }
 }

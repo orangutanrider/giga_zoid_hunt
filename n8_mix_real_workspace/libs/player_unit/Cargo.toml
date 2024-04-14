@@ -1,0 +1,33 @@
+[package]
+name = "player_unit"
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+bevy_rapier2d.workspace = true
+
+behaviour_tree.workspace = true
+
+ref_paths.workspace = true
+ref_caravan.workspace = true
+ref_marks.workspace = true
+
+rapier_config.workspace = true
+
+rts_unit_detectors.workspace = true
+rts_unit_control.workspace = true
+rts_unit_nav.workspace = true
+rts_direct_attack.workspace = true
+rts_unit_health.workspace = true
+rts_unit_team.workspace = true
+rts_unit_soul.workspace = true
+rts_unit_death.workspace = true
+rts_unit_movers.workspace = true
+
+nav_to_mover.workspace = true
+control_to_detector.workspace = true
+health_to_death.workspace = true
+control_to_nav.workspace = true

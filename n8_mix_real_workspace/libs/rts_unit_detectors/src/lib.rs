@@ -2,14 +2,57 @@ pub mod enemy_circle_intersections;
 pub mod player_circle_intersections;
 pub mod distill_closest;
 pub mod distill_target;
+pub mod prelude;
 
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use core::slice::Iter;
+use std::{default, marker::*};
+
+use ref_marks::*;
+use ref_paths::*;
+
+use self::player_circle_intersections::player_circle_intersections_sys;
+use self::enemy_circle_intersections::enemy_circle_intersections_sys;
+use self::distill_target::target_detection_distillation_sys;
+use self::distill_closest::closest_detection_distillation_sys;
+
+pub struct RTSUnitDetectorsPlugin;
+
+impl Plugin for RTSUnitDetectorsPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(PreUpdate, (
+            player_circle_intersections_sys,
+            enemy_circle_intersections_sys,
+            target_detection_distillation_sys,
+            closest_detection_distillation_sys
+        ));
+    }
+}
+
+#[derive(Component)]
+/// Signed waymark.
+pub struct ToDetector<S: RefSignature>{
+    waymark: Entity,
+    signature: PhantomData<S>
+}
+impl<S: RefSignature> Waymark for ToDetector<S> {
+    fn go(&self) -> Entity {
+        return self.waymark
+    }
+}
 
 #[derive(Component)]
 pub struct TIntersectionsAggregate(pub Vec<Entity>);
+impl Default for TIntersectionsAggregate {
+    fn default() -> Self {
+        Self(Vec::new())
+    }
+}
 impl TIntersectionsAggregate {
+    pub fn new() -> Self {
+        return Self(Vec::new())
+    }
     pub fn iter(&self) -> Iter<Entity> {
         return self.0.iter();
     }

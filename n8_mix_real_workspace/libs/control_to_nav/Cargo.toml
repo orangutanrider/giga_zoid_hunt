@@ -1,0 +1,16 @@
+[package]
+name = "control_to_nav"
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+
+ref_caravan.workspace = true
+ref_paths.workspace = true
+ref_marks.workspace = true
+
+rts_unit_nav.workspace = true
+rts_unit_control.workspace = true

@@ -29,13 +29,13 @@ impl Plugin for ControlPlugin {
 #[derive(Default)]
 #[derive(Bundle)]
 pub struct ControlCoreBundle {
-    pub flag: UnitControl,
+    pub flag: Control,
     pub transform: TransformBundle,
 
     pub selectable: Selectable,
     pub commandable: Commandable,
 
-    pub orders: ActiveOrderTerminal,
+    pub orders: TActiveOrderType,
     pub clear: ClearOrdersBang,
 }
 
@@ -47,7 +47,7 @@ pub struct ControlBundle {
     pub attack_move_orders: TAttackMoveOrders,
     pub target_orders: TAttackTargetOrders,
 
-    pub current_target: CurrentTarget,
+    pub current_target: TCurrentTarget,
 
     pub target_processor: UntilTargetGoneProcessor,
     pub pure_move_processor: PMProximityProcessor,
@@ -56,13 +56,13 @@ pub struct ControlBundle {
 
 #[derive(Component)]
 /// Self flag
-pub struct UnitControl;
-impl Default for UnitControl {
+pub struct Control;
+impl Default for Control {
     fn default() -> Self {
         Self {  }
     }
 }
 
 #[derive(Component)]
-pub struct ToUnitControl(Entity);
-waymark!(ToUnitControl);
+pub struct ToControl(Entity);
+waymark!(ToControl);

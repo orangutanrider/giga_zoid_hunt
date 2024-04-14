@@ -3,6 +3,11 @@ use crate::*;
 
 #[derive(Component)]
 pub struct DistillationForClosest(Option<Entity>);
+impl Default for DistillationForClosest {
+    fn default() -> Self {
+        Self(None)
+    }
+}
 impl DistillationColumn for DistillationForClosest {
     fn read_detection(&self) -> Option<Entity> {
         return self.0

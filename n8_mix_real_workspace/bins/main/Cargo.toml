@@ -7,13 +7,19 @@ edition.workspace = true
 
 [dependencies]
 bevy.workspace = true
+bevy_rapier2d.workspace = true
 
-ref_paths.workspace = true
-ref_caravan.workspace = true
 behaviour_tree.workspace = true
-
-rts_unit_detectors.workspace = true
+health_to_death.workspace = true
+mouse_pos.workspace = true
+player_unit.workspace = true
+rts_controller.workspace = true
+rts_direct_attack.workspace = true
 rts_unit_control.workspace = true
+rts_unit_death.workspace = true
+rts_unit_detectors.workspace = true
+rts_unit_movers.workspace = true
+rts_unit_nav.workspace = true
 
 [features]
 dev = ["bevy/dynamic_linking",]

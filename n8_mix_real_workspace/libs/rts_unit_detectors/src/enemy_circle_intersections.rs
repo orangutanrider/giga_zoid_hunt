@@ -9,6 +9,11 @@ use crate::*;
 pub struct CircleIntersectionsOfEnemy{
     radius: f32,
 }
+impl Default for CircleIntersectionsOfEnemy{
+    fn default() -> Self {
+        Self { radius: 0.0 }
+    }
+}
 impl CircleIntersectionsOfEnemy {
     pub fn new(radius: f32) -> Self {
         return Self {
@@ -17,7 +22,7 @@ impl CircleIntersectionsOfEnemy {
     }
 }
 impl ImmutableDetector for CircleIntersectionsOfEnemy {
-    const FILTER: QueryFilter<'static> = P_DETECTABLE_FILTER;
+    const FILTER: QueryFilter<'static> = DETECTABLE_ENEMY_UNITS_FILTER;
     
     fn shape(&self) -> Collider {
         return Collider::ball(self.radius)
@@ -26,7 +31,7 @@ impl ImmutableDetector for CircleIntersectionsOfEnemy {
 
 /// Detection to local aggregate terminal.
 pub fn enemy_circle_intersections_sys(
-    rapier: &RapierContext,
+    rapier: Res<RapierContext>,
     mut q: Query<(&mut TIntersectionsAggregate, &GlobalTransform, &CircleIntersectionsOfEnemy)>
 ) {
     for (mut terminal, transform, params) in q.iter_mut() {

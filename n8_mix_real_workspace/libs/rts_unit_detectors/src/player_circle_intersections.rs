@@ -17,7 +17,7 @@ impl CircleIntersectionsOfPlayer {
     }
 }
 impl ImmutableDetector for CircleIntersectionsOfPlayer {
-    const FILTER: QueryFilter<'static> = E_DETECTABLE_FILTER;
+    const FILTER: QueryFilter<'static> = DETECTABLE_PLAYER_UNITS_FILTER;
     
     fn shape(&self) -> Collider {
         return Collider::ball(self.radius)
@@ -25,8 +25,8 @@ impl ImmutableDetector for CircleIntersectionsOfPlayer {
 }
 
 /// Detection to local aggregate terminal.
-pub fn enemy_circle_intersections_sys(
-    rapier: &RapierContext,
+pub fn player_circle_intersections_sys(
+    rapier: Res<RapierContext>,
     mut q: Query<(&mut TIntersectionsAggregate, &GlobalTransform, &CircleIntersectionsOfPlayer)>
 ) {
     for (mut terminal, transform, params) in q.iter_mut() {

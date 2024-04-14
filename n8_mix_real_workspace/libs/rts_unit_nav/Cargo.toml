@@ -10,5 +10,3 @@ bevy.workspace = true
 
 ref_caravan.workspace = true
 ref_paths.workspace = true
-
-rts_waymarks.workspace = true

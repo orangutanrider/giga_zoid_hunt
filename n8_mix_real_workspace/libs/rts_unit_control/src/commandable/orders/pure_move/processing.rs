@@ -10,16 +10,27 @@ use super::*;
 pub struct PMProximityProcessor{
     threshold: f32
 }
+impl Default for PMProximityProcessor {
+    fn default() -> Self {
+        Self { threshold: 0.0 }
+    }
+}
 impl PMProximityProcessor {
+    pub fn new(threshold:f32) -> Self {
+        return Self{ threshold }
+    }
+    
     pub fn threshold(&self) -> f32 {
         return self.threshold
     }
 }
 
+// Ideally you split the system into two, so that you can have OrderProcessedAgar be optional.
+// a With one and a Without one.
 pub fn pm_proximity_processing_sys(
-    mut control_q: Query<(&mut ActiveOrderTerminal, &mut TPureMoveOrders, &PMProximityProcessor, &GlobalTransform), Changed<GlobalTransform>>
+    mut control_q: Query<(&mut TActiveOrderType, &mut TPureMoveOrders, &PMProximityProcessor, &GlobalTransform, &mut OrderProcessedAgar), Changed<GlobalTransform>>
 ) {
-    for (mut order_types, mut unit_orders, processor, transform) in control_q.iter_mut() {
+    for (mut order_types, mut unit_orders, processor, transform, mut agar) in control_q.iter_mut() {
         validate_active_terminal_c!(TPureMoveOrders, order_types);
 
         let Some(current) = unit_orders.current() else {
@@ -33,5 +44,6 @@ pub fn pm_proximity_processing_sys(
         }
 
         unit_orders.clear_current();
+        agar.bang();
     }
 }

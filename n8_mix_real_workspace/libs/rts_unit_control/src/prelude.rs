@@ -1,14 +1,16 @@
 pub use crate::{
+    validate_active_terminal_c,
+    validate_active_terminal_r,
     ControlPlugin,
     ControlBundle,
     ControlCoreBundle,
-    UnitControl,
-    ToUnitControl,
+    Control,
+    ToControl,
 };
 
 pub use crate::commandable::{
     Commandable,
-    ActiveOrderTerminal,
+    TActiveOrderType,
     ClearOrdersBang,
     orders::{
         TUnitOrder,
@@ -26,9 +28,9 @@ pub use crate::commandable::{
         attack_target::{
             AttackTargetOrder,
             TAttackTargetOrders,
+            TCurrentTarget,
             processing::{
-                CurrentTarget,
-                AbortCurrentTargetBang,
+                //AbortCurrentTargetBang,
                 UntilTargetGoneProcessor,
                 TargetedBy,
             }
