@@ -76,9 +76,9 @@ fn spawn_player_units_startup(
     mut commands: Commands,
     asset_server: Res<AssetServer>, 
 ) {
-    spawn_player_unit(Vec2::new(-10.0, 0.0), &mut commands, &asset_server);
-    spawn_player_unit(Vec2::new(-5.0, 0.0), &mut commands, &asset_server);
+    spawn_player_unit(Vec2::new(-90.0, 0.0), &mut commands, &asset_server);
+    spawn_player_unit(Vec2::new(-45.0, 0.0), &mut commands, &asset_server);
     spawn_player_unit(Vec2::new(0.0, 0.0), &mut commands, &asset_server);
-    spawn_player_unit(Vec2::new(5.0, 0.0), &mut commands, &asset_server);
-    spawn_player_unit(Vec2::new(10.0, 0.0), &mut commands, &asset_server);
+    spawn_player_unit(Vec2::new(45.0, 0.0), &mut commands, &asset_server);
+    spawn_player_unit(Vec2::new(90.0, 0.0), &mut commands, &asset_server);
 }

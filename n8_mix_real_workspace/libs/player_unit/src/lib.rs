@@ -251,9 +251,19 @@ pub const ATTACK_POWER: f32 = 5.0;
 pub const ATTACK_SPEED: f32 = 0.75;
 pub const ATTACK_ANIMATION_TIME: f32 = 1.1;
 
-pub const HUB_OFFSET: Vec2 = Vec2{ x: 0.0, y: 1.0 };
-pub const NODES_Y_OFFSET: f32 = 1.0;
-pub const NODES_X_OFFSET: f32 = 1.0;
+pub const ROOT_SIZE: Vec2 = Vec2::new(16.0, 4.0);
+pub const ROOT_OFFSET: Vec3 = Vec3::new(0.0, 0.0, 1.0);
+
+pub const TREE_ROOT_SIZE: Vec2 = Vec2::new(16.0, 2.0);
+pub const TREE_ROOT_OFFSET: Vec3 = Vec3::new(0.0, 0.0, 2.0);
+
+pub const HUB_SIZE: Vec2 = Vec2::new(16.0, 20.0);
+pub const HUB_OFFSET: Vec2 = Vec2::new(0.0, 16.0);
+
+pub const NODES_SIZE: Vec2 = Vec2::new(4.0, 4.0);
+pub const NODES_Y_OFFSET: f32 = 16.0;
+pub const NODES_X_OFFSET: f32 = 6.0;
+
 
 pub fn spawn_player_unit(
     location: Vec2,
@@ -273,6 +283,7 @@ pub fn spawn_player_unit(
         SpriteBundle {
             texture: square.clone_weak(),
             transform: Transform { translation: location.extend(0.0), ..Default::default()},
+            sprite: Sprite { custom_size: Some(ROOT_SIZE), ..Default::default() },
             ..Default::default()
         }
     )).id();
@@ -284,7 +295,8 @@ pub fn spawn_player_unit(
         },
         SpriteBundle {
             texture: square.clone_weak(),
-            transform: Transform { translation: location.extend(0.0), ..Default::default()},
+            transform: Transform { translation: TREE_ROOT_OFFSET, ..Default::default()},
+            sprite: Sprite { custom_size: Some(TREE_ROOT_SIZE), ..Default::default() },
             ..Default::default()
         }
     )).id();
@@ -305,7 +317,8 @@ pub fn spawn_player_unit(
         },
         SpriteBundle {
             texture: square.clone_weak(),
-            transform: Transform { translation: (location + HUB_OFFSET).extend(0.0), ..Default::default()},
+            transform: Transform { translation: HUB_OFFSET.extend(0.0), ..Default::default()},
+            sprite: Sprite { custom_size: Some(HUB_SIZE), ..Default::default() },
             ..Default::default()
         },
     )).id();
@@ -319,7 +332,8 @@ pub fn spawn_player_unit(
         },
         SpriteBundle {
             texture: square.clone_weak(),
-            transform: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * -2.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
+            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * -2.5, NODES_Y_OFFSET).extend(0.0), ..Default::default()},
+            sprite: Sprite { custom_size: Some(NODES_SIZE), ..Default::default() },
             ..Default::default()
         }
     )).id();
@@ -333,7 +347,8 @@ pub fn spawn_player_unit(
         },
         SpriteBundle {
             texture: square.clone_weak(),
-            transform: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * -1.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
+            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * -1.5, NODES_Y_OFFSET).extend(0.0), ..Default::default()},
+            sprite: Sprite { custom_size: Some(NODES_SIZE), ..Default::default() },
             ..Default::default()
         }
     )).id();
@@ -350,7 +365,8 @@ pub fn spawn_player_unit(
         },
         SpriteBundle {
             texture: square.clone_weak(),
-            transform: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * -0.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
+            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * -0.5, NODES_Y_OFFSET).extend(0.0), ..Default::default()},
+            sprite: Sprite { custom_size: Some(NODES_SIZE), ..Default::default() },
             ..Default::default()
         }
     )).id();
@@ -367,7 +383,8 @@ pub fn spawn_player_unit(
         },
         SpriteBundle {
             texture: square.clone_weak(),
-            transform: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * 0.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
+            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * 0.5, NODES_Y_OFFSET).extend(0.0), ..Default::default()},
+            sprite: Sprite { custom_size: Some(NODES_SIZE), ..Default::default() },
             ..Default::default()
         }
     )).id();
@@ -384,7 +401,8 @@ pub fn spawn_player_unit(
         },
         SpriteBundle {
             texture: square.clone_weak(),
-            transform: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * 1.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
+            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * 1.5, NODES_Y_OFFSET).extend(0.0), ..Default::default()},
+            sprite: Sprite { custom_size: Some(NODES_SIZE), ..Default::default() },
             ..Default::default()
         }
     )).id();
@@ -404,7 +422,8 @@ pub fn spawn_player_unit(
         },
         SpriteBundle {
             texture: square,
-            transform: Transform { translation: (location + Vec2::new(NODES_X_OFFSET * 2.5, NODES_Y_OFFSET)).extend(0.0), ..Default::default()},
+            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * 2.5, NODES_Y_OFFSET).extend(0.0), ..Default::default()},
+            sprite: Sprite { custom_size: Some(NODES_SIZE), ..Default::default() },
             ..Default::default()
         }
     )).id();
