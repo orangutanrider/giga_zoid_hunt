@@ -15,7 +15,7 @@ pub struct AttackInput<'w> {
 impl<'w> AttackInput<'w> {
     const KEYS: [KeyCode; 1] = [KeyCode::KeyA];
 
-    fn just_pressed(&self) -> bool {
+    pub fn just_pressed(&self) -> bool {
         return self.keys.any_just_pressed(Self::KEYS);
     }
 

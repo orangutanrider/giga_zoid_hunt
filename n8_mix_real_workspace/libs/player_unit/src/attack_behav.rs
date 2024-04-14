@@ -211,14 +211,12 @@ pub fn attack_execution_sys(
         if !(timer.0 >= trigger.trigger_time) {
             continue;
         }
-        println!("Attack attempt");
 
         trigger.triggered = true;
         let Some(target) = target.0 else {
             continue;
         };
 
-        println!("Attack signal");
         attack_bang.bang(target);
     }
 }

@@ -1619,6 +1619,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7e962a19be5cfc3f3bf6dd8f61eb50107f356ad6270fbb3ed41476571db78be5"
 
 [[package]]
+name = "death_flare"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_caravan",
+ "ref_paths",
+ "rts_unit_death",
+]
+
+[[package]]
 name = "derive_more"
 version = "0.99.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2415,6 +2425,7 @@ dependencies = [
  "behaviour_tree",
  "bevy",
  "bevy_rapier2d",
+ "death_flare",
  "health_to_death",
  "mouse_pos",
  "player_unit",
@@ -3029,6 +3040,7 @@ dependencies = [
  "bevy_rapier2d",
  "control_to_detector",
  "control_to_nav",
+ "death_flare",
  "health_to_death",
  "nav_to_mover",
  "rapier_config",

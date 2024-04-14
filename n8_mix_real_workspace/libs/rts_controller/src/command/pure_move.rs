@@ -14,7 +14,7 @@ pub struct PureMoveInput<'w> {
 impl<'w> PureMoveInput<'w> {
     const KEYS: [KeyCode; 1] = [KeyCode::KeyD];
 
-    fn just_pressed(&self) -> bool {
+    pub fn just_pressed(&self) -> bool {
         return self.keys.any_just_pressed(Self::KEYS);
     }
 

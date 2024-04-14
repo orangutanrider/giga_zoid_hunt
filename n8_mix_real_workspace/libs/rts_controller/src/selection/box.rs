@@ -1,3 +1,5 @@
+pub mod visuals;
+
 use bevy::{ecs::system::SystemParam, prelude::*};
 use mouse_pos::CursorWorldPos;
 
@@ -15,7 +17,7 @@ pub struct BoxInput<'w> {
     mouse_pos: Res<'w, CursorWorldPos>,
 }
 impl<'w> BoxInput<'w> {
-    const BUTTONS: [MouseButton; 1] = [MouseButton::Left];
+    pub const BUTTONS: [MouseButton; 1] = [MouseButton::Left];
 
     pub fn just_pressed(&self) -> bool {
         return self.mouse_buttons.any_just_pressed(Self::BUTTONS);

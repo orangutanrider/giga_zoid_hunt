@@ -25,6 +25,10 @@ impl DeathBang {
     pub fn bang(&mut self) {
         self.0 = true;
     }
+
+    pub fn is_active(& self) -> bool {
+        self.0
+    }
 }
 
 #[derive(Component, Default)]

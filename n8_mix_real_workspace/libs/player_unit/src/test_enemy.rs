@@ -23,6 +23,7 @@ pub struct TestEnemy {
     pub despawn_is_ref: DespawnTargetIsReference,
     pub to_despawn_target: ToDespawnTarget,
     pub team_affiliation: EnemyTeam,
+    pub death_flare: DeathFlareOnDeath,
 }
 
 pub fn spawn_test_enemy(

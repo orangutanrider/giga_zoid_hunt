@@ -22,5 +22,5 @@ impl AttackMoveOrder {
 
 #[derive(Component)]
 /// Attack movement order terminal
-pub struct TAttackMoveOrders(Vec<AttackMoveOrder>);
+pub struct TAttackMoveOrders(VecDeque<AttackMoveOrder>);
 unit_order_terminal!(TAttackMoveOrders, AttackMoveOrder);

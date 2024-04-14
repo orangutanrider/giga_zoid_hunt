@@ -22,5 +22,5 @@ impl PureMoveOrder {
 
 #[derive(Component)]
 /// Pure movement order terminal
-pub struct TPureMoveOrders(Vec<PureMoveOrder>);
+pub struct TPureMoveOrders(VecDeque<PureMoveOrder>);
 unit_order_terminal!(TPureMoveOrders, PureMoveOrder);
