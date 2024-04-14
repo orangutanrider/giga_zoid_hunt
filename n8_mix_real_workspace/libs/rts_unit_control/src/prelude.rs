@@ -28,9 +28,9 @@ pub use crate::commandable::{
         attack_target::{
             AttackTargetOrder,
             TAttackTargetOrders,
+            TCurrentTarget,
             processing::{
-                CurrentTarget,
-                AbortCurrentTargetBang,
+                //AbortCurrentTargetBang,
                 UntilTargetGoneProcessor,
                 TargetedBy,
             }

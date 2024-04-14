@@ -12,7 +12,10 @@ impl Plugin for DebugPlugin {
         app.add_systems(Startup, spawn_test_enemy_dbg_sys);
 
         app.add_systems(Update, (
-            //prnt_units_sys
+            //prnt_units_sys,
+            //prnt_if_targeted_by_exists,
+            prnt_targeted_by,
+            prnt_attack_target_data_sys,
             prnt_state_sys,
             prnt_order_type_sys,
             prnt_hub_sys,
@@ -122,12 +125,16 @@ fn prnt_state_mapping(
     print!(" | IDLE: {}", state.contains(IDLE));
     print!(" | PURE_MOVE: {}", state.contains(PURE_MOVE));
     print!(" | ATTACK_MOVE: {}", state.contains(ATTACK_MOVE));
+    print!(" | ATTACK_TARGET: {}", state.contains(ATTACK_TARGET));
     print!(" | IN_AGGRO: {}", state.contains(IN_AGGRO));
     print!(" | IN_ATTACK: {}", state.contains(IN_ATTACK));
     println!("");
 }
 
 use player_unit::Hub;
+use rts_unit_detectors::distill_closest::DistillationForClosest;
+use rts_unit_detectors::distill_target::DistillationForTarget;
+use rts_unit_detectors::TIntersectionsAggregate;
 use rts_unit_movers::TMoveVector;
 use rts_unit_nav::NavVectorOutput;
 use rts_unit_nav::TNavWaypoint;
@@ -179,3 +186,70 @@ fn prnt_nav_sys(
         }
     }
 }
+
+fn prnt_attack_target_data_sys(
+    input: Res<ButtonInput<KeyCode>>,
+    q: Query<(Option<&TAttackTargetOrders>, Option<&TCurrentTarget>)>,
+) {
+    if !input.just_pressed(KeyCode::KeyH) {
+        return;
+    }
+    println!("");
+
+    for (orders, current) in q.iter() {
+
+        if let Some(orders) = orders {
+            let mut index = 0;
+            for order in orders.iter() {
+                println!("Attack Target Order {}: {:?}", index, order.target);
+                index = index + 1;
+            }
+        }
+
+        if let Some(current) = current {
+            println!("Current: {:?}", current.read());
+        }
+    }
+}
+
+fn prnt_if_targeted_by_exists(
+    q: Query<&TargetedBy>,
+) {
+    let mut index = 0;
+    for _ in q.iter() {
+        index = index + 1;
+    }
+    if index > 0 {
+        println!("{} targeted by components", index);
+    }
+}
+
+fn prnt_targeted_by(
+    input: Res<ButtonInput<KeyCode>>,
+    q: Query<&TargetedBy>,
+) {
+    if !input.just_pressed(KeyCode::KeyY) {
+        return;
+    }
+    println!("");
+
+    for targeted_by in q.iter() {
+        println!("TargetedBy: {}", targeted_by.read().len());
+    }
+}
+
+/* 
+fn prnt_detection_data(
+    input: Res<ButtonInput<KeyCode>>,
+    q: Query<(&TIntersectionsAggregate, &DistillationForClosest)>,
+) {
+    if !input.just_pressed(KeyCode::KeyT) {
+        return;
+    }
+    println!("");
+
+    for targeted_by in q.iter() {
+        println!("TargetedBy: {}", targeted_by.read().len());
+    }
+}
+*/

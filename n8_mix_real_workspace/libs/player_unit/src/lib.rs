@@ -1,10 +1,13 @@
+pub mod test_enemy;
+
+
 pub mod chase_behav; pub(crate) use self::chase_behav::*;
 pub mod common; pub(crate) use self::common::*;
 pub mod move_behav; pub(crate) use self::move_behav::*;
 pub mod state_to_root; pub(crate) use self::state_to_root::*;
 pub mod attack_behav; pub(crate) use self::attack_behav::*;
 pub mod idle_behav; pub use idle_behav::*;
-pub mod test_enemy;
+
 
 use rts_unit_control::commandable::OrderProcessedAgar;
 
@@ -89,6 +92,7 @@ impl Plugin for PlayerUnitPlugin {
 
             // chase
             BChaseNavToMoverPlugin,
+            BChaseControlToNavPlugin
         ));
     }
 }
@@ -137,7 +141,7 @@ struct BHub {
     pub pure_move_orders: TPureMoveOrders,
     pub attack_move_orders: TAttackMoveOrders,
     pub target_orders: TAttackTargetOrders,
-    pub current_target: CurrentTarget,
+    pub current_target: TCurrentTarget,
     pub target_processor: UntilTargetGoneProcessor,
     pub pure_move_processor: PMProximityProcessor,
     pub attack_move_processor: AMProximityProcessor,
@@ -153,6 +157,8 @@ struct BHub {
     pub rigidbody: RigidBody,
     pub sensor: Sensor,
     pub grouping: CollisionGroups,
+
+    pub at_here_targeting: TargetedBy,
 
     // Mortality
     pub health: THealth,

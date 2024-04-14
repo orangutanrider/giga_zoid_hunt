@@ -56,7 +56,7 @@ pub fn box_selection_sys(
     if !input.just_released() {
         return;
     }
-    if input.add_mode() {
+    if !input.add_mode() {
         un_select_all(&mut commands, &selected_q);
     }
 
