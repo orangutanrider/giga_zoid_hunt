@@ -6,7 +6,9 @@ pub mod common; pub(crate) use self::common::*;
 pub mod move_behav; pub(crate) use self::move_behav::*;
 pub mod state_to_root; pub(crate) use self::state_to_root::*;
 pub mod attack_behav; pub(crate) use self::attack_behav::*;
-pub mod idle_behav; pub use idle_behav::*;
+pub mod idle_behav; use attack_laser::LaserVisualsOnAttack;
+use bang_colour::BangColour;
+pub use idle_behav::*;
 
 
 use rts_unit_control::commandable::OrderProcessedAgar;
@@ -283,7 +285,7 @@ pub fn spawn_player_unit(
         SpriteBundle {
             texture: square.clone_weak(),
             transform: Transform { translation: location.extend(0.0), ..Default::default()},
-            sprite: Sprite { custom_size: Some(ROOT_SIZE), ..Default::default() },
+            sprite: Sprite { custom_size: Some(ROOT_SIZE), color: Color::GRAY, ..Default::default() },
             ..Default::default()
         }
     )).id();
@@ -296,7 +298,7 @@ pub fn spawn_player_unit(
         SpriteBundle {
             texture: square.clone_weak(),
             transform: Transform { translation: TREE_ROOT_OFFSET, ..Default::default()},
-            sprite: Sprite { custom_size: Some(TREE_ROOT_SIZE), ..Default::default() },
+            sprite: Sprite { custom_size: Some(TREE_ROOT_SIZE), color: Color::DARK_GRAY, ..Default::default() },
             ..Default::default()
         }
     )).id();
@@ -318,7 +320,7 @@ pub fn spawn_player_unit(
         SpriteBundle {
             texture: square.clone_weak(),
             transform: Transform { translation: HUB_OFFSET.extend(0.0), ..Default::default()},
-            sprite: Sprite { custom_size: Some(HUB_SIZE), ..Default::default() },
+            sprite: Sprite { custom_size: Some(HUB_SIZE), color: Color::ORANGE_RED, ..Default::default() },
             ..Default::default()
         },
     )).id();
@@ -361,6 +363,7 @@ pub fn spawn_player_unit(
             to_control: ToControl::new(hub),
             to_nav: ToNav::new(hub),
             to_mover: ToMover::new(root),
+            bang_colour: bang_colour::BangColour::new(Color::YELLOW, Color::GRAY),
             ..Default::default()
         },
         SpriteBundle {
@@ -379,6 +382,7 @@ pub fn spawn_player_unit(
             to_control: ToControl::new(hub),
             to_nav: ToNav::new(hub),
             to_mover: ToMover::new(root),
+            bang_colour: bang_colour::BangColour::new(Color::SEA_GREEN, Color::GRAY),
             ..Default::default()
         },
         SpriteBundle {
@@ -397,6 +401,7 @@ pub fn spawn_player_unit(
             to_control: ToControl::new(hub),
             to_nav: ToNav::new(hub),
             to_mover: ToMover::new(root),
+            bang_colour: bang_colour::BangColour::new(Color::ORANGE, Color::GRAY),
             ..Default::default()
         },
         SpriteBundle {
@@ -407,6 +412,8 @@ pub fn spawn_player_unit(
         }
     )).id();
 
+    const LASER_FADE: f32 = 3.0;
+    const LASER_WIDTH: f32 = 8.0;
     // Attack
     let attack_behav = commands.spawn((
         BAttack{
@@ -418,6 +425,8 @@ pub fn spawn_player_unit(
             to_control: ToControl::new(hub),
             to_nav: ToNav::new(hub),
             to_mover: ToMover::new(root),
+            bang_colour: bang_colour::BangColour::new(Color::PINK, Color::GRAY),
+            attack_laser: LaserVisualsOnAttack::new(Color::PINK, LASER_FADE, LASER_WIDTH),
             ..Default::default()
         },
         SpriteBundle {

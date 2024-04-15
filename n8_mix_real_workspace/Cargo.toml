@@ -55,6 +55,8 @@ rts_unit_movers = { path = "libs/rts_unit_movers" }
 rts_unit_detectors = { path = "libs/rts_unit_detectors" }
 rts_direct_attack = { path = "libs/rts_direct_attack" }
 death_flare = { path = "libs/death_flare" }
+bang_colour = { path = "libs/bang_colour" }
+attack_laser = { path = "libs/attack_laser" }
 
 control_to_detector = { path = "libs/control_to_detector" }
 control_to_nav = { path = "libs/control_to_nav" }

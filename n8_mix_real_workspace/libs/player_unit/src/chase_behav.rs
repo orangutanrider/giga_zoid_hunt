@@ -1,3 +1,4 @@
+use bang_colour::BangColour;
 use bevy::prelude::*;
 use rts_unit_movers::ToMover;
 
@@ -57,6 +58,8 @@ pub(crate) struct BChase {
     pub to_control: ToControl,
     pub to_nav: ToNav,
     pub to_mover: ToMover,
+
+    pub bang_colour: BangColour,
 }
 
 // Behaviour

@@ -1,0 +1,15 @@
+[package]
+name = "attack_laser"
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+
+ref_caravan.workspace = true
+ref_paths.workspace = true
+ref_marks.workspace = true
+
+rts_direct_attack.workspace = true

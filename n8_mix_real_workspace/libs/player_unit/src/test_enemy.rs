@@ -61,7 +61,7 @@ pub fn spawn_test_enemy(
             sensor: Sensor,
             grouping: ENEMY_SOUL_CGROUP,
 
-            health: THealth(10.0),
+            health: THealth(100.0),
             max_health: MaxHealth::new(10.0),
             to_despawn_target: ToDespawnTarget::new(root),
             ..Default::default()

@@ -18,8 +18,10 @@ fn main() {
 
     app.add_systems(Startup, (
         spawn_main_camera_startup,
-        spawn_player_units_startup,
         spawn_selection_box_startup,
+
+        //spawn_player_units_startup, 
+        spawn_x_player_units_startup,
     ));
 
     #[cfg(debug_assertions)]
@@ -27,7 +29,6 @@ fn main() {
         //RapierDebugRenderPlugin{mode: DebugRenderMode::all(),..default()},
         debug::DebugPlugin
     );
-
 
     app.run();
 }
@@ -51,7 +52,12 @@ impl Plugin for MainPlugin {
             rts_unit_detectors::RTSUnitDetectorsPlugin,
             rts_unit_movers::MoversPlugin,
             rts_unit_nav::NavPlugin,
-            death_flare::DeathFlarePlugin
+            death_flare::DeathFlarePlugin,
+            bang_colour::BangColourPlugin,
+        ));
+
+        app.add_plugins((
+            attack_laser::LaserVisualsPlugin,
         ));
     }
 }
@@ -61,7 +67,16 @@ fn spawn_main_camera_startup(
 ) {
     commands.spawn((
         MainCamera,
-        Camera2dBundle::default(),
+        //Camera2dBundle::default(),
+        Camera2dBundle{
+            projection: OrthographicProjection { 
+                scale: 1.5, 
+                far: 1000.,
+                near: -1000.,
+                ..Default::default() 
+            },
+            ..Default::default()
+        }
     ));
 }
 
@@ -81,4 +96,24 @@ fn spawn_player_units_startup(
     spawn_player_unit(Vec2::new(0.0, 0.0), &mut commands, &asset_server);
     spawn_player_unit(Vec2::new(45.0, 0.0), &mut commands, &asset_server);
     spawn_player_unit(Vec2::new(90.0, 0.0), &mut commands, &asset_server);
+}
+
+const X: usize = 15;
+fn spawn_x_player_units_startup(
+    commands: Commands,
+    asset_server: Res<AssetServer>, 
+) {
+    spawn_x_player_units(X, commands, asset_server);
+}
+
+fn spawn_x_player_units(
+    x: usize,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>, 
+) {
+    spawn_player_unit(Vec2::ZERO, &mut commands, &asset_server);
+    if x <= 0 {
+        return;
+    }
+    spawn_x_player_units(x - 1, commands, asset_server);
 }

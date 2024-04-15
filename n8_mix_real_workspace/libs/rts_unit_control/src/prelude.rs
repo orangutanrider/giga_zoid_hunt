@@ -38,7 +38,7 @@ pub use crate::commandable::{
     }
 };
 
-pub use crate::commander::SelectionCommands;
+pub use crate::commander::SpiralCommander;
 
 pub use crate::selectable::{
     Selected,
