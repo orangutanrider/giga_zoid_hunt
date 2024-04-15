@@ -1,4 +1,6 @@
 use super::*;
+use attack_laser::LaserVisualsOnAttack;
+use bang_colour::BangColour;
 use rts_direct_attack::*;
 
 // Hold target locally.
@@ -42,6 +44,9 @@ pub(crate) struct BAttack {
     pub to_mover: ToMover,
 
     pub no_move: RefdMoverIsZeroWhenBang,
+
+    pub bang_colour: BangColour,
+    pub attack_laser: LaserVisualsOnAttack
 }
 
 pub fn attack_behav_sys(

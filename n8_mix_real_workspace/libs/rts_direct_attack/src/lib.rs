@@ -6,7 +6,8 @@ pub struct DirectAttackPlugin;
 
 impl Plugin for DirectAttackPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, direct_attack_sys);
+        app.add_systems(PreUpdate, bang_reset_sys);
+        app.add_systems(PostUpdate, direct_attack_sys);
     }
 }
 
@@ -24,6 +25,10 @@ impl DirectAttackBang {
 
     pub fn bang(&mut self, target: Entity) {
         self.0 = Some(target);
+    }
+
+    pub fn read(&self) -> Option<Entity> {
+        return self.0
     }
 }
 
@@ -48,20 +53,29 @@ impl DirectAttackPower {
 // Add a damage to health data handling point (probably damage as a component), but this is good enough for my purposes.
 
 pub fn direct_attack_sys(
-    mut q: Query<(&mut DirectAttackBang, &DirectAttackPower), Changed<DirectAttackBang>>,
+    q: Query<(&DirectAttackBang, &DirectAttackPower), Changed<DirectAttackBang>>,
     mut target_q: Query<&mut THealth>
 ) {
-    for (mut bang, power) in q.iter_mut() {
+    for (bang, power) in q.iter() {
         let Some(target) = bang.0 else {
             continue;
         };
-        bang.bypass_change_detection();
-        bang.0 = None;
 
         let Ok(mut target) = target_q.get_mut(target) else {
             continue;
         };
 
+        println!("E");
         target.0 = target.0 - power.0;
+    }
+}
+
+pub fn bang_reset_sys(
+    mut q: Query<&mut DirectAttackBang, Changed<DirectAttackBang>>,
+) {
+    for mut bang in q.iter_mut() {
+        bang.bypass_change_detection();
+        bang.0 = None;
+        println!("L");
     }
 }

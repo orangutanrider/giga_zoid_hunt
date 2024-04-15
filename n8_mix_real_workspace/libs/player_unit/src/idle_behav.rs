@@ -1,3 +1,5 @@
+use bang_colour::BangColour;
+
 use super::*;
 
 // Definition
@@ -18,6 +20,8 @@ pub(crate) struct BIdle {
     pub to_mover: ToMover,
 
     pub no_move: RefdMoverIsZeroWhenBang,
+    
+    pub bang_colour: BangColour,
 }
 
 // Behaviour

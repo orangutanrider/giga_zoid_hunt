@@ -1,6 +1,6 @@
 pub mod processing;
 
-use crate::unit_order_terminal;
+use crate::{commander::WaypointOrder, unit_order_terminal};
 use super::*;
 
 #[derive(Clone, Copy, Debug)]
@@ -12,6 +12,15 @@ impl Default for AttackMoveOrder {
         return Self { 
             waypoint: Vec2::ZERO,
         }
+    }
+}
+impl WaypointOrder for AttackMoveOrder {
+    fn waypoint(&self) -> Vec2 {
+        return self.waypoint
+    }
+
+    fn from_waypoint(waypoint: Vec2) -> Self {
+        return Self::new(waypoint)
     }
 }
 impl AttackMoveOrder {

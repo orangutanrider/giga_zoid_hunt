@@ -281,10 +281,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
+name = "attack_laser"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_caravan",
+ "ref_marks",
+ "ref_paths",
+ "rts_direct_attack",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
+
+[[package]]
+name = "bang_colour"
+version = "0.0.1"
+dependencies = [
+ "behaviour_tree",
+ "bevy",
+ "ref_caravan",
+ "ref_marks",
+ "ref_paths",
+]
 
 [[package]]
 name = "base64"
@@ -2422,6 +2444,8 @@ dependencies = [
 name = "main"
 version = "0.0.1"
 dependencies = [
+ "attack_laser",
+ "bang_colour",
  "behaviour_tree",
  "bevy",
  "bevy_rapier2d",
@@ -3035,6 +3059,8 @@ checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 name = "player_unit"
 version = "0.0.1"
 dependencies = [
+ "attack_laser",
+ "bang_colour",
  "behaviour_tree",
  "bevy",
  "bevy_rapier2d",
