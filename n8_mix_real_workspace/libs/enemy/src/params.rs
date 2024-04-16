@@ -15,7 +15,7 @@ pub const LASER_COLOUR: Color = Color::BLUE;
 pub const LASER_WIDTH: f32 = 8.0;
 pub const LASER_FADE: f32 = 3.0;
 
-pub const BODY_DISTANCE_SCALAR: f32 = 1.0;
+pub const BODY_DISTANCE_SCALAR: f32 = 0.01;
 pub const CHASE_SCALAR: f32 = 1.0;
 pub const BODY_POWER:f32 = 1.0;
 pub const CHASE_POWER:f32 = 1.0;
