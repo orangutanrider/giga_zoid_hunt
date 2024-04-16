@@ -24,6 +24,7 @@ death_flare.workspace = true
 bang_colour.workspace = true
 attack_laser.workspace = true
 detection_colour.workspace = true
+enemy.workspace = true
 
 [features]
 dev = ["bevy/dynamic_linking",]

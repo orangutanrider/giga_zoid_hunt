@@ -22,6 +22,8 @@ fn main() {
 
         //spawn_player_units_startup, 
         spawn_x_player_units_startup,
+
+        spawn_enemy_startup,
     ));
 
     #[cfg(debug_assertions)]
@@ -41,6 +43,7 @@ impl Plugin for MainPlugin {
             DefaultPlugins,
             RapierPhysicsPlugin::<()>::default(),
 
+            enemy::EnemyPlugin,
             behaviour_tree::plugins::AllPlugins,
             health_to_death::HealthToDeathPlugin,
             mouse_pos::CursorTrackingPlugin,
@@ -112,9 +115,17 @@ fn spawn_x_player_units(
     mut commands: Commands,
     asset_server: Res<AssetServer>, 
 ) {
-    spawn_player_unit(Vec2::ZERO, &mut commands, &asset_server);
+    const LOCATION: Vec2 = Vec2::new(0.0, -300.0);
+    spawn_player_unit(LOCATION, &mut commands, &asset_server);
     if x <= 0 {
         return;
     }
     spawn_x_player_units(x - 1, commands, asset_server);
+}
+
+fn spawn_enemy_startup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>, 
+) {
+    enemy::spawn_enemy(Vec2::ZERO, &mut commands, &asset_server)
 }
