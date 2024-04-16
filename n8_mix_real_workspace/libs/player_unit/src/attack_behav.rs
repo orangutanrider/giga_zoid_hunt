@@ -72,15 +72,16 @@ fn attack_logic(
     
     ref_caravan!(to_root::root_q((mut unit_mca, state, agar)));
 
-    if agar.is_active() {
-        unit_mca.0 = 0; // Move to idle
-        return;
-    }
-
     let state: TreeState = state.state();
 
     if state.contains(PURE_MOVE) {
+        unit_mca.0 = 1; // Move to move
+        return
+    }
+
+    if agar.is_active() {
         unit_mca.0 = 0; // Move to idle
+        return;
     }
 }
 
@@ -117,6 +118,8 @@ fn target_update(
         target_terminal.0 = closest.0;
     } else if state.contains(ATTACK_TARGET) {
         target_terminal.0 = targeted.0;
+    } else {
+        target_terminal.0 = closest.0;
     }
 }
 
@@ -227,24 +230,29 @@ pub fn attack_execution_sys(
 }
 
 pub fn attack_end_sys(
-    q: Query<(&AttackEndTrigger, &AttackTimer, &ToBehaviourRoot), Changed<AttackTimer>>,
+    mut q: Query<(&AttackEndTrigger, &mut AttackTimer, &ToBehaviourRoot, &mut AttackTrigger), Changed<AttackTimer>>,
     mut root_q: Query<&mut TUnitIMCAMapper>,
 ) {
-    for (trigger, timer, to_root) in q.iter() {
-        if !(timer.0 >= trigger.0) {
+    for (end, timer, to_root, execute) in q.iter_mut() {
+        if !(timer.0 >= end.0) {
             continue;
         }
 
-        attack_end(to_root, &mut root_q)
+        attack_end(timer, execute, to_root, &mut root_q);
     }
 }
 
 pub fn attack_end(
+    mut timer: Mut<AttackTimer>,
+    mut execute: Mut<AttackTrigger>,
     to_root: &ToBehaviourRoot,
     root_q: &mut Query<&mut TUnitIMCAMapper>,
 ) {
     ref_caravan!(to_root::root_q(mut imca_mapper););
-    imca_mapper.0 = 0; // to Idle
+    imca_mapper.0 = 3; // to Attack
+
+    timer.0 = 0.0;
+    execute.triggered = false;
 }
 
 #[derive(Component, Default)]
