@@ -201,7 +201,7 @@ fn chase_to_body_movement_sys(
 
         let chase = chase.read();
         let chase_prevelance = chase * CHASE_SCALAR;
-        let chase_move = (head - target).normalize_or_zero() * CHASE_POWER * CHASE_BODY_MOVE;
+        let chase_move = (target - head).normalize_or_zero() * CHASE_POWER * CHASE_BODY_MOVE;
 
         // Set
         let hub = to_mover.go();

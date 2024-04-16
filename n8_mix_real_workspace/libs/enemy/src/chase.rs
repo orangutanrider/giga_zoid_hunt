@@ -217,17 +217,18 @@ pub fn head_movement_sys(
         let target = target.translation().truncate();
 
         // Calculate prevelance
-        let body_prevelance = (body_head_distance / BODY_DISTANCE_SCALAR).exp();
-
+        let body_prevelance = (body_head_distance * BODY_DISTANCE_SCALAR) / 1.0;
+        //println!("{}", body_prevelance);
         let chase = chase.read();
         let chase_prevelance = chase * CHASE_SCALAR;
 
         // Calculate move vectors
         let to_body_move = (body - head).normalize_or_zero() * BODY_POWER;
 
-        let to_target_move = (head - target).normalize_or_zero() * CHASE_POWER;
+        let to_target_move = (target - head).normalize_or_zero() * CHASE_POWER;
 
         //println!("{}", to_body_move);
+        //println!("{}", to_target_move);
 
         // To mover
         use rts_unit_movers::Key as MoveKey;
