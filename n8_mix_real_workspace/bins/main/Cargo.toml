@@ -23,6 +23,7 @@ rts_unit_nav.workspace = true
 death_flare.workspace = true
 bang_colour.workspace = true
 attack_laser.workspace = true
+detection_colour.workspace = true
 
 [features]
 dev = ["bevy/dynamic_linking",]

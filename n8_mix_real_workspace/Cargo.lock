@@ -1662,6 +1662,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "detection_colour"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_caravan",
+ "ref_marks",
+ "ref_paths",
+ "rts_unit_detectors",
+]
+
+[[package]]
 name = "dispatch"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2450,6 +2461,7 @@ dependencies = [
  "bevy",
  "bevy_rapier2d",
  "death_flare",
+ "detection_colour",
  "health_to_death",
  "mouse_pos",
  "player_unit",
@@ -3067,6 +3079,7 @@ dependencies = [
  "control_to_detector",
  "control_to_nav",
  "death_flare",
+ "detection_colour",
  "health_to_death",
  "nav_to_mover",
  "rapier_config",

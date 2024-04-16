@@ -65,7 +65,6 @@ pub fn direct_attack_sys(
             continue;
         };
 
-        println!("E");
         target.0 = target.0 - power.0;
     }
 }
@@ -76,6 +75,5 @@ pub fn bang_reset_sys(
     for mut bang in q.iter_mut() {
         bang.bypass_change_detection();
         bang.0 = None;
-        println!("L");
     }
 }

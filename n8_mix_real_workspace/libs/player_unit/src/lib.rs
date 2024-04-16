@@ -41,6 +41,8 @@ use health_to_death::*;
 
 use rapier_config::*;
 
+use detection_colour::*;
+
 // Note:
 // There are reference definitions in this that could be upgraded to be more flexible.
 
@@ -205,6 +207,8 @@ struct BAggroDetection {
     pub aggregate: TIntersectionsAggregate,
     pub closest: DistillationForClosest,
     pub detector: CircleIntersectionsOfEnemy,
+
+    pub detection_colour: DetectionColour,
 }
 
 #[derive(Component, Default)]
@@ -225,6 +229,8 @@ struct BAttackDetection {
     pub target_as_control: TargetAsCurrentInControl<Hub>,
     pub control_is_reference: ControlIsReference<Hub>,
     pub to_control: ToControl,
+
+    pub detection_colour: DetectionColour,
 }
 
 #[derive(Event)]
@@ -240,8 +246,8 @@ pub fn spawn_player_unit_event_sys(
     }
 }
 
-pub const PARAM_AGGRO_RANGE: f32 = 100.0;
-pub const PARAM_ATTACK_RANGE: f32 = 70.0;
+pub const PARAM_AGGRO_RANGE: f32 = 280.0;
+pub const PARAM_ATTACK_RANGE: f32 = 210.0;
 
 pub const PHYSICS_SIZE: f32 = 10.0;
 pub const BODY_SIZE: f32 = 10.0;
@@ -330,6 +336,7 @@ pub fn spawn_player_unit(
         BAggroDetection{
             detector: CircleIntersectionsOfEnemy::new(PARAM_AGGRO_RANGE),
             to_root: ToBehaviourRoot::new(hub),
+            detection_colour: DetectionColour::new(Color::ORANGE_RED, Color::GRAY),
             ..Default::default()
         },
         SpriteBundle {
@@ -345,6 +352,7 @@ pub fn spawn_player_unit(
         BAttackDetection{
             detector: CircleIntersectionsOfEnemy::new(PARAM_ATTACK_RANGE),
             to_root: ToBehaviourRoot::new(hub),
+            detection_colour: DetectionColour::new(Color::PURPLE, Color::GRAY),
             ..Default::default()
         },
         SpriteBundle {
@@ -382,7 +390,7 @@ pub fn spawn_player_unit(
             to_control: ToControl::new(hub),
             to_nav: ToNav::new(hub),
             to_mover: ToMover::new(root),
-            bang_colour: bang_colour::BangColour::new(Color::SEA_GREEN, Color::GRAY),
+            bang_colour: bang_colour::BangColour::new(Color::LIME_GREEN, Color::GRAY),
             ..Default::default()
         },
         SpriteBundle {

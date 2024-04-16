@@ -49,15 +49,16 @@ impl Plugin for MainPlugin {
             rts_direct_attack::DirectAttackPlugin,
             rts_unit_control::ControlPlugin,
             rts_unit_death::DeathPlugin,
+        ));
+
+        app.add_plugins((
+            attack_laser::LaserVisualsPlugin,
+            detection_colour::DetectionColourPlugin,
             rts_unit_detectors::RTSUnitDetectorsPlugin,
             rts_unit_movers::MoversPlugin,
             rts_unit_nav::NavPlugin,
             death_flare::DeathFlarePlugin,
             bang_colour::BangColourPlugin,
-        ));
-
-        app.add_plugins((
-            attack_laser::LaserVisualsPlugin,
         ));
     }
 }
