@@ -1732,6 +1732,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "enemy"
+version = "0.0.1"
+dependencies = [
+ "attack_laser",
+ "bang_colour",
+ "behaviour_tree",
+ "bevy",
+ "bevy_rapier2d",
+ "control_to_detector",
+ "control_to_nav",
+ "death_flare",
+ "detection_colour",
+ "health_to_death",
+ "nav_to_mover",
+ "rapier_config",
+ "ref_caravan",
+ "ref_marks",
+ "ref_paths",
+ "rts_direct_attack",
+ "rts_unit_control",
+ "rts_unit_death",
+ "rts_unit_detectors",
+ "rts_unit_health",
+ "rts_unit_movers",
+ "rts_unit_nav",
+ "rts_unit_soul",
+ "rts_unit_team",
+]
+
+[[package]]
 name = "equivalent"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2462,6 +2492,7 @@ dependencies = [
  "bevy_rapier2d",
  "death_flare",
  "detection_colour",
+ "enemy",
  "health_to_death",
  "mouse_pos",
  "player_unit",

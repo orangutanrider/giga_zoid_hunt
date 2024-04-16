@@ -115,6 +115,8 @@ struct BTreeRoot {
     pub tree_bang: RootBang,
     pub reset_bang: ResetBang,
     pub export_bang: ExportBang,
+
+    pub team_affiliation: PlayerTeam,
 }
 
 #[derive(Component, Default)]
@@ -193,6 +195,8 @@ struct BRoot {
     // Mover
     pub move_terminal: TMoveVector,
     pub move_process: LocalTransformMovement,
+
+    pub team_affiliation: PlayerTeam,
 }
 
 #[derive(Component, Default)]
@@ -209,6 +213,8 @@ struct BAggroDetection {
     pub detector: CircleIntersectionsOfEnemy,
 
     pub detection_colour: DetectionColour,
+
+    pub team_affiliation: PlayerTeam,
 }
 
 #[derive(Component, Default)]
@@ -231,6 +237,8 @@ struct BAttackDetection {
     pub to_control: ToControl,
 
     pub detection_colour: DetectionColour,
+
+    pub team_affiliation: PlayerTeam,
 }
 
 #[derive(Event)]

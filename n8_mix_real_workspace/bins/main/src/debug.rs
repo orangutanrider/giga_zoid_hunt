@@ -1,6 +1,7 @@
 use behaviour_tree::bang::Bang;
 use behaviour_tree::state::terminal::TState;
 use bevy::prelude::*;
+use enemy::chase::Chase;
 use player_unit::test_enemy::spawn_test_enemy;
 use player_unit::Root;
 use rts_unit_control::prelude::*;
@@ -21,6 +22,7 @@ impl Plugin for DebugPlugin {
             prnt_hub_sys,
             prnt_movers_sys,
             prnt_nav_sys,
+            prnt_enemy_chase_head_position,
             prnt_order_data_sys::<TPureMoveOrders, PureMoveOrder, PureMove>,
             prnt_order_data_sys::<TAttackMoveOrders, AttackMoveOrder, AMove>,
             prnt_order_data_sys::<TAttackTargetOrders, AttackTargetOrder, Targeted>,
@@ -253,3 +255,18 @@ fn prnt_detection_data(
     }
 }
 */
+
+fn prnt_enemy_chase_head_position(
+    input: Res<ButtonInput<KeyCode>>,
+    q: Query<&GlobalTransform, With<Chase>>,
+) {
+    if !input.just_pressed(KeyCode::KeyT) {
+        return;
+    }
+    println!("");
+
+    for transform in q.iter() {
+        let transform = transform.translation();
+        println!("Chase: {}", transform);
+    }
+}

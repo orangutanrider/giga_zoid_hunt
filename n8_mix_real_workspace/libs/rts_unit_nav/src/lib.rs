@@ -2,7 +2,9 @@
 
 pub mod direct_nav;
 
-use bevy::prelude::*;
+use std::any::TypeId;
+
+use bevy::{prelude::*, utils::HashMap};
 use ref_paths::*;
 
 pub use direct_nav::*;

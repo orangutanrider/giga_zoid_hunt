@@ -22,6 +22,8 @@ pub(crate) struct BIdle {
     pub no_move: RefdMoverIsZeroWhenBang,
     
     pub bang_colour: BangColour,
+
+    pub team_affiliation: PlayerTeam,
 }
 
 // Behaviour

@@ -46,7 +46,9 @@ pub(crate) struct BAttack {
     pub no_move: RefdMoverIsZeroWhenBang,
 
     pub bang_colour: BangColour,
-    pub attack_laser: LaserVisualsOnAttack
+    pub attack_laser: LaserVisualsOnAttack,
+
+    pub team_affiliation: PlayerTeam,
 }
 
 pub fn attack_behav_sys(

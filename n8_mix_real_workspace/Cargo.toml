@@ -65,6 +65,7 @@ nav_to_mover = { path = "libs/nav_to_mover" }
 health_to_death = { path = "libs/health_to_death" }
 
 player_unit = { path = "libs/player_unit" }
+enemy = { path = "libs/enemy" }
 
 # ================================
 # PROFILES

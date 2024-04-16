@@ -1,6 +1,7 @@
 use bang_colour::BangColour;
 use bevy::prelude::*;
 use rts_unit_movers::ToMover;
+use rts_unit_team::PlayerTeam;
 
 use crate::{AggroDetectorClosest, ATTACK_TARGET, CHASE, IN_ATTACK, PURE_MOVE};
 
@@ -60,6 +61,8 @@ pub(crate) struct BChase {
     pub to_mover: ToMover,
 
     pub bang_colour: BangColour,
+
+    pub team_affiliation: PlayerTeam,
 }
 
 // Behaviour
