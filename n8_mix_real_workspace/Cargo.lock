@@ -2501,6 +2501,7 @@ dependencies = [
  "rts_unit_control",
  "rts_unit_death",
  "rts_unit_detectors",
+ "rts_unit_health",
  "rts_unit_movers",
  "rts_unit_nav",
 ]

@@ -3,16 +3,10 @@ use bevy::prelude::*;
 use rts_unit_movers::ToMover;
 use rts_unit_team::PlayerTeam;
 
-use crate::{AggroDetectorClosest, ATTACK_TARGET, CHASE, IN_ATTACK, PURE_MOVE};
+use crate::{AggroDetectorClosest, ATTACK_TARGET, CHASE, IN_ATTACK, IN_ATTACK_RANGE, PURE_MOVE};
 
 use super::{
-    TUnitIMCAMapper,
-    state_to_root::{
-        ATTACK_MOVE,
-        IN_AGGRO,
-        MOVE
-    },
-    common::*,
+    *,
 };
 
 pub(crate) use behaviour_tree::{prelude::*, state::State as TreeState};
@@ -86,11 +80,6 @@ fn chase_logic(
     
     ref_caravan!(to_root::root_q((mut unit_mca, state, agar)));
 
-    if agar.is_active() {
-        unit_mca.0 = 0; // Move to idle
-        return;
-    }
-
     let state: TreeState = state.state();
 
     if state.contains(PURE_MOVE) {
@@ -99,11 +88,15 @@ fn chase_logic(
     }
 
     const ATTACK_ORDERS: TreeState = ATTACK_MOVE.union(ATTACK_TARGET);
-    if !(state.intersects(ATTACK_ORDERS) && state.contains(IN_ATTACK)) {
+    if state.intersects(ATTACK_ORDERS) && state.contains(IN_ATTACK) {
+        unit_mca.0 = 3; // Move to attacking state
         return;
     }
 
-    unit_mca.0 = unit_mca.0 + 1; // Move to attacking state
+    if agar.is_active() {
+        unit_mca.0 = 0; // Move to idle
+        return;
+    }
 }
 
 #[derive(Component, Default)]

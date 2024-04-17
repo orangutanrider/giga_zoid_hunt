@@ -23,6 +23,24 @@ impl Plugin for MoversPlugin {
 pub struct ToMover(Entity);
 waymark!(ToMover);
 
+
+#[derive(Component)]
+pub struct MoveSpeed(f32);
+impl Default for MoveSpeed {
+    fn default() -> Self {
+        Self(0.0)
+    }
+}
+impl MoveSpeed {
+    pub fn new(speed: f32) -> Self {
+        return MoveSpeed(speed)
+    }
+
+    pub fn read(&self) -> f32 {
+        return self.0
+    }
+}
+
 #[derive(Component)]
 /// Data terminal.
 pub struct TMoveVector(pub Vec2);
@@ -98,10 +116,10 @@ pub fn inactivity_sys(
 ) {
     for (mut inactivity, mover) in q.iter_mut() {
         if mover.0 != Vec2::ZERO {
-            inactivity.0 = 0.0;
-            continue;
+            inactivity.0 = (inactivity.0 - time.delta_seconds()).clamp(0.0, f32::MAX);
         }
-
-        inactivity.0 = inactivity.0 + time.delta_seconds();
+        else {
+            inactivity.0 = inactivity.0 + time.delta_seconds();
+        }
     }
 }

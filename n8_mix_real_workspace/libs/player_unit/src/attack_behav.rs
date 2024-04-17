@@ -81,10 +81,10 @@ fn attack_logic(
         return
     }
 
-    if agar.is_active() {
-        unit_mca.0 = 0; // Move to idle
-        return;
-    }
+    //if agar.is_active() {
+    //    unit_mca.0 = 0; // Move to idle
+    //    return;
+    //}
 }
 
 // Target handling
@@ -233,7 +233,7 @@ pub fn attack_execution_sys(
 
 pub fn attack_end_sys(
     mut q: Query<(&AttackEndTrigger, &mut AttackTimer, &ToBehaviourRoot, &mut AttackTrigger), Changed<AttackTimer>>,
-    mut root_q: Query<&mut TUnitIMCAMapper>,
+    mut root_q: Query<(&mut TUnitIMCAMapper, &TState)>,
 ) {
     for (end, timer, to_root, execute) in q.iter_mut() {
         if !(timer.0 >= end.0) {
@@ -248,10 +248,17 @@ pub fn attack_end(
     mut timer: Mut<AttackTimer>,
     mut execute: Mut<AttackTrigger>,
     to_root: &ToBehaviourRoot,
-    root_q: &mut Query<&mut TUnitIMCAMapper>,
+    root_q: &mut Query<(&mut TUnitIMCAMapper, &TState)>,
 ) {
-    ref_caravan!(to_root::root_q(mut imca_mapper););
-    imca_mapper.0 = 3; // to Attack
+    ref_caravan!(to_root::root_q((mut imca_mapper, state)););
+
+    let state: TreeState = state.state();
+    if !state.contains(IN_ATTACK_RANGE) {
+        imca_mapper.0 = 2; // Move to chase
+    }
+    else {
+        imca_mapper.0 = 3; // to Attack
+    }
 
     timer.0 = 0.0;
     execute.triggered = false;

@@ -57,7 +57,7 @@ fn idle_logic(
     else if state.contains(ATTACK_TARGET) {
         unit_mca.0 = 2; // Move to chase state
     }
-    else if state.contains(IN_ATTACK) { // Hold position is default
+    else if state.contains(IN_ATTACK_RANGE) { // Hold position is default
         unit_mca.0 = 3; // Move to attacking state
         return;
     }
