@@ -32,20 +32,21 @@ use rts_unit_team::*;
 use super::*;
 
 #[derive(Component, Default)]
-pub struct Chase;
+pub struct ChaseHead;
 
 #[derive(Bundle, Default)]
 pub struct BundChase {
     pub to_mover: ToMover,
     pub to_hub: ToHub,
-    pub flag: Chase,
+    pub flag: ChaseHead,
     
     pub chase_factor: ChaseFactor, 
     pub chase_target: ChaseTarget,
 
     pub mover_in: TMoveAggregator,
     pub mover_process: LocalTransformMovement,
-
+    pub speed: MoveSpeed,
+    
     pub attack: DirectAttackBang,
     pub damage: DirectAttackPower,
     pub attack_timer: AttackTimer,
@@ -102,10 +103,10 @@ pub fn chase_target_selection_sys(
         if most_inactive_val <= 0.0 {
             f32::MAX
         } else {
-            MOST_INACTIVE_FACTOR / most_inactive_val
+            CHASE_INACTIVITY_PRIORITY / most_inactive_val
         }
     };
-    let lowest_health_val = lowest_health_val;
+    let lowest_health_val = lowest_health_val / CHASE_INJURED_PRIORITY;
     
     let target = {
         if lowest_health_val < most_inactive_val {
@@ -154,8 +155,8 @@ pub fn chase_factor_sys(
     let health_factor = global_current_health / global_max_health;
 
     for mut chase_factor in q.iter_mut() {
-        chase_factor.health_factor = health_factor * HEALTH_FACTOR;
-        chase_factor.death_spikes = chase_factor.death_spikes + (deaths * DEATH_SPIKE);
+        chase_factor.health_factor = health_factor * CHASE_HEALTH_FRENZY;
+        chase_factor.death_spikes = chase_factor.death_spikes + (deaths * CHASE_DEATH_SPIKE);
     }
 }
 
@@ -167,13 +168,14 @@ pub fn death_spike_decay_sys(
         if chase_factor.death_spikes <= 0.0 {
             continue;
         }
-        chase_factor.death_spikes = chase_factor.death_spikes - (time.delta_seconds() * DEATH_SPIKE_DECAY);
+        chase_factor.death_spikes = chase_factor.death_spikes - (time.delta_seconds() * CHASE_DEATH_SPIKE_DECAY);
     }
 }
 
 // Movement
+/* 
 pub fn rotate_to_face_target_sys(
-    mut q: Query<(&mut Transform, &GlobalTransform, &ChaseTarget), With<Chase>>,
+    mut q: Query<(&mut Transform, &GlobalTransform, &ChaseTarget), With<ChaseHead>>,
     target_q: Query<&GlobalTransform>,
 ) {
     for (mut transform, head, target) in q.iter_mut() {
@@ -193,12 +195,13 @@ pub fn rotate_to_face_target_sys(
         transform.rotation = rotation;
     }
 }
+*/
 
 /// Body position, prevelance increasing with distance, exponential
 /// Target position, prevelance increasing with chase factor, linear
 pub fn head_movement_sys(
-    mut head_q: Query<(&ToHub, &GlobalTransform, &ChaseTarget, &ChaseFactor, &mut TMoveAggregator), With<Chase>>,
-    q: Query<&GlobalTransform, Without<Chase>>, // used for body and target
+    mut head_q: Query<(&ToHub, &GlobalTransform, &ChaseTarget, &ChaseFactor, &mut TMoveAggregator), With<ChaseHead>>,
+    q: Query<&GlobalTransform, Without<ChaseHead>>, // used for body and target
 ) {
     // body_head distance.
 
@@ -217,15 +220,15 @@ pub fn head_movement_sys(
         let target = target.translation().truncate();
 
         // Calculate prevelance
-        let body_prevelance = (body_head_distance * BODY_DISTANCE_SCALAR) / 1.0;
-        //println!("{}", body_prevelance);
+        let body_prevelance = (body_head_distance * CHASE_BODY_AUTHORITY) / 1.0;
+
         let chase = chase.read();
-        let chase_prevelance = chase * CHASE_SCALAR;
+        let chase_prevelance = chase * CHASE_HEAD_AUTONOMY;
 
         // Calculate move vectors
-        let to_body_move = (body - head).normalize_or_zero() * BODY_POWER;
+        let to_body_move = (body - head).normalize_or_zero() * CHASE_BODY_PULL;
 
-        let to_target_move = (target - head).normalize_or_zero() * CHASE_POWER;
+        let to_target_move = (target - head).normalize_or_zero() * CHASE_HEAD_PULL;
 
         //println!("{}", to_body_move);
         //println!("{}", to_target_move);
@@ -233,7 +236,7 @@ pub fn head_movement_sys(
         // To mover
         use rts_unit_movers::Key as MoveKey;
         mover.inputs.insert(MoveKey::External(hub), (to_body_move, body_prevelance)); // Body
-        let local = TypeId::of::<Chase>();
+        let local = TypeId::of::<ChaseHead>();
         mover.inputs.insert(MoveKey::Local(local), (to_target_move, chase_prevelance)); // Move
     }
 }
@@ -266,7 +269,7 @@ impl AttackTimer {
 }
 
 pub fn chase_attack_sys(
-    mut q: Query<(&mut DirectAttackBang, &mut AttackTimer, &ChaseTarget, &GlobalTransform), With<Chase>>,
+    mut q: Query<(&mut DirectAttackBang, &mut AttackTimer, &ChaseTarget, &GlobalTransform), With<ChaseHead>>,
     target_q: Query<&GlobalTransform>,
     time: Res<Time>,
 ) {
@@ -279,13 +282,13 @@ pub fn chase_attack_sys(
 
         let distance = chase.distance(target_at);
 
-        if distance > ATTACK_RANGE { 
+        if distance > CHASE_ATTACK_RANGE { 
             timer.decrement(time.delta_seconds());
             continue; 
         }
 
         timer.increment(time.delta_seconds());
-        if timer.read() < ATTACK_SPEED { continue; }
+        if timer.read() < CHASE_ATTACK_SPEED { continue; }
 
         attack.bang(target);
         timer.reset();

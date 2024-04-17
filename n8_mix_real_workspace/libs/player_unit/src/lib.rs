@@ -1,5 +1,7 @@
 pub mod test_enemy;
 
+pub mod params; pub use params::*;
+pub mod state; pub use state::*;
 
 pub mod chase_behav; pub(crate) use self::chase_behav::*;
 pub mod common; pub(crate) use self::common::*;
@@ -107,6 +109,26 @@ impl Plugin for PlayerUnitPlugin {
 // Unit Structure
 
 #[derive(Component, Default)]
+pub struct Root;
+#[derive(Bundle, Default)]
+struct BRoot {
+    pub flag: Root,
+
+    // Physics body
+    pub collider: Collider,
+    pub rigidbody: RigidBody,
+    pub grouping: CollisionGroups,
+
+    // Mover
+    pub move_terminal: TMoveVector,
+    pub move_process: LocalTransformMovement,
+    pub speed: MoveSpeed,
+    pub inactivity: Inactivity,
+
+    pub team_affiliation: PlayerTeam,
+}
+
+#[derive(Component, Default)]
 struct TreeRoot;
 ref_signature!(TreeRoot);
 #[derive(Bundle, Default)]
@@ -152,7 +174,7 @@ struct BHub {
     pub target_processor: UntilTargetGoneProcessor,
     pub pure_move_processor: PMProximityProcessor,
     pub attack_move_processor: AMProximityProcessor,
-    pub agar: OrderProcessedAgar, // Unused
+    pub agar: OrderProcessedAgar, 
 
     // Nav
     pub nav_terminal: TNavWaypoint,
@@ -179,24 +201,9 @@ struct BHub {
     pub to_despawn_target: ToDespawnTarget,
     pub team_affiliation: PlayerTeam,
     pub death_flare: DeathFlareOnDeath,
-}
+    pub regen: HealthRegeneration,
 
-#[derive(Component, Default)]
-pub struct Root;
-#[derive(Bundle, Default)]
-struct BRoot {
-    pub flag: Root,
-
-    // Physics body
-    pub collider: Collider,
-    pub rigidbody: RigidBody,
-    pub grouping: CollisionGroups,
-
-    // Mover
-    pub move_terminal: TMoveVector,
-    pub move_process: LocalTransformMovement,
-
-    pub team_affiliation: PlayerTeam,
+    pub health_to_colour: HealthToColour,
 }
 
 #[derive(Component, Default)]
@@ -254,33 +261,6 @@ pub fn spawn_player_unit_event_sys(
     }
 }
 
-pub const PARAM_AGGRO_RANGE: f32 = 280.0;
-pub const PARAM_ATTACK_RANGE: f32 = 210.0;
-
-pub const PHYSICS_SIZE: f32 = 10.0;
-pub const BODY_SIZE: f32 = 10.0;
-
-pub const ORDER_COMPLETE_DISTANCE:f32 = 5.0;
-
-pub const HEALTH: f32 = 10.0;
-pub const ATTACK_POWER: f32 = 5.0;
-pub const ATTACK_SPEED: f32 = 0.75;
-pub const ATTACK_ANIMATION_TIME: f32 = 1.1;
-
-pub const ROOT_SIZE: Vec2 = Vec2::new(16.0, 4.0);
-pub const ROOT_OFFSET: Vec3 = Vec3::new(0.0, 0.0, 1.0);
-
-pub const TREE_ROOT_SIZE: Vec2 = Vec2::new(16.0, 2.0);
-pub const TREE_ROOT_OFFSET: Vec3 = Vec3::new(0.0, 0.0, 2.0);
-
-pub const HUB_SIZE: Vec2 = Vec2::new(16.0, 20.0);
-pub const HUB_OFFSET: Vec2 = Vec2::new(0.0, 16.0);
-
-pub const NODES_SIZE: Vec2 = Vec2::new(4.0, 4.0);
-pub const NODES_Y_OFFSET: f32 = 16.0;
-pub const NODES_X_OFFSET: f32 = 6.0;
-
-
 pub fn spawn_player_unit(
     location: Vec2,
     commands: &mut Commands,
@@ -294,12 +274,13 @@ pub fn spawn_player_unit(
             collider: Collider::ball(PHYSICS_SIZE),
             rigidbody: RigidBody::KinematicPositionBased,
             grouping: RTS_UNIT_PHYSICS_BODY_CGROUP,
+            speed: MoveSpeed::new(MOVE_SPEED),
             ..Default::default()
         },
         SpriteBundle {
             texture: square.clone_weak(),
             transform: Transform { translation: location.extend(0.0), ..Default::default()},
-            sprite: Sprite { custom_size: Some(ROOT_SIZE), color: Color::GRAY, ..Default::default() },
+            sprite: Sprite { custom_size: Some(ROOT_SIZE), color: ROOT_COLOUR,..Default::default() },
             ..Default::default()
         }
     )).id();
@@ -312,7 +293,7 @@ pub fn spawn_player_unit(
         SpriteBundle {
             texture: square.clone_weak(),
             transform: Transform { translation: TREE_ROOT_OFFSET, ..Default::default()},
-            sprite: Sprite { custom_size: Some(TREE_ROOT_SIZE), color: Color::DARK_GRAY, ..Default::default() },
+            sprite: Sprite { custom_size: Some(TREE_ROOT_SIZE), color: TREE_ROOT_COLOUR, ..Default::default() },
             ..Default::default()
         }
     )).id();
@@ -329,12 +310,15 @@ pub fn spawn_player_unit(
             health: THealth(HEALTH),
             max_health: MaxHealth::new(HEALTH),
             to_despawn_target: ToDespawnTarget::new(root),
+            regen: HealthRegeneration(HEALTH_REGEN),
+            health_to_colour: HealthToColour::new(FULL_HEALTH_COLOUR, LOW_HEALTH_COLOUR),
+
             ..Default::default()
         },
         SpriteBundle {
             texture: square.clone_weak(),
             transform: Transform { translation: HUB_OFFSET.extend(0.0), ..Default::default()},
-            sprite: Sprite { custom_size: Some(HUB_SIZE), color: Color::ORANGE_RED, ..Default::default() },
+            sprite: Sprite { custom_size: Some(HUB_SIZE), color: FULL_HEALTH_COLOUR, ..Default::default() },
             ..Default::default()
         },
     )).id();
@@ -342,7 +326,7 @@ pub fn spawn_player_unit(
     // Aggro detector
     let aggro_detector = commands.spawn((
         BAggroDetection{
-            detector: CircleIntersectionsOfEnemy::new(PARAM_AGGRO_RANGE),
+            detector: CircleIntersectionsOfEnemy::new(AGGRO_RANGE),
             to_root: ToBehaviourRoot::new(hub),
             detection_colour: DetectionColour::new(Color::ORANGE_RED, Color::GRAY),
             ..Default::default()
@@ -358,7 +342,7 @@ pub fn spawn_player_unit(
     // Attack detector
     let attack_detector = commands.spawn((
         BAttackDetection{
-            detector: CircleIntersectionsOfEnemy::new(PARAM_ATTACK_RANGE),
+            detector: CircleIntersectionsOfEnemy::new(ATTACK_RANGE),
             to_root: ToBehaviourRoot::new(hub),
             detection_colour: DetectionColour::new(Color::PURPLE, Color::GRAY),
             ..Default::default()
@@ -428,8 +412,6 @@ pub fn spawn_player_unit(
         }
     )).id();
 
-    const LASER_FADE: f32 = 3.0;
-    const LASER_WIDTH: f32 = 8.0;
     // Attack
     let attack_behav = commands.spawn((
         BAttack{
@@ -442,7 +424,7 @@ pub fn spawn_player_unit(
             to_nav: ToNav::new(hub),
             to_mover: ToMover::new(root),
             bang_colour: bang_colour::BangColour::new(Color::PINK, Color::GRAY),
-            attack_laser: LaserVisualsOnAttack::new(Color::PINK, LASER_FADE, LASER_WIDTH),
+            attack_laser: LaserVisualsOnAttack::new(LASER_COLOUR, LASER_FADE, LASER_WIDTH),
             ..Default::default()
         },
         SpriteBundle {

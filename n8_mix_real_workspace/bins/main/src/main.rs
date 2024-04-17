@@ -26,11 +26,13 @@ fn main() {
         spawn_enemy_startup,
     ));
 
+    /* 
     #[cfg(debug_assertions)]
     app.add_plugins(
         //RapierDebugRenderPlugin{mode: DebugRenderMode::all(),..default()},
         debug::DebugPlugin
     );
+    */
 
     app.run();
 }
@@ -43,6 +45,7 @@ impl Plugin for MainPlugin {
             DefaultPlugins,
             RapierPhysicsPlugin::<()>::default(),
 
+            rts_unit_health::HealthPlugin,
             enemy::EnemyPlugin,
             behaviour_tree::plugins::AllPlugins,
             health_to_death::HealthToDeathPlugin,

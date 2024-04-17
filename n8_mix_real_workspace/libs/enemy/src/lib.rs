@@ -1,11 +1,12 @@
 pub mod chase;
-pub mod params; use attack_laser::LaserVisualsOnAttack;
-pub use params::*;
+pub mod defend;
+pub mod params;pub use params::*;
 
 use bevy_rapier2d::prelude::*;
 use bevy::prelude::*;
 
-use chase::BundChase;
+use defend::*;
+use chase::*;
 use rapier_config::RTS_UNIT_PHYSICS_BODY_CGROUP;
 use ref_caravan::*;
 use ref_marks::*;
@@ -25,6 +26,8 @@ use rts_unit_death::*;
 use rts_unit_movers::*;
 use death_flare::*;
 use health_to_death::*;
+use attack_laser::*;
+
 
 pub struct EnemyPlugin;
 
@@ -34,10 +37,15 @@ impl Plugin for EnemyPlugin {
             chase_to_body_movement_sys,
             chase::head_movement_sys,
             chase_attack_sys,
-            chase::rotate_to_face_target_sys,
+            //chase::rotate_to_face_target_sys,
             death_spike_decay_sys,
             chase_factor_sys,
             chase_target_selection_sys,
+
+            defend_attack_sys,
+            defend_factor_sys,
+            defend_target_selection_sys,
+            defend_head_movement_sys,
         ));
     }
 }
@@ -57,6 +65,7 @@ struct BRoot {
     // Mover
     pub move_terminal: TMoveAggregator,
     pub move_process: LocalTransformMovement,
+    pub speed: MoveSpeed,
 }
 
 #[derive(Component, Default)]
@@ -104,6 +113,10 @@ struct BHub {
     pub to_despawn_target: ToDespawnTarget,
     pub team_affiliation: EnemyTeam,
     pub death_flare: DeathFlareOnDeath,
+
+    // Defend detection
+    pub aggregate: TIntersectionsAggregate,
+    pub detector: CircleIntersectionsOfPlayer,
 }
 
 pub fn spawn_enemy(
@@ -119,6 +132,7 @@ pub fn spawn_enemy(
             collider: Collider::ball(PHYSICS_SIZE),
             rigidbody: RigidBody::KinematicPositionBased,
             grouping: RTS_UNIT_PHYSICS_BODY_CGROUP,
+            speed: MoveSpeed::new(MOVE_SPEED),
             ..Default::default()
         },
         SpriteBundle {
@@ -152,6 +166,7 @@ pub fn spawn_enemy(
             health: THealth(HEALTH),
             max_health: MaxHealth::new(HEALTH),
             to_despawn_target: ToDespawnTarget::new(root),
+            detector: CircleIntersectionsOfPlayer::new(DEFEND_SAFE_SPACE_RADIUS),
             ..Default::default()
         },
         SpriteBundle {
@@ -167,7 +182,8 @@ pub fn spawn_enemy(
             to_mover: ToMover::new(root),
             to_hub: ToHub(hub),
             damage: DirectAttackPower::new(ATTACK_DAMAGE),
-            laser: LaserVisualsOnAttack::new(LASER_COLOUR, LASER_FADE, LASER_WIDTH),
+            laser: LaserVisualsOnAttack::new(CHASE_LASER_COLOUR, CHASE_LASER_FADE, CHASE_LASER_WIDTH),
+            speed: MoveSpeed::new(CHASE_MOVE_SPEED),
             ..Default::default()
         },
         SpriteBundle{
@@ -178,16 +194,33 @@ pub fn spawn_enemy(
         }
     )).id();
 
+    let defend = commands.spawn((
+        BundDefend{
+            to_mover: ToMover::new(root),
+            to_hub: ToHub(hub),
+            damage: DirectAttackPower::new(ATTACK_DAMAGE),
+            laser: LaserVisualsOnAttack::new(DEFEND_LASER_COLOUR, DEFEND_LASER_FADE, DEFEND_LASER_WIDTH),
+            speed: MoveSpeed::new(DEFEND_MOVE_SPEED),
+            ..Default::default()
+        },
+        SpriteBundle{
+            texture: texture.clone_weak(),
+            transform: Transform { translation: DEFEND_OFFSET.extend(0.0), ..Default::default()},
+            sprite: Sprite { custom_size: Some(DEFEND_SIZE), color: DEFEND_COLOUR, ..Default::default() },
+            ..Default::default()
+        }
+    )).id();
+
     commands.entity(root).add_child(tree_root);
     commands.entity(tree_root).add_child(hub);
-    commands.entity(hub).push_children(&[chase]);
+    commands.entity(hub).push_children(&[chase, defend]);
 }
 
 // Heads to body movement
 // Aggregate Movement
 use chase::*;
 fn chase_to_body_movement_sys(
-    chase_q: Query<(&ToMover, &ChaseTarget, &ChaseFactor, &GlobalTransform, Entity), With<Chase>>,
+    chase_q: Query<(&ToMover, &ChaseTarget, &ChaseFactor, &GlobalTransform, Entity), With<ChaseHead>>,
     target_q: Query<&GlobalTransform>,
     mut root_q: Query<&mut TMoveAggregator>,
 ) {
@@ -200,8 +233,8 @@ fn chase_to_body_movement_sys(
         let target = target.translation().truncate();
 
         let chase = chase.read();
-        let chase_prevelance = chase * CHASE_SCALAR;
-        let chase_move = (target - head).normalize_or_zero() * CHASE_POWER * CHASE_BODY_MOVE;
+        let chase_prevelance = chase * CHASE_HEAD_AUTONOMY;
+        let chase_move = (target - head).normalize_or_zero() * CHASE_HEAD_PULL * CHASE_BODY_MOVE;
 
         // Set
         let hub = to_mover.go();
@@ -209,5 +242,31 @@ fn chase_to_body_movement_sys(
 
         use rts_unit_movers::Key as MoveKey;
         body.inputs.insert(MoveKey::External(chase_entity), (chase_move, chase_prevelance));
+    }
+}
+
+fn defend_to_body_movement_sys(
+    chase_q: Query<(&ToMover, &DefendTarget, &DefendFactor, &GlobalTransform, Entity), With<DefendHead>>,
+    target_q: Query<&GlobalTransform>,
+    mut root_q: Query<&mut TMoveAggregator>,
+) {
+    for (to_mover, target, defend, head, defend_entity) in chase_q.iter() {
+        // Get
+        let head = head.translation().truncate();
+
+        let target = target.read();
+        let Ok(target) = target_q.get(target) else { continue; };
+        let target = target.translation().truncate();
+
+        let defend = defend.read();
+        let defend_prevelance = defend * CHASE_HEAD_AUTONOMY;
+        let defend_move = (target - head).normalize_or_zero() * CHASE_HEAD_PULL * CHASE_BODY_MOVE;
+
+        // Set
+        let hub = to_mover.go();
+        let Ok(mut body) = root_q.get_mut(hub) else { continue; };
+
+        use rts_unit_movers::Key as MoveKey;
+        body.inputs.insert(MoveKey::External(defend_entity), (defend_move, defend_prevelance));
     }
 }

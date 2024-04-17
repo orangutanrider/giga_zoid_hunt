@@ -1,3 +1,4 @@
+/* 
 use behaviour_tree::bang::Bang;
 use behaviour_tree::state::terminal::TState;
 use bevy::prelude::*;
@@ -129,7 +130,7 @@ fn prnt_state_mapping(
     print!(" | ATTACK_MOVE: {}", state.contains(ATTACK_MOVE));
     print!(" | ATTACK_TARGET: {}", state.contains(ATTACK_TARGET));
     print!(" | IN_AGGRO: {}", state.contains(IN_AGGRO));
-    print!(" | IN_ATTACK: {}", state.contains(IN_ATTACK));
+    print!(" | IN_ATTACK: {}", state.contains(IN_ATTACK_RANGE));
     println!("");
 }
 
@@ -270,3 +271,4 @@ fn prnt_enemy_chase_head_position(
         println!("Chase: {}", transform);
     }
 }
+*/

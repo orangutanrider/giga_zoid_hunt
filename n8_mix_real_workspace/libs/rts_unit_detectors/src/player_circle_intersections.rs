@@ -5,7 +5,7 @@ use rapier_config::*;
 
 use crate::*;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct CircleIntersectionsOfPlayer{
     radius: f32,
 }
