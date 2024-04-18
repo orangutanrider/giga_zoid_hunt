@@ -15,5 +15,11 @@ use bevy_rapier2d::prelude::CollisionGroups;
 
 pub const RTS_UNIT_PHYSICS_BODY_CGROUP: CollisionGroups = CollisionGroups::new(
     RTS_UNIT_PHYSICS_BODY,
+    BOUNDS,
+);
+
+pub const BOUNDS: Group = Group::GROUP_32;
+pub const BOUNDS_CGROUP: CollisionGroups = CollisionGroups::new(
+    BOUNDS,
     RTS_UNIT_PHYSICS_BODY,
 );

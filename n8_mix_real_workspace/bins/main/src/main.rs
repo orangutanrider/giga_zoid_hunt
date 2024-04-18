@@ -24,6 +24,8 @@ fn main() {
         spawn_x_player_units_startup,
 
         spawn_enemy_startup,
+        spawn_bounds_startup,
+        no_gravity_startup,
     ));
 
     /* 
@@ -69,6 +71,12 @@ impl Plugin for MainPlugin {
     }
 }
 
+fn no_gravity_startup(
+    mut gravity: ResMut<RapierConfiguration>,
+) {
+    gravity.gravity = Vec2::ZERO;
+}
+
 fn spawn_main_camera_startup(
     mut commands: Commands,
 ) {
@@ -77,7 +85,7 @@ fn spawn_main_camera_startup(
         //Camera2dBundle::default(),
         Camera2dBundle{
             projection: OrthographicProjection { 
-                scale: 1.5, 
+                scale: 1.45, 
                 far: 1000.,
                 near: -1000.,
                 ..Default::default() 
@@ -131,4 +139,11 @@ fn spawn_enemy_startup(
     asset_server: Res<AssetServer>, 
 ) {
     enemy::spawn_enemy(Vec2::ZERO, &mut commands, &asset_server)
+}
+
+fn spawn_bounds_startup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>, 
+) {
+    level::spawn_bounds(&mut commands, &asset_server);
 }

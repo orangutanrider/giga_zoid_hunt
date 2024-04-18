@@ -41,7 +41,7 @@ pub struct BundDefend {
     pub to_hub: ToHub,
     pub flag: DefendHead,
 
-    pub factor: DefendFactor,
+    pub factor: DefendFrenzy,
     pub target: DefendTarget,
 
     pub mover_in: TMoveAggregator,
@@ -56,20 +56,20 @@ pub struct BundDefend {
 
 // Defend factor data collection
 #[derive(Component, Default)]
-pub struct DefendFactor{
+pub struct DefendFrenzy{
     damaged_factor: f32,
     proximity_factor: u32,
 
     previous_health: f32,
 }
-impl DefendFactor {
+impl DefendFrenzy {
     pub fn read(&self) -> f32 {
-        return (self.damaged_factor * DEFEND_PAIN_WEIGHT) + ((self.proximity_factor as f32) * PROXIMITY_FACTOR_WEIGHT) + 0.001
+        return (self.damaged_factor * DEFEND_PAIN_WEIGHT) + ((self.proximity_factor as f32) * DEFEND_SAFE_SPACE_WEIGHT) + 0.001
     }
 }
 
 pub fn defend_factor_sys(
-    mut q: Query<(&mut DefendFactor, &ToHub), With<DefendHead>>,
+    mut q: Query<(&mut DefendFrenzy, &ToHub), With<DefendHead>>,
     hub_q: Query<(&THealth, &TIntersectionsAggregate)>
 ) {
     for (mut defend, to_hub) in q.iter_mut() {
@@ -95,26 +95,33 @@ pub fn defend_factor_sys(
 }
 
 pub fn defend_factor_damaged_decay(
-    mut q: Query<&mut DefendFactor, With<DefendHead>>,
+    mut q: Query<&mut DefendFrenzy, With<DefendHead>>,
     time: Res<Time>,
 ) {
     for mut defend in q.iter_mut() {
-        defend.damaged_factor = (defend.damaged_factor - (DEFEND_PAIN_DECAY * time.delta_seconds()))
+        defend.damaged_factor = (defend.damaged_factor -  time.delta_seconds() * (
+            DEFEND_PAIN_DECAY + (DEFEND_PAIN_EXPONENT_DECAY * defend.damaged_factor)))
             .clamp(0.0, f32::MAX);
     }
 }
 
 // Defend target
 #[derive(Component)]
-pub struct DefendTarget(Entity);
+pub struct DefendTarget{
+    target: Entity,
+    update_cooldown: f32,
+}
 impl Default for DefendTarget {
     fn default() -> Self {
-        Self(Entity::PLACEHOLDER)
+        Self{
+            target: Entity::PLACEHOLDER,
+            update_cooldown: 0.0,
+        }
     }
 }
 impl DefendTarget {
     pub fn read(&self) -> Entity {
-        return self.0
+        return self.target
     }
 }
 
@@ -123,8 +130,12 @@ pub fn defend_target_selection_sys(
     enemy_q: Query<(Entity, &GlobalTransform), (With<PlayerTeam>, With<THealth>)>,
     mut defend_q: Query<(&mut DefendTarget, &ToHub)>,
     hub_q: Query<&GlobalTransform>,
+    time: Res<Time>
 ) {
     for (mut target, to_hub) in defend_q.iter_mut() {
+        target.update_cooldown = target.update_cooldown + time.delta_seconds();
+        if target.update_cooldown < DEFEND_TARGET_UPDATE_RATE { continue; }
+
         // Get
         let Ok(body) = hub_q.get(to_hub.go()) else { continue; }; 
         let body = body.translation().truncate();
@@ -143,7 +154,7 @@ pub fn defend_target_selection_sys(
         let closest = closest;
 
         // Set
-        target.0 = closest;
+        target.target = closest;
     }
 }
 
@@ -151,7 +162,7 @@ pub fn defend_target_selection_sys(
 // High defend factor = long neck + fast
 // Low defend factor = short neck + avg
 pub fn defend_head_movement_sys(
-    mut head_q: Query<(&mut TMoveAggregator, &DefendFactor, &GlobalTransform, &ToHub, &DefendTarget), With<DefendHead>>,
+    mut head_q: Query<(&mut TMoveAggregator, &DefendFrenzy, &GlobalTransform, &ToHub, &DefendTarget), With<DefendHead>>,
     q: Query<&GlobalTransform>
 ) {
     for (mut mover, defend, head_location, to_hub, target) in head_q.iter_mut() {
@@ -168,20 +179,16 @@ pub fn defend_head_movement_sys(
         let Ok(target) = q.get(target) else { continue; };
         let target = target.translation().truncate();
 
-        // Calculate prevelance
+        // Calculate body authority
         let body_prevelance = (body_head_distance * DEFEND_BODY_PULL) / 1.0;
 
-        //println!("{}", body_prevelance);
-
+        // Calculate head autonomy
         let defend = defend.read();
-        let defend_prevelance = defend * DEFEND_HEAD_PULL;
+        let defend_prevelance = (defend * DEFEND_NECK_GROWTH).clamp(DEFEND_NECK_MIN, DEFEND_NECK_MAX);
 
         // Calculate move vectors
         let to_body_move = (body - head).normalize_or_zero() * DEFEND_BODY_AUTHORITY;
         let to_target_move = (target - head).normalize_or_zero() * DEFEND_HEAD_AUTONOMY;
-
-        //println!("{}", to_body_move);
-        //println!("{}", to_target_move);
 
         // To mover
         use rts_unit_movers::Key as MoveKey;
@@ -219,12 +226,12 @@ impl AttackTimer {
 }
 
 pub fn defend_attack_sys(
-    mut q: Query<(&mut DirectAttackBang, &mut AttackTimer, &DefendTarget, &GlobalTransform, &DefendFactor), With<DefendHead>>,
+    mut q: Query<(&mut DirectAttackBang, &mut AttackTimer, &DefendTarget, &GlobalTransform, &DefendFrenzy), With<DefendHead>>,
     target_q: Query<&GlobalTransform>,
     time: Res<Time>,
 ) {
     for (mut attack, mut timer, target, head_position, defend) in q.iter_mut() {
-        let target = target.0;
+        let target = target.target;
         let Ok(target_at) = target_q.get(target) else { continue; };
         let target_at = target_at.translation().truncate();
         
@@ -235,7 +242,7 @@ pub fn defend_attack_sys(
         let defend = defend.read();
 
         let range_equation = { DEFEND_ATTACK_RANGE *
-            ((DEFEND_FRENZY_RANGE_DECREASE / defend)
+            ((1.0 / (defend * DEFEND_FRENZY_RANGE_DECREASE))
             .clamp(DEFEND_MIN_ATTACK_RANGE, DEFEND_MAX_ATTACK_RANGE))
         };
 
@@ -252,5 +259,56 @@ pub fn defend_attack_sys(
 
         attack.bang(target);
         timer.reset();
+    }
+}
+
+pub fn defend_frenzy_to_colour(
+    mut q: Query<(&mut Sprite, &DefendFrenzy)>
+) {
+    let min = DEFEND_FRENZY_TO_COLOUR_MIN_MAX.x;
+    let max = DEFEND_FRENZY_TO_COLOUR_MIN_MAX.y;
+    for (mut sprite, frenzy) in q.iter_mut() {
+        let current = frenzy.read();
+        
+        let t = (current + min) / max;
+        let colour_min: Vec3 = DEFEND_COLOUR.hsl_to_vec3();
+        let colour_max = DEFEND_FRENZY_COLOUR.hsl_to_vec3();
+        let colour = Vec3::lerp(colour_min, colour_max, t);
+        
+        sprite.color = Color::rgb(colour.x, colour.y, colour.z);
+    }
+}
+
+#[derive(Component)]
+pub struct DefendNeck{
+    pub hub: Entity,
+    pub defend: Entity,
+}
+
+pub fn defend_neck_sys(
+    mut q: Query<(&mut Transform, &DefendNeck)>,
+    transform_q: Query<&GlobalTransform>,
+) {
+    for (mut transform, neck) in q.iter_mut() {
+        let origin = neck.hub;
+        let Ok(origin) = transform_q.get(origin) else {continue;};
+        let origin = origin.translation().truncate();
+
+        let target = neck.defend;
+        let Ok(target) = transform_q.get(target) else {continue;};
+        let target = target.translation().truncate();
+
+        let distance = origin.distance(target);
+        let diff = target - origin;
+        let direction = diff.normalize();
+    
+        let translation = (origin + (direction * distance * 0.5)).extend(-0.5);
+        let rotation = Quat::from_rotation_z(direction.to_angle());
+    
+        let scale = Vec3::new(distance, NECK_WIDTH, 0.1);
+
+        transform.scale = scale;
+        transform.translation = translation;
+        transform.rotation = rotation;
     }
 }

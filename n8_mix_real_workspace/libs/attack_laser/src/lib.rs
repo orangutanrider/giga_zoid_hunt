@@ -68,7 +68,7 @@ pub fn laser_visuals_sys(
         sprite.color.set_a(alpha - time_adjusted_fade);
         transform.scale = Vec3::new(
             transform.scale.x, 
-            transform.scale.y - time_adjusted_fade,
+            transform.scale.y - (time_adjusted_fade * 1.5),
             transform.scale.z
         );
     }

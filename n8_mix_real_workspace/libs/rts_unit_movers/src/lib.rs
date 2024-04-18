@@ -1,6 +1,8 @@
+pub mod velocity;
 pub mod transform;
 use std::any::TypeId;
 
+pub use velocity::*;
 pub use transform::*;
 
 use bevy::{prelude::*, utils::HashMap};
@@ -12,9 +14,16 @@ impl Plugin for MoversPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(PreUpdate, move_aggregator_re_calculate_sys);
         app.add_systems(Update, (
+            velocity_movement_sys,
+            velocity_movement_aggregator_sys,
+            velocity_movement_decider_sys,
+
             tranform_movement_sys,
             tranform_movement_aggregator_sys,
+            tranform_movement_decider_sys,
+            
             inactivity_sys,
+            move_decider_re_calculate_sys,
         ));
     }
 }
@@ -80,10 +89,10 @@ impl TMoveAggregator {
         let len = len as f32;
         let avg_factor = 1.0 / len;
 
-        for (_, (nav_vec, prevelance)) in self.inputs.iter() {
-            let nav_vec = *nav_vec;
+        for (_, (move_vec, prevelance)) in self.inputs.iter() {
+            let move_vec = *move_vec;
             let prevelance = *prevelance;
-            let nav_vec = nav_vec * avg_factor * prevelance;
+            let nav_vec = move_vec * avg_factor * prevelance;
             self.aggregate = self.aggregate + nav_vec;
         }
     }
@@ -121,5 +130,50 @@ pub fn inactivity_sys(
         else {
             inactivity.0 = inactivity.0 + time.delta_seconds();
         }
+    }
+}
+
+#[derive(Component)]
+/// Input
+pub struct TMoveDecider{
+    pub inputs: HashMap<Key, (Vec2, f32)>,
+    decision: Vec2,
+}
+impl Default for TMoveDecider {
+    fn default() -> Self {
+        Self{
+            inputs: HashMap::new(),
+            decision: Vec2::ZERO,
+        }
+    }
+}
+impl TMoveDecider {
+    fn re_calculate(&mut self) {
+        self.decision = Vec2::ZERO;
+
+        let mut decision = Vec2::ZERO;
+        let mut dominant_prevelance = 0.0;
+        for (_, (move_vec, prevelance)) in self.inputs.iter() {
+            if prevelance < &dominant_prevelance { continue; }
+
+            decision = *move_vec;
+            dominant_prevelance = *prevelance;
+        }
+
+        self.decision = decision;
+    }
+    
+    pub fn read(&self) -> Vec2 {
+        return self.decision
+    }
+}
+
+pub fn move_decider_re_calculate_sys(
+    mut q: Query<&mut TMoveDecider, Changed<TMoveDecider>>,
+    time: Res<Time>,
+) {
+    for mut decider in q.iter_mut() {
+        decider.bypass_change_detection();
+        decider.re_calculate();
     }
 }

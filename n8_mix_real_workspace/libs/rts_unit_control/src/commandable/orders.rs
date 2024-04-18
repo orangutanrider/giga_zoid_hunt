@@ -16,7 +16,7 @@ pub struct BuiltInOrdersPlugin;
 impl Plugin for BuiltInOrdersPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(AttackTargetPlugin);
-        app.add_systems(Update, (
+        app.add_systems(PreUpdate, (
             t_unit_order_clear_sys::<TPureMoveOrders, PureMoveOrder>,
             pm_proximity_processing_sys,
             t_unit_order_clear_sys::<TAttackMoveOrders, AttackMoveOrder>,
