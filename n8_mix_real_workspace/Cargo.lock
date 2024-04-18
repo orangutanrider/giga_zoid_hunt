@@ -2387,6 +2387,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
+name = "level"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "bevy_rapier2d",
+ "rapier_config",
+]
+
+[[package]]
 name = "lewton"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2494,6 +2503,7 @@ dependencies = [
  "detection_colour",
  "enemy",
  "health_to_death",
+ "level",
  "mouse_pos",
  "player_unit",
  "rts_controller",

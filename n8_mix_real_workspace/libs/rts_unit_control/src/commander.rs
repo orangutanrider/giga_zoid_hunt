@@ -9,7 +9,7 @@ use bevy::ecs::system::SystemParam;
 
 use super::*;
 
-const FORMATION_SCALE: Vec2 = Vec2::new(30.0, 20.0);
+const FORMATION_SCALE: Vec2 = Vec2::new(40.0, 40.0);
 
 pub struct FormationIter{
     origin: Vec2,

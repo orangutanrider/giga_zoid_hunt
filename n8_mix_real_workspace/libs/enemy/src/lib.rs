@@ -41,11 +41,17 @@ impl Plugin for EnemyPlugin {
             death_spike_decay_sys,
             chase_factor_sys,
             chase_target_selection_sys,
+            chase_frenzy_to_colour,
+            chase_neck_sys,
 
             defend_attack_sys,
             defend_factor_sys,
             defend_target_selection_sys,
             defend_head_movement_sys,
+            defend_factor_damaged_decay,
+            defend_frenzy_to_colour,
+            defend_to_body_movement_sys,
+            defend_neck_sys,
         ));
     }
 }
@@ -61,10 +67,11 @@ struct BRoot {
     pub collider: Collider,
     pub rigidbody: RigidBody,
     pub grouping: CollisionGroups,
+    pub velocity: Velocity,
 
     // Mover
-    pub move_terminal: TMoveAggregator,
-    pub move_process: LocalTransformMovement,
+    pub move_terminal: TMoveDecider,
+    pub move_process: LocalVelocityMovement,
     pub speed: MoveSpeed,
 }
 
@@ -130,7 +137,7 @@ pub fn spawn_enemy(
     let root = commands.spawn((
         BRoot{
             collider: Collider::ball(PHYSICS_SIZE),
-            rigidbody: RigidBody::KinematicPositionBased,
+            rigidbody: RigidBody::KinematicVelocityBased,
             grouping: RTS_UNIT_PHYSICS_BODY_CGROUP,
             speed: MoveSpeed::new(MOVE_SPEED),
             ..Default::default()
@@ -167,6 +174,11 @@ pub fn spawn_enemy(
             max_health: MaxHealth::new(HEALTH),
             to_despawn_target: ToDespawnTarget::new(root),
             detector: CircleIntersectionsOfPlayer::new(DEFEND_SAFE_SPACE_RADIUS),
+            death_flare: DeathFlareOnDeath{
+                color: DEATH_FLARE_COLOUR,
+                fade: DEATH_FLARE_FADE,
+                width: DEATH_FLARE_WIDTH,
+            },
             ..Default::default()
         },
         SpriteBundle {
@@ -204,25 +216,50 @@ pub fn spawn_enemy(
             ..Default::default()
         },
         SpriteBundle{
-            texture: texture.clone_weak(),
+            texture: texture,
             transform: Transform { translation: DEFEND_OFFSET.extend(0.0), ..Default::default()},
             sprite: Sprite { custom_size: Some(DEFEND_SIZE), color: DEFEND_COLOUR, ..Default::default() },
             ..Default::default()
         }
     )).id();
 
+    let texture: Handle<Image> = asset_server.load("sprite\\primitive\\1px_square.png");
+
+    commands.spawn((
+        ChaseNeck{
+            hub,
+            chase,
+        },
+        SpriteBundle{
+            texture: texture.clone_weak(),
+            transform: Transform { translation: CHASE_OFFSET.extend(0.0), ..Default::default()},
+            sprite: Sprite { color: CHASE_COLOUR, ..Default::default() },
+            ..Default::default()
+        }
+    ));
+
+    commands.spawn((
+        DefendNeck{
+            hub,
+            defend,
+        },
+        SpriteBundle{
+            texture: texture,
+            transform: Transform { translation: DEFEND_OFFSET.extend(0.0), ..Default::default()},
+            sprite: Sprite { color: DEFEND_COLOUR, ..Default::default() },
+            ..Default::default()
+        }
+    ));
+
     commands.entity(root).add_child(tree_root);
     commands.entity(tree_root).add_child(hub);
     commands.entity(hub).push_children(&[chase, defend]);
 }
 
-// Heads to body movement
-// Aggregate Movement
-use chase::*;
 fn chase_to_body_movement_sys(
-    chase_q: Query<(&ToMover, &ChaseTarget, &ChaseFactor, &GlobalTransform, Entity), With<ChaseHead>>,
+    chase_q: Query<(&ToMover, &ChaseTarget, &ChaseFrenzy, &GlobalTransform, Entity), With<ChaseHead>>,
     target_q: Query<&GlobalTransform>,
-    mut root_q: Query<&mut TMoveAggregator>,
+    mut root_q: Query<&mut TMoveDecider>,
 ) {
     for (to_mover, target, chase, head, chase_entity) in chase_q.iter() {
         // Get
@@ -233,8 +270,13 @@ fn chase_to_body_movement_sys(
         let target = target.translation().truncate();
 
         let chase = chase.read();
-        let chase_prevelance = chase * CHASE_HEAD_AUTONOMY;
-        let chase_move = (target - head).normalize_or_zero() * CHASE_HEAD_PULL * CHASE_BODY_MOVE;
+
+        let chase_move = (target - head).normalize_or_zero();
+        let chase_move = chase_move * ((chase * CHASE_HEAD_PULL) + CHASE_BODY_MOVE_BASE_SPEED);
+        let chase_move = chase_move.clamp_length(0.0, CHASE_MOVE_LIMIT);
+
+
+        let chase_prevelance = (chase * CHASE_FRENZY_DOMINANCE) + CHASE_BASE_DOMINANCE; // Move decision prevelance
 
         // Set
         let hub = to_mover.go();
@@ -246,11 +288,11 @@ fn chase_to_body_movement_sys(
 }
 
 fn defend_to_body_movement_sys(
-    chase_q: Query<(&ToMover, &DefendTarget, &DefendFactor, &GlobalTransform, Entity), With<DefendHead>>,
+    defend_q: Query<(&ToMover, &DefendTarget, &DefendFrenzy, &GlobalTransform, Entity), With<DefendHead>>,
     target_q: Query<&GlobalTransform>,
-    mut root_q: Query<&mut TMoveAggregator>,
+    mut root_q: Query<&mut TMoveDecider>,
 ) {
-    for (to_mover, target, defend, head, defend_entity) in chase_q.iter() {
+    for (to_mover, target, defend, head, defend_entity) in defend_q.iter() {
         // Get
         let head = head.translation().truncate();
 
@@ -259,8 +301,12 @@ fn defend_to_body_movement_sys(
         let target = target.translation().truncate();
 
         let defend = defend.read();
-        let defend_prevelance = defend * CHASE_HEAD_AUTONOMY;
-        let defend_move = (target - head).normalize_or_zero() * CHASE_HEAD_PULL * CHASE_BODY_MOVE;
+
+        let defend_move = (target - head).normalize_or_zero();
+        let defend_move = defend_move * ((defend * DEFEND_HEAD_PULL) + DEFEND_BODY_MOVE_BASE_SPEED);
+        let defend_move = defend_move.clamp_length(0.0, DEFEND_MOVE_LIMIT);
+
+        let defend_prevelance = (defend * DEFEND_FRENZY_DOMINANCE) + DEFEND_BASE_DOMINANCE; // Move decision prevelance
 
         // Set
         let hub = to_mover.go();

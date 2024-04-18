@@ -40,7 +40,7 @@ pub struct BundChase {
     pub to_hub: ToHub,
     pub flag: ChaseHead,
     
-    pub chase_factor: ChaseFactor, 
+    pub chase_factor: ChaseFrenzy, 
     pub chase_target: ChaseTarget,
 
     pub mover_in: TMoveAggregator,
@@ -71,9 +71,9 @@ pub fn chase_target_selection_sys(
     health_q: Query<(Entity, &THealth, &MaxHealth), With<PlayerTeam>>,
     mut q: Query<&mut ChaseTarget>
 ) {
+    // Find most inactive enemy
     let mut most_inactive: Entity = Entity::PLACEHOLDER;
-    let mut most_inactive_val: f32 = -1.0;
-
+    let mut most_inactive_val: f32 = 0.0;
     for (entity, inactivity) in inactivity_q.iter() {
         if inactivity.read() > most_inactive_val {
             most_inactive = entity;
@@ -81,9 +81,9 @@ pub fn chase_target_selection_sys(
         }
     }
 
+    // Find enemy with lowest percentage current health
     let mut lowest_health: Entity = Entity::PLACEHOLDER;
     let mut lowest_health_val: f32 = f32::MAX;
-
     for (entity, health, max_health) in health_q.iter() {
         let max_health = max_health.read();
         let health = health.0;
@@ -99,76 +99,78 @@ pub fn chase_target_selection_sys(
         lowest_health_val = percentage_current_health;
     }
 
-    let most_inactive_val = {
-        if most_inactive_val <= 0.0 {
-            f32::MAX
-        } else {
-            CHASE_INACTIVITY_PRIORITY / most_inactive_val
-        }
-    };
-    let lowest_health_val = lowest_health_val / CHASE_INJURED_PRIORITY;
+    // Create weights
+    let most_inactive_val = most_inactive_val * CHASE_INACTIVITY_PRIORITY;
+    let lowest_health_val = (1.0 / lowest_health_val) * CHASE_INJURED_PRIORITY;
     
+    // Prioritise target based on weights
     let target = {
-        if lowest_health_val < most_inactive_val {
+        if lowest_health_val >= most_inactive_val {
             lowest_health
         } else {
             most_inactive
         }
     };
 
+    // Set target
     for mut chase_target in q.iter_mut() {
         chase_target.0 = target;
     }
 }
 
 #[derive(Component, Default)]
-pub struct ChaseFactor{
+pub struct ChaseFrenzy{
     health_factor: f32,
     death_spikes: f32,
 }
-impl ChaseFactor {
+impl ChaseFrenzy {
     pub fn read(&self) -> f32 {
         return self.health_factor + self.death_spikes
     }
 }
 
 pub fn chase_factor_sys(
-    mut q: Query<&mut ChaseFactor>,
+    mut q: Query<&mut ChaseFrenzy>,
     death_q: Query<&DeathBang, (Changed<DeathBang>, With<PlayerTeam>)>,
     health_q: Query<(&THealth, &MaxHealth), With<PlayerTeam>>,
 ) {
+    // Calculate death spike
     let mut deaths = 0;
     for death in death_q.iter() {
         if death.is_active() {
             deaths = deaths + 1;
         }
     }
+    let deaths = deaths as f32;
+    let deaths_spike = deaths * CHASE_DEATH_SPIKE;
     
+    // Calculate global percentage current health.
     let mut global_max_health = 0.01;
     let mut global_current_health = 0.01;
     for (health, max_health) in health_q.iter() {
         global_current_health = global_current_health + health.0;
         global_max_health = global_current_health + max_health.read();
     }
-
-    let deaths = deaths as f32;
     let health_factor = global_current_health / global_max_health;
+    let health_factor = (1.0 / health_factor) - 1.0;
 
     for mut chase_factor in q.iter_mut() {
         chase_factor.health_factor = health_factor * CHASE_HEALTH_FRENZY;
-        chase_factor.death_spikes = chase_factor.death_spikes + (deaths * CHASE_DEATH_SPIKE);
+        chase_factor.death_spikes = chase_factor.death_spikes + deaths_spike;
     }
 }
 
 pub fn death_spike_decay_sys(
-    mut q: Query<&mut ChaseFactor>,
+    mut q: Query<&mut ChaseFrenzy>,
     time: Res<Time>,
 ) {
     for mut chase_factor in q.iter_mut() {
         if chase_factor.death_spikes <= 0.0 {
             continue;
         }
-        chase_factor.death_spikes = chase_factor.death_spikes - (time.delta_seconds() * CHASE_DEATH_SPIKE_DECAY);
+        chase_factor.death_spikes = chase_factor.death_spikes - (time.delta_seconds() * (
+            CHASE_DEATH_SPIKE_DECAY + (chase_factor.death_spikes * CHASE_DEATH_SPIKE_EXPONENT_DECAY)
+        ));
     }
 }
 
@@ -200,11 +202,9 @@ pub fn rotate_to_face_target_sys(
 /// Body position, prevelance increasing with distance, exponential
 /// Target position, prevelance increasing with chase factor, linear
 pub fn head_movement_sys(
-    mut head_q: Query<(&ToHub, &GlobalTransform, &ChaseTarget, &ChaseFactor, &mut TMoveAggregator), With<ChaseHead>>,
+    mut head_q: Query<(&ToHub, &GlobalTransform, &ChaseTarget, &ChaseFrenzy, &mut TMoveAggregator), With<ChaseHead>>,
     q: Query<&GlobalTransform, Without<ChaseHead>>, // used for body and target
 ) {
-    // body_head distance.
-
     for (to_hub, transform, target, chase, mut mover) in head_q.iter_mut() {
         // Get
         let hub = to_hub.go();
@@ -220,18 +220,15 @@ pub fn head_movement_sys(
         let target = target.translation().truncate();
 
         // Calculate prevelance
-        let body_prevelance = (body_head_distance * CHASE_BODY_AUTHORITY) / 1.0;
+        let body_prevelance = (body_head_distance * CHASE_BODY_PULL) / 1.0;
 
         let chase = chase.read();
-        let chase_prevelance = chase * CHASE_HEAD_AUTONOMY;
-
+        let chase_prevelance = (chase * CHASE_NECK_GROWTH).clamp(CHASE_NECK_MIN, CHASE_NECK_MAX);
+        
         // Calculate move vectors
-        let to_body_move = (body - head).normalize_or_zero() * CHASE_BODY_PULL;
+        let to_body_move = (body - head).normalize_or_zero() * CHASE_BODY_AUTHORITY;
 
-        let to_target_move = (target - head).normalize_or_zero() * CHASE_HEAD_PULL;
-
-        //println!("{}", to_body_move);
-        //println!("{}", to_target_move);
+        let to_target_move = (target - head).normalize_or_zero() * CHASE_HEAD_AUTONOMY;
 
         // To mover
         use rts_unit_movers::Key as MoveKey;
@@ -292,5 +289,56 @@ pub fn chase_attack_sys(
 
         attack.bang(target);
         timer.reset();
+    }
+}
+
+pub fn chase_frenzy_to_colour(
+    mut q: Query<(&mut Sprite, &ChaseFrenzy)>
+) {
+    let min = CHASE_FRENZY_TO_COLOUR_MIN_MAX.x;
+    let max = CHASE_FRENZY_TO_COLOUR_MIN_MAX.y;
+    for (mut sprite, frenzy) in q.iter_mut() {
+        let current = frenzy.read();
+        
+        let t = (current + min) / max;
+        let colour_min: Vec3 = CHASE_COLOUR.hsl_to_vec3();
+        let colour_max = CHASE_FRENZY_COLOUR.hsl_to_vec3();
+        let colour = Vec3::lerp(colour_min, colour_max, t);
+        
+        sprite.color = Color::rgb(colour.x, colour.y, colour.z);
+    }
+}
+
+#[derive(Component)]
+pub struct ChaseNeck{
+    pub hub: Entity,
+    pub chase: Entity,
+}
+
+pub fn chase_neck_sys(
+    mut q: Query<(&mut Transform, &ChaseNeck)>,
+    transform_q: Query<&GlobalTransform>,
+) {
+    for (mut transform, neck) in q.iter_mut() {
+        let origin = neck.hub;
+        let Ok(origin) = transform_q.get(origin) else {continue;};
+        let origin = origin.translation().truncate();
+
+        let target = neck.chase;
+        let Ok(target) = transform_q.get(target) else {continue;};
+        let target = target.translation().truncate();
+
+        let distance = origin.distance(target);
+        let diff = target - origin;
+        let direction = diff.normalize();
+    
+        let translation = (origin + (direction * distance * 0.5)).extend(-0.5);
+        let rotation = Quat::from_rotation_z(direction.to_angle());
+    
+        let scale = Vec3::new(distance, NECK_WIDTH, 0.1);
+
+        transform.scale = scale;
+        transform.translation = translation;
+        transform.rotation = rotation;
     }
 }

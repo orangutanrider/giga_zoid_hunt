@@ -118,10 +118,12 @@ struct BRoot {
     pub collider: Collider,
     pub rigidbody: RigidBody,
     pub grouping: CollisionGroups,
+    pub locking: LockedAxes,
+    pub velocity: Velocity,
 
     // Mover
     pub move_terminal: TMoveVector,
-    pub move_process: LocalTransformMovement,
+    pub move_process: LocalVelocityMovement,
     pub speed: MoveSpeed,
     pub inactivity: Inactivity,
 
@@ -271,15 +273,16 @@ pub fn spawn_player_unit(
     // Root
     let root = commands.spawn((
         BRoot{
-            collider: Collider::ball(PHYSICS_SIZE),
-            rigidbody: RigidBody::KinematicPositionBased,
+            collider: Collider::cuboid(PHYSICS_SIZE, PHYSICS_SIZE),
+            rigidbody: RigidBody::Dynamic,
             grouping: RTS_UNIT_PHYSICS_BODY_CGROUP,
             speed: MoveSpeed::new(MOVE_SPEED),
+            locking: LockedAxes::ROTATION_LOCKED,
             ..Default::default()
         },
         SpriteBundle {
             texture: square.clone_weak(),
-            transform: Transform { translation: location.extend(0.0), ..Default::default()},
+            transform: Transform { translation: location.extend(-2.0), ..Default::default()},
             sprite: Sprite { custom_size: Some(ROOT_SIZE), color: ROOT_COLOUR,..Default::default() },
             ..Default::default()
         }
@@ -312,7 +315,11 @@ pub fn spawn_player_unit(
             to_despawn_target: ToDespawnTarget::new(root),
             regen: HealthRegeneration(HEALTH_REGEN),
             health_to_colour: HealthToColour::new(FULL_HEALTH_COLOUR, LOW_HEALTH_COLOUR),
-
+            death_flare: DeathFlareOnDeath{
+                color: DEATH_FLARE_COLOUR,
+                fade: DEATH_FLARE_FADE,
+                width: DEATH_FLARE_WIDTH,
+            },
             ..Default::default()
         },
         SpriteBundle {
@@ -333,7 +340,7 @@ pub fn spawn_player_unit(
         },
         SpriteBundle {
             texture: square.clone_weak(),
-            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * -2.5, NODES_Y_OFFSET).extend(0.0), ..Default::default()},
+            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * -2.5, NODES_Y_OFFSET).extend(1.0), ..Default::default()},
             sprite: Sprite { custom_size: Some(NODES_SIZE), ..Default::default() },
             ..Default::default()
         }
@@ -349,7 +356,7 @@ pub fn spawn_player_unit(
         },
         SpriteBundle {
             texture: square.clone_weak(),
-            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * -1.5, NODES_Y_OFFSET).extend(0.0), ..Default::default()},
+            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * -1.5, NODES_Y_OFFSET).extend(1.1), ..Default::default()},
             sprite: Sprite { custom_size: Some(NODES_SIZE), ..Default::default() },
             ..Default::default()
         }
@@ -368,7 +375,7 @@ pub fn spawn_player_unit(
         },
         SpriteBundle {
             texture: square.clone_weak(),
-            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * -0.5, NODES_Y_OFFSET).extend(0.0), ..Default::default()},
+            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * -0.5, NODES_Y_OFFSET).extend(1.2), ..Default::default()},
             sprite: Sprite { custom_size: Some(NODES_SIZE), ..Default::default() },
             ..Default::default()
         }
@@ -387,7 +394,7 @@ pub fn spawn_player_unit(
         },
         SpriteBundle {
             texture: square.clone_weak(),
-            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * 0.5, NODES_Y_OFFSET).extend(0.0), ..Default::default()},
+            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * 0.5, NODES_Y_OFFSET).extend(1.3), ..Default::default()},
             sprite: Sprite { custom_size: Some(NODES_SIZE), ..Default::default() },
             ..Default::default()
         }
@@ -406,7 +413,7 @@ pub fn spawn_player_unit(
         },
         SpriteBundle {
             texture: square.clone_weak(),
-            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * 1.5, NODES_Y_OFFSET).extend(0.0), ..Default::default()},
+            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * 1.5, NODES_Y_OFFSET).extend(1.4), ..Default::default()},
             sprite: Sprite { custom_size: Some(NODES_SIZE), ..Default::default() },
             ..Default::default()
         }
@@ -429,7 +436,7 @@ pub fn spawn_player_unit(
         },
         SpriteBundle {
             texture: square,
-            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * 2.5, NODES_Y_OFFSET).extend(0.0), ..Default::default()},
+            transform: Transform { translation: Vec2::new(NODES_X_OFFSET * 2.5, NODES_Y_OFFSET).extend(1.5), ..Default::default()},
             sprite: Sprite { custom_size: Some(NODES_SIZE), ..Default::default() },
             ..Default::default()
         }
