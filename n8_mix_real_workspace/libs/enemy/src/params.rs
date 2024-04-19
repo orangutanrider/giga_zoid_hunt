@@ -38,6 +38,9 @@ pub const CHASE_OFFSET: Vec2 = Vec2::new(32.0, 70.0);
 pub const DEFEND_SIZE: Vec2 = Vec2::new(24.0, 24.0);
 pub const DEFEND_OFFSET: Vec2 = Vec2::new(32.0, 70.0);
 
+pub const WILDCARD_SIZE: Vec2 = Vec2::new(24.0, 24.0);
+pub const WILDCARD_OFFSET: Vec2 = Vec2::new(32.0, 70.0);
+
 pub const DEATH_FLARE_COLOUR: Color = HUB_COLOUR;
 pub const DEATH_FLARE_WIDTH: f32 = 56.0;
 pub const DEATH_FLARE_FADE: f32 = 5.0;
@@ -131,3 +134,46 @@ pub const DEFEND_FRENZY_ATTACK_SPEED: f32 = 1.4;
 // These values cap the attack speed between them.
 pub const DEFEND_MIN_ATTACK_SPEED: f32 = 3.1;
 pub const DEFEND_MAX_ATTACK_SPEED: f32 = 0.1;
+
+// ================================
+// WILDCARD BEHAVIOUR
+pub const WILDCARD_MOVE_SPEED: f32 = 1.0;
+
+pub const WILDCARD_RANDOM_WAYPOINT_BOUNDS: Vec2 = Vec2::new(1000.0, 500.0);
+pub const WILDCARD_WAYPOINT_COMPLETION_DISTANCE: f32 = 10.0;
+pub const WILDCARD_WAYPOINT_REFRESH_TIMER_RANG: Vec2 = Vec2::new(2.0, 10.0);
+
+pub const WILDCARD_BODY_PULL: f32 = 1.0;
+pub const WILDCARD_NECK_GROWTH: f32 = 1.0;
+pub const WILDCARD_NECK_MIN: f32 = 1.0;
+pub const WILDCARD_NECK_MAX: f32 = 1.0;
+pub const WILDCARD_BODY_AUTHORITY: f32 = 1.0;
+pub const WILDCARD_HEAD_AUTONOMY: f32 = 1.0;
+
+pub const WILDCARD_CHASE_FRENZY_THRESHOLD: f32 = 1.0;
+pub const WILDCARD_DEFEND_FRENZY_THRESHOLD: f32 = 1.0;
+pub const WILDCARD_TOTAL_FRENZY_THRESHOLD: f32 = 1.0;
+
+pub const WILDCARD_HEAD_PULL: f32 = 1.0;
+pub const WILDCARD_BODY_MOVE_BASE_SPEED: f32 = 1.0;
+pub const WILDCARD_MOVE_LIMIT: f32 = 1.0;
+pub const WILDCARD_FRENZY_DOMINANCE: f32 = 1.0;
+pub const WILDCARD_BASE_DOMINANCE: f32 = 1.0;
+
+pub const WILDCARD_PERSONA_SWITCHING_HEALTH_THRESHOLD: f32 = 0.5; // Percentage current health
+pub const WILDCARD_PERSONA_ACTIVATION_TIME_RANGE: Vec2 = Vec2::new(0.0, 1.0);
+pub const WILDCARD_PERSONA_DURATION_TIME_RANGE: Vec2 = Vec2::new(0.0, 1.0);
+
+pub const WILDCARD_MOTIF_COLOUR: Color = Color::WHITE;
+
+pub const WILDCARD_COLOUR: Color = Color::WHITE;
+pub const WILDCARD_FRENZY_COLOUR: Color = Color::WHITE;
+pub const WILDCARD_FRENZY_COLOUR_MIN_MAX: Vec2 = Vec2::new(0.5, 2.5);
+
+pub const WILDCARD_CHASE_PERSONA_COLOUR: Color = Color::WHITE;
+pub const WILDCARD_CHASE_PERSONA_FRENZY_COLOUR: Color = Color::WHITE;
+pub const WILDCARD_CHASE_PERSONA_FRENZY_COLOUR_MIN_MAX: Vec2 = Vec2::new(0.5, 2.5);
+
+pub const WILDCARD_DEFEND_PERSONA_COLOUR: Color = Color::WHITE;
+pub const WILDCARD_DEFEND_PERSONA_FRENZY_COLOUR: Color = Color::WHITE;
+pub const WILDCARD_DEFEND_PERSONA_FRENZY_COLOUR_MIN_MAX: Vec2 = Vec2::new(0.5, 2.5);

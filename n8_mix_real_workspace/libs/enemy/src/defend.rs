@@ -35,6 +35,10 @@ use super::*;
 #[derive(Component, Default)]
 pub struct DefendHead;
 
+#[derive(Component)]
+pub struct ToDefend(Entity);
+waymark!(ToDefend);
+
 #[derive(Bundle, Default)]
 pub struct BundDefend {
     pub to_mover: ToMover,
@@ -275,7 +279,7 @@ pub fn defend_frenzy_to_colour(
         let colour_max = DEFEND_FRENZY_COLOUR.hsl_to_vec3();
         let colour = Vec3::lerp(colour_min, colour_max, t);
         
-        sprite.color = Color::rgb(colour.x, colour.y, colour.z);
+        sprite.color = Color::hsl(colour.x, colour.y, colour.z);
     }
 }
 
@@ -310,5 +314,35 @@ pub fn defend_neck_sys(
         transform.scale = scale;
         transform.translation = translation;
         transform.rotation = rotation;
+    }
+}
+
+pub fn defend_to_body_movement_sys(
+    defend_q: Query<(&ToMover, &DefendTarget, &DefendFrenzy, &GlobalTransform, Entity), With<DefendHead>>,
+    target_q: Query<&GlobalTransform>,
+    mut root_q: Query<&mut TMoveDecider>,
+) {
+    for (to_mover, target, defend, head, defend_entity) in defend_q.iter() {
+        // Get
+        let head = head.translation().truncate();
+
+        let target = target.read();
+        let Ok(target) = target_q.get(target) else { continue; };
+        let target = target.translation().truncate();
+
+        let defend = defend.read();
+
+        let defend_move = (target - head).normalize_or_zero();
+        let defend_move = defend_move * ((defend * DEFEND_HEAD_PULL) + DEFEND_BODY_MOVE_BASE_SPEED);
+        let defend_move = defend_move.clamp_length(0.0, DEFEND_MOVE_LIMIT);
+
+        let defend_prevelance = (defend * DEFEND_FRENZY_DOMINANCE) + DEFEND_BASE_DOMINANCE; // Move decision prevelance
+
+        // Set
+        let hub = to_mover.go();
+        let Ok(mut body) = root_q.get_mut(hub) else { continue; };
+
+        use rts_unit_movers::Key as MoveKey;
+        body.inputs.insert(MoveKey::External(defend_entity), (defend_move, defend_prevelance));
     }
 }

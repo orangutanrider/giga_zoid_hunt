@@ -19,10 +19,13 @@
     // Short range
 
 use std::any::TypeId;
-
-use attack_laser::LaserVisualsOnAttack;
 use bevy_rapier2d::prelude::*;
-use bevy::{prelude::*, time::Stopwatch};
+use bevy::prelude::*;
+use bevy_rand::prelude::*;
+use rand_core::*;
+
+use random::*;
+use attack_laser::*;
 use rts_unit_death::*;
 use rts_unit_health::*;
 use rts_unit_movers::*;
@@ -33,6 +36,10 @@ use super::*;
 
 #[derive(Component, Default)]
 pub struct ChaseHead;
+
+#[derive(Component)]
+pub struct ToChase(Entity);
+waymark!(ToChase);
 
 #[derive(Bundle, Default)]
 pub struct BundChase {
@@ -201,7 +208,7 @@ pub fn rotate_to_face_target_sys(
 
 /// Body position, prevelance increasing with distance, exponential
 /// Target position, prevelance increasing with chase factor, linear
-pub fn head_movement_sys(
+pub fn chase_head_movement_sys(
     mut head_q: Query<(&ToHub, &GlobalTransform, &ChaseTarget, &ChaseFrenzy, &mut TMoveAggregator), With<ChaseHead>>,
     q: Query<&GlobalTransform, Without<ChaseHead>>, // used for body and target
 ) {
@@ -305,7 +312,7 @@ pub fn chase_frenzy_to_colour(
         let colour_max = CHASE_FRENZY_COLOUR.hsl_to_vec3();
         let colour = Vec3::lerp(colour_min, colour_max, t);
         
-        sprite.color = Color::rgb(colour.x, colour.y, colour.z);
+        sprite.color = Color::hsl(colour.x, colour.y, colour.z);
     }
 }
 
@@ -340,5 +347,36 @@ pub fn chase_neck_sys(
         transform.scale = scale;
         transform.translation = translation;
         transform.rotation = rotation;
+    }
+}
+
+pub fn chase_to_body_movement_sys(
+    chase_q: Query<(&ToMover, &ChaseTarget, &ChaseFrenzy, &GlobalTransform, Entity), With<ChaseHead>>,
+    target_q: Query<&GlobalTransform>,
+    mut root_q: Query<&mut TMoveDecider>,
+) {
+    for (to_mover, target, chase, head, chase_entity) in chase_q.iter() {
+        // Get
+        let head = head.translation().truncate();
+
+        let target = target.read();
+        let Ok(target) = target_q.get(target) else { continue; };
+        let target = target.translation().truncate();
+
+        let chase = chase.read();
+
+        let chase_move = (target - head).normalize_or_zero();
+        let chase_move = chase_move * ((chase * CHASE_HEAD_PULL) + CHASE_BODY_MOVE_BASE_SPEED);
+        let chase_move = chase_move.clamp_length(0.0, CHASE_MOVE_LIMIT);
+
+
+        let chase_prevelance = (chase * CHASE_FRENZY_DOMINANCE) + CHASE_BASE_DOMINANCE; // Move decision prevelance
+
+        // Set
+        let hub = to_mover.go();
+        let Ok(mut body) = root_q.get_mut(hub) else { continue; };
+
+        use rts_unit_movers::Key as MoveKey;
+        body.inputs.insert(MoveKey::External(chase_entity), (chase_move, chase_prevelance));
     }
 }
