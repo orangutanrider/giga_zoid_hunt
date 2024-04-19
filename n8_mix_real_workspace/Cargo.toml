@@ -27,9 +27,10 @@ edition = "2021"
 [workspace.dependencies]
 # external
 bevy = { version = "0.13.0" }  
-bevy_rapier2d = { version = "0.25.0", features = ["serde-serialize"] }
-# bevy_rapier2d: --features -f debug-render-2d simd-nightly
+bevy_rapier2d = { version = "0.25.0", features = ["serde-serialize"] } # bevy_rapier2d: --features -f debug-render-2d simd-nightly
 bitflags = { version = "2.4.2" }
+bevy_rand = { version = "0.5.2", features = ["rand_chacha", "wyrand"] }
+rand_core = { version = "0.6.4" }
 
 # bins
 main = { path = "bins/main"}
@@ -43,6 +44,7 @@ behaviour_tree = { path = "libs/behaviour_tree" }
 mouse_pos = { path = "libs/mouse_pos" }
 project_settings = { path = "libs/project_settings "}
 rapier_config = { path = "libs/rapier_config"}
+random = { path = "libs/random" }
 
 rts_unit_death = { path = "libs/rts_unit_death" }
 rts_unit_soul = { path = "libs/rts_unit_soul" }
