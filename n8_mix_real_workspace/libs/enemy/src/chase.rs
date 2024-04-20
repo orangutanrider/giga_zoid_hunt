@@ -74,7 +74,7 @@ impl ChaseTarget {
 }
 
 pub fn chase_target_selection_sys(
-    inactivity_q: Query<(Entity, &Inactivity), With<PlayerTeam>>,
+    inactivity_q: Query<(&ToHealth, &Inactivity), With<PlayerTeam>>,
     health_q: Query<(Entity, &THealth, &MaxHealth), With<PlayerTeam>>,
     mut q: Query<&mut ChaseTarget>
 ) {
@@ -83,7 +83,7 @@ pub fn chase_target_selection_sys(
     let mut most_inactive_val: f32 = 0.0;
     for (entity, inactivity) in inactivity_q.iter() {
         if inactivity.read() > most_inactive_val {
-            most_inactive = entity;
+            most_inactive = entity.go();
             most_inactive_val = inactivity.read();
         }
     }

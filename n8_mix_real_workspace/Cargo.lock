@@ -2550,6 +2550,8 @@ dependencies = [
  "rts_unit_health",
  "rts_unit_movers",
  "rts_unit_nav",
+ "selection_visuals",
+ "sprite_sorting",
 ]
 
 [[package]]
@@ -3173,6 +3175,8 @@ dependencies = [
  "rts_unit_nav",
  "rts_unit_soul",
  "rts_unit_team",
+ "selection_visuals",
+ "sprite_sorting",
 ]
 
 [[package]]
@@ -3561,6 +3565,7 @@ name = "rts_unit_health"
 version = "0.0.1"
 dependencies = [
  "bevy",
+ "ref_paths",
 ]
 
 [[package]]
@@ -3660,6 +3665,15 @@ name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
+
+[[package]]
+name = "selection_visuals"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_paths",
+ "rts_unit_control",
+]
 
 [[package]]
 name = "serde"
@@ -3781,6 +3795,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eda41003dc44290527a59b13432d4a0379379fa074b70174882adfbdfd917844"
 dependencies = [
  "bitflags 2.4.2",
+]
+
+[[package]]
+name = "sprite_sorting"
+version = "0.0.1"
+dependencies = [
+ "bevy",
 ]
 
 [[package]]

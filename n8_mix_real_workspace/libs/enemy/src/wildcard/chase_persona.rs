@@ -30,7 +30,7 @@ impl ChasePersonaTarget {
 
 // Targeting is the same, but it chooses the 2nd highest weighted.
 pub fn wc_persona_chase_target_selection_sys(
-    inactivity_q: Query<(Entity, &Inactivity), With<PlayerTeam>>,
+    inactivity_q: Query<(&ToHealth, &Inactivity), With<PlayerTeam>>,
     health_q: Query<(Entity, &THealth, &MaxHealth), With<PlayerTeam>>,
     mut q: Query<(&mut ChasePersonaTarget, &WildcardPersona)>,
 ) {
@@ -41,7 +41,7 @@ pub fn wc_persona_chase_target_selection_sys(
     for (entity, inactivity) in inactivity_q.iter() {
         if inactivity.read() > most_inactive_val {
             prev_most_inactive = most_inactive;
-            most_inactive = entity;
+            most_inactive = entity.go();
             most_inactive_val = inactivity.read();
         }
     }

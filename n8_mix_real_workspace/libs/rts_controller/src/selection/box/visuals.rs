@@ -22,10 +22,10 @@ pub fn spawn_selection_box(
         flag: SelectionBox,
         sprite: SpriteBundle { 
             sprite: Sprite { color: Color::Hsla { 
-                hue: 360.0, 
+                hue: 110.0, 
                 saturation: 1.0, 
-                lightness: 1.0, 
-                alpha: 0.33 
+                lightness: 0.35, 
+                alpha: 0.1 
             }, ..Default::default()}, 
             texture: square, 
             visibility: Visibility::Hidden, 

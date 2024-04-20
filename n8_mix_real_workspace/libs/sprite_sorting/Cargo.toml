@@ -1,5 +1,5 @@
 [package]
-name = "rts_unit_health"
+name = "sprite_sorting"
 
 version.workspace = true
 authors.workspace = true
@@ -7,5 +7,3 @@ edition.workspace = true
 
 [dependencies]
 bevy.workspace = true
-
-ref_paths.workspace = true

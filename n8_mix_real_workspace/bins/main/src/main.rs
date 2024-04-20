@@ -68,6 +68,8 @@ impl Plugin for MainPlugin {
         app.add_plugins((
             bang_colour::BangColourPlugin,
             death_flare::DeathFlarePlugin,
+            selection_visuals::SelectionMotifPlugin,
+            sprite_sorting::SpriteSorterPlugin,
         ));
     }
 }
@@ -78,6 +80,7 @@ fn no_gravity_startup(
     gravity.gravity = Vec2::ZERO;
 }
 
+const BACKGROUND_COLOUR: Color = Color::hsl(0.0, 0.0, 0.05);
 fn spawn_main_camera_startup(
     mut commands: Commands,
 ) {
@@ -85,10 +88,14 @@ fn spawn_main_camera_startup(
         MainCamera,
         //Camera2dBundle::default(),
         Camera2dBundle{
+            camera: Camera{
+                clear_color: ClearColorConfig::Custom(BACKGROUND_COLOUR),
+                ..Default::default()
+            },
             projection: OrthographicProjection { 
                 scale: 1.45, 
-                far: 1000.,
-                near: -1000.,
+                far: 10000.,
+                near: -10000.,
                 ..Default::default() 
             },
             ..Default::default()

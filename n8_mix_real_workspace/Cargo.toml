@@ -61,6 +61,8 @@ bang_colour = { path = "libs/bang_colour" }
 attack_laser = { path = "libs/attack_laser" }
 detection_colour = { path = "libs/detection_colour" }
 level = { path = "libs/level" }
+selection_visuals = { path = "libs/selection_visuals" }
+sprite_sorting = { path = "libs/sprite_sorting" }
 
 control_to_detector = { path = "libs/control_to_detector" }
 control_to_nav = { path = "libs/control_to_nav" }
