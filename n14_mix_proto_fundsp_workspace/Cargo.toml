@@ -1,0 +1,44 @@
+# ================================
+# WORKSPACE
+[workspace]
+resolver = "2"
+members = ["libs/*", "bins/*"]
+
+[workspace.package]
+version = "0.0.1"
+authors = ["Dominic Rooney"]
+edition = "2021"
+
+[workspace.dependencies]
+# external
+bevy = { version = "0.13.0" }  
+fundsp = { version = "0.17.0"}
+cpal = { version = "0.15" }
+once_cell = { version = "1.13" }
+
+# bins
+main = { path = "bins/main"}
+
+# libs
+bevy_fundsp_13 = { path = "libs/bevy_fundsp_13" }
+
+# ================================
+# PROFILES
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.dist] # distribution
+inherits = "release"
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

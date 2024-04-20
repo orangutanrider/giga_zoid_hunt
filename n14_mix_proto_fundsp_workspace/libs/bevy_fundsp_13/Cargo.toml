@@ -1,0 +1,10 @@
+[package]
+name = "bevy_fundsp_13"
+authors = ["Gio Genre De Asis"]
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+fundsp.workspace = true
+cpal.workspace = true
+once_cell.workspace = true
