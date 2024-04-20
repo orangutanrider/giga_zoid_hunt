@@ -215,8 +215,8 @@ pub fn wc_persona_defend_to_body_movement_sys(
         let defend_prevelance = (defend * DEFEND_FRENZY_DOMINANCE) + DEFEND_BASE_DOMINANCE; // Move decision prevelance
 
         // Set
-        let hub = to_mover.go();
-        let Ok(mut body) = root_q.get_mut(hub) else { continue; };
+        let root = to_mover.go();
+        let Ok(mut body) = root_q.get_mut(root) else { continue; };
 
         use rts_unit_movers::Key as MoveKey;
         body.inputs.insert(MoveKey::External(defend_entity), (defend_move, defend_prevelance));
