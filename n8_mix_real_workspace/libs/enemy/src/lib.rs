@@ -59,6 +59,7 @@ impl Plugin for EnemyPlugin {
             wildcard_frenzy_sys,
             wildcard_head_movement_sys,
             wildcard_to_body_movement_sys,
+            head_motif_rotate_sys,
 
             wildcard_persona_deciding_sys,
             persona_duration_sys,

@@ -536,22 +536,22 @@ pub struct ToMotif(Entity);
 waymark!(ToMotif);
 
 pub fn head_motif_rotate_sys(
-    q: Query<(&ToMotif, &WildcardPersona, &NavVectorOutput, &DefendPersonaTarget, &ChasePersonaTarget), With<WildcardHead>>,
+    q: Query<(&ToMotif, &WildcardPersona, &NavVectorOutput, &DefendPersonaTarget, &ChasePersonaTarget, &GlobalTransform), With<WildcardHead>>,
     mut motif_q: Query<&mut Transform, With<Motif>>,
-    target_q: Query<&GlobalTransform, Without<Motif>>,
+    target_q: Query<&GlobalTransform, (Without<Motif>, Without<WildcardHead>)>,
 ) {
-    for (to_motif, persona, wildcard, defend, chase) in q.iter() {
+    for (to_motif, persona, wildcard, defend, chase, head_pos) in q.iter() {
         let Ok(motif) = motif_q.get_mut(to_motif.go()) else { continue; };
 
         match persona.0 {
             WildcardPersonas::Wildcard => {
-
+                wildcard_motif_rotate(motif, wildcard);
             },
             WildcardPersonas::Chase => {
-
+                chase_persona_motif_rotate(motif, head_pos, &chase, &target_q);
             },
             WildcardPersonas::Defend => {
-
+                defend_persona_motif_rotate(motif, head_pos, &defend, &target_q);
             },
         }
     }
@@ -561,21 +561,50 @@ fn wildcard_motif_rotate(
     mut motif: Mut<Transform>,
     wildcard: &NavVectorOutput,
 ) {
-
-}
-
-fn defend_motif_rotate(
-    mut motif: Mut<Transform>,
-    target: &DefendPersonaTarget,
-    target_q: &Query<&GlobalTransform, Without<Motif>>,
-) {
-
+    let rotation = Quat::from_rotation_z(wildcard.0.to_angle());
+    motif.rotation = rotation;
 }
 
 fn chase_persona_motif_rotate(
     mut motif: Mut<Transform>,
+    head_pos: &GlobalTransform,
     target: &ChasePersonaTarget,
-    target_q: &Query<&GlobalTransform, Without<Motif>>,
+    target_q: &Query<&GlobalTransform, (Without<Motif>, Without<WildcardHead>)>,
 ) {
+    // Get
+    let target = target.read();
+    let Ok(target) = target_q.get(target) else { return; };
+    let target = target.translation().truncate();
+    
+    let head_pos = head_pos.translation().truncate();
 
+    let diff = target - head_pos;
+    let direction = diff.normalize();
+
+    let rotation = Quat::from_rotation_z(direction.to_angle());
+    
+    // Set
+    motif.rotation = rotation;
+}
+
+fn defend_persona_motif_rotate(
+    mut motif: Mut<Transform>,
+    head_pos: &GlobalTransform,
+    target: &DefendPersonaTarget,
+    target_q: &Query<&GlobalTransform, (Without<Motif>, Without<WildcardHead>)>,
+) {
+    // Get
+    let target = target.read();
+    let Ok(target) = target_q.get(target) else { return; };
+    let target = target.translation().truncate();
+    
+    let head_pos = head_pos.translation().truncate();
+
+    let diff = target - head_pos;
+    let direction = diff.normalize();
+
+    let rotation = Quat::from_rotation_z(direction.to_angle());
+    
+    // Set
+    motif.rotation = rotation;
 }
