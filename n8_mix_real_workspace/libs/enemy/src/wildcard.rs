@@ -41,13 +41,27 @@ pub struct BundWildcard {
     pub nav_process: DirectNav,
     pub out_nav: NavVectorOutput,
 
+    pub attack: DirectAttackBang,
+    pub laser: LaserVisualsOnAttack,
+    pub damage: DirectAttackPower,
+
+    // Wildcard
     pub wild_frenzy: WildcardFrenzy,
     pub timer: WildcardTimer,
 
+    // Persona General
     pub persona: WildcardPersona,
     pub persona_frenzy: PersonaFrenzy,
     pub activate: PersonaActivateTimer,
     pub duration: PersonaDurationTimer,
+
+    // Persona Defend
+    pub defend_target: DefendPersonaTarget,
+    pub defend_attack_timer: DefendPersonaAttackTimer,
+
+    // Persona Chase
+    pub chase_target: ChasePersonaTarget,
+    pub chase_attack_timer: ChasePersonaAttackTimer,
 }
 
 #[derive(Component, Default)]

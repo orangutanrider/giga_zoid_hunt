@@ -261,6 +261,8 @@ pub fn spawn_enemy(
             to_mover: ToMover::new(root),
             to_hub: ToHub(hub),
             speed: MoveSpeed::new(WILDCARD_MOVE_SPEED),
+            laser: LaserVisualsOnAttack::new(WILDCARD_LASER_COLOUR, WILDCARD_LASER_FADE, WILDCARD_LASER_WIDTH),
+            damage: DirectAttackPower::new(ATTACK_DAMAGE),
             ..Default::default()
         },
         SpriteBundle{
@@ -292,9 +294,22 @@ pub fn spawn_enemy(
             defend,
         },
         SpriteBundle{
-            texture: texture,
+            texture: texture.clone_weak(),
             transform: Transform { translation: DEFEND_OFFSET.extend(0.0), ..Default::default()},
             sprite: Sprite { color: DEFEND_COLOUR, ..Default::default() },
+            ..Default::default()
+        }
+    ));
+
+    commands.spawn((
+        WildcardNeck{
+            hub,
+            wildcard,
+        },
+        SpriteBundle{
+            texture: texture,
+            transform: Transform { translation: WILDCARD_OFFSET.extend(0.0), ..Default::default()},
+            sprite: Sprite { color: WILDCARD_COLOUR, ..Default::default() },
             ..Default::default()
         }
     ));

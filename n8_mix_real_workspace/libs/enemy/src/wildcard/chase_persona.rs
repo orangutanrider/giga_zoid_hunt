@@ -219,8 +219,8 @@ pub fn wc_persona_chase_to_body_movement_sys(
         let chase_prevelance = (chase * CHASE_FRENZY_DOMINANCE) + CHASE_BASE_DOMINANCE; // Move decision prevelance
 
         // Set
-        let hub = to_mover.go();
-        let Ok(mut body) = root_q.get_mut(hub) else { continue; };
+        let root = to_mover.go();
+        let Ok(mut body) = root_q.get_mut(root) else { continue; };
 
         use rts_unit_movers::Key as MoveKey;
         body.inputs.insert(MoveKey::External(chase_entity), (chase_move, chase_prevelance));

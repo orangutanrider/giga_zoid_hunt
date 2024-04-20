@@ -1349,6 +1349,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd16c4719339c4530435d38e511904438d07cce7950afa3718a84ac36c10e89e"
 
 [[package]]
+name = "cheats"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "enemy",
+ "player_unit",
+]
+
+[[package]]
 name = "clang-sys"
 version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2406,6 +2415,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "87d65e08a9ec02e409d27a0139eaa6b9756b4d81fe7cde71f6941a83730ce838"
 dependencies = [
  "bitflags 1.3.2",
+]
+
+[[package]]
+name = "laser_sound"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_caravan",
+ "ref_marks",
+ "ref_paths",
+ "rts_direct_attack",
 ]
 
 [[package]]

@@ -55,6 +55,10 @@ pub const DEFEND_LASER_COLOUR: Color = Color::BLUE;
 pub const DEFEND_LASER_FADE: f32 = 3.0;
 pub const DEFEND_LASER_WIDTH: f32 = 8.0;
 
+pub const WILDCARD_LASER_COLOUR: Color = Color::RED;
+pub const WILDCARD_LASER_WIDTH: f32 = 8.0;
+pub const WILDCARD_LASER_FADE: f32 = 3.0;
+
 // ================================
 // CHASE BEHAVIOUR
 pub const CHASE_COLOUR: Color = Color::hsl(200.0, 1.0, 0.5);
