@@ -43,10 +43,17 @@ pub struct BundAttackTargetVisual {
     pub sprite: SpriteBundle,
 }
 
-const FADE_SPEED: f32 = 2.0;
-const GROUND_ORDER_Z: f32 = -1.0;
+const FADE_SPEED: f32 = 1.66;
+
+const GROUND_ORDER_Z: f32 = -1000.0;
 const GROUND_ORDER_SCALE: Vec3 = Vec3::new(0.66, 0.33, 1.0);
-const TARGET_ORDER_Z: f32 = 1.0;
+
+const ATTACK_MOVE_ORDER_COLOUR: Color = Color::ORANGE_RED;
+const PURE_MOVE_ORDER_COLOUR: Color = Color::hsl(110., 1., 0.35);
+
+const TARGET_ORDER_Z: f32 = 1000.0;
+const TARGET_ORDER_SCALE: Vec3 = Vec3::new(2.2, 2.2, 1.0);
+const TARGET_ORDER_COLOUR: Color = Color::RED;
 
 pub fn pure_move_visual_sys(
     mut q: Query<(Entity, &mut Sprite), With<PureMoveVisual>>,
@@ -140,11 +147,15 @@ fn create_attack_target_visuals(
     commands.spawn(BundAttackTargetVisual{
         flag: AttackTargetVisual(target),
         sprite: SpriteBundle { 
-            sprite: Sprite{
-                color: Color::RED,
+            sprite: Sprite {
+                color: TARGET_ORDER_COLOUR,
                 ..Default::default()
             }, 
-            transform: Transform::from_translation(location.extend(TARGET_ORDER_Z)), 
+            transform: Transform {
+                translation: location.extend(TARGET_ORDER_Z),
+                scale: TARGET_ORDER_SCALE,
+                ..Default::default()
+            },
             texture, 
             ..Default::default()
         },
@@ -162,7 +173,7 @@ fn create_attack_move_visuals(
         flag: AttackMoveVisual,
         sprite: SpriteBundle { 
             sprite: Sprite{
-                color: Color::ORANGE_RED,
+                color: ATTACK_MOVE_ORDER_COLOUR,
                 ..Default::default()
             }, 
             transform: Transform { translation: location.extend(GROUND_ORDER_Z), scale: GROUND_ORDER_SCALE, ..Default::default() }, 
@@ -188,7 +199,7 @@ pub fn create_pure_move_visuals_sys(
         flag: PureMoveVisual,
         sprite: SpriteBundle { 
             sprite: Sprite{
-                color: Color::YELLOW,
+                color: PURE_MOVE_ORDER_COLOUR,
                 ..Default::default()
             }, 
             transform: Transform { translation: location.extend(GROUND_ORDER_Z), scale: GROUND_ORDER_SCALE, ..Default::default() }, 

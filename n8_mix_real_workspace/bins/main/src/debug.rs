@@ -33,6 +33,7 @@ impl Plugin for DebugPlugin {
     }
 }
 
+/* 
 pub fn print_random_sys (
     mut rng: ResMut<GlobalEntropy<WyRand>>,
 ) {
@@ -64,7 +65,6 @@ pub fn avg_n_random_sys (
     println!("{}", average);
 }
 
-/* 
 fn spawn_test_enemy_dbg_sys(
     mut commands: Commands,
     asset_server: Res<AssetServer>, 

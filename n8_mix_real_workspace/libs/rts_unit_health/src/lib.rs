@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use ref_paths::*;
+
 pub struct HealthPlugin;
 
 impl Plugin for HealthPlugin {
@@ -10,6 +12,10 @@ impl Plugin for HealthPlugin {
         ));
     }
 }
+
+#[derive(Component)]
+pub struct ToHealth(Entity);
+waymark!(ToHealth);
 
 #[derive(Component)]
 pub struct THealth(pub f32);

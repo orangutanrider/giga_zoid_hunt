@@ -12,6 +12,7 @@ pub use crate::commandable::{
     Commandable,
     TActiveOrderType,
     ClearOrdersBang,
+    OrderProcessedAgar,
     orders::{
         TUnitOrder,
         t_unit_order_clear_sys,

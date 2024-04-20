@@ -1,5 +1,5 @@
 [package]
-name = "rts_unit_health"
+name = "selection_visuals"
 
 version.workspace = true
 authors.workspace = true
@@ -9,3 +9,5 @@ edition.workspace = true
 bevy.workspace = true
 
 ref_paths.workspace = true
+
+rts_unit_control.workspace = true
