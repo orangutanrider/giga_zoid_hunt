@@ -112,7 +112,7 @@ pub fn wc_persona_defend_head_movement_sys(
         // To mover
         use rts_unit_movers::Key as MoveKey;
         mover.inputs.insert(MoveKey::External(hub), (to_body_move, body_prevelance)); // Body
-        let local = TypeId::of::<DefendHead>();
+        let local = TypeId::of::<WildcardHead>();
         mover.inputs.insert(MoveKey::Local(local), (to_target_move, defend_prevelance)); // Move
     }
 }

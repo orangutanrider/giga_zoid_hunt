@@ -7,6 +7,7 @@ use player_unit::public::*;
 use enemy::spawn_enemy;
 use rts_unit_team::*;
 use rts_unit_death::*;
+use rts_unit_health::*;
 
 // Key combo to activate cheats
 
@@ -27,6 +28,8 @@ impl Plugin for CheatsPlugin {
             spawn_enemies_cheat_sys,
             kill_enemies_sys,
             kill_player_units_sys,
+            damage_players_sys,
+            damage_enemies_sys,
         ));
     }
 }
@@ -61,11 +64,24 @@ pub fn cheat_activate_sys(
 
     // If the index has reached the end of the combo and the submission key has been pressed.
     // Then activate cheats.
-    if input.just_pressed(SUBMISSION_KEY) && index == (CHEAT_COMBO.len() - 1) {
+    if input.just_pressed(SUBMISSION_KEY) && index == CHEAT_COMBO.len() {
         res.active = true;
         return;
     }
 
+    // If index is at end and a key other than submit is pressed, reset.
+    if index == CHEAT_COMBO.len() {
+        for press in keys.read() {
+            if !(press.state == ButtonState::Pressed) {
+                continue;
+            }
+
+            res.combo_index = 0;
+        }
+
+        return;
+    }
+    
     let current = CHEAT_COMBO[index];
 
     // Read key presses
@@ -259,4 +275,52 @@ pub fn kill_enemies_sys(
     for mut death in q.iter_mut() {
         death.bang();
     }
+}
+
+const DAMAGE_ALL_ENEMIES_KEY: KeyCode = KeyCode::Period;
+pub fn damage_enemies_sys(
+    activate: Res<CheatActivate>,
+    mut res: ResMut<CheatNum>,
+    input: Res<ButtonInput<KeyCode>>,
+    mut q: Query<&mut THealth, With<EnemyTeam>>,
+) {
+    if !activate.active { return; }
+
+    if !input.pressed(CHEAT_BUTTON) {
+        return;
+    }
+
+    if !input.just_pressed(DAMAGE_ALL_ENEMIES_KEY) {
+        return;
+    }
+
+    for mut health in q.iter_mut() {
+        health.0 = health.0 - (res.cheat_num as f32);
+    }
+
+    reset_cheat_num(&mut res);
+}
+
+const DAMAGE_ALL_PLAYERS_KEY: KeyCode = KeyCode::Comma;
+pub fn damage_players_sys(
+    activate: Res<CheatActivate>,
+    mut res: ResMut<CheatNum>,
+    input: Res<ButtonInput<KeyCode>>,
+    mut q: Query<&mut THealth, With<PlayerTeam>>,
+) {
+    if !activate.active { return; }
+
+    if !input.pressed(CHEAT_BUTTON) {
+        return;
+    }
+
+    if !input.just_pressed(DAMAGE_ALL_PLAYERS_KEY) {
+        return;
+    }
+
+    for mut health in q.iter_mut() {
+        health.0 = health.0 - (res.cheat_num as f32);
+    }
+
+    reset_cheat_num(&mut res);
 }

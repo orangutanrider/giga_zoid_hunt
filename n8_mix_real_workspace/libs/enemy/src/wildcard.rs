@@ -29,6 +29,7 @@ pub struct WildcardHead;
 
 #[derive(Bundle, Default)]
 pub struct BundWildcard {
+    pub to_motif: ToMotif,
     pub to_mover: ToMover,
     pub to_hub: ToHub,
     pub flag: WildcardHead,
@@ -218,7 +219,7 @@ pub fn wildcard_head_movement_sys(
         // To mover
         use rts_unit_movers::Key as MoveKey;
         mover.inputs.insert(MoveKey::External(hub), (to_body_move, body_prevelance)); // Body
-        let local = TypeId::of::<DefendHead>();
+        let local = TypeId::of::<WildcardHead>();
         mover.inputs.insert(MoveKey::Local(local), (to_target_move, wildcard_prevelance)); // Move
     }
 }
@@ -401,7 +402,7 @@ fn defend_frenzy_as_persona_frenzy(
     );
 
     let defend_frenzy = defend_frenzy.read();
-    frenzy.0 = defend_frenzy;
+    frenzy.0 = defend_frenzy * WILDCARD_CHASE_PERSONA_FRENZY_SCALAR;
 }
 
 fn chase_frenzy_as_persona_frenzy(
@@ -415,7 +416,7 @@ fn chase_frenzy_as_persona_frenzy(
     );
 
     let chase_frenzy = chase_frenzy.read();
-    frenzy.0 = chase_frenzy;
+    frenzy.0 = chase_frenzy * WILDCARD_DEFEND_PERSONA_FRENZY_SCALAR;
 }
 
 pub fn persona_switching_activation_sys(

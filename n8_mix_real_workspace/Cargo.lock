@@ -1357,6 +1357,7 @@ dependencies = [
  "mouse_pos",
  "player_unit",
  "rts_unit_death",
+ "rts_unit_health",
  "rts_unit_team",
 ]
 
