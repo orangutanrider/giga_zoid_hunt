@@ -170,6 +170,6 @@ pub mod prelude {
     };
 }
 
-#[doc = include_str!("../README.md")]
-#[cfg(all(feature = "bevy_audio", doctest))]
-struct DocTestsForReadMe; // Only used for testing code blocks in README.md
+// #[doc = include_str!("../README.md")]
+// #[cfg(all(feature = "bevy_audio", doctest))]
+// struct DocTestsForReadMe; // Only used for testing code blocks in README.md

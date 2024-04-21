@@ -54,6 +54,36 @@ impl DspSource {
             source_type,
         }
     }
+
+    /// Convert the DSP source to its corresponding bytes.
+    ///
+    /// The source type must be static,
+    /// otherwise it will panic,
+    /// as it does not know how long it is.
+    ///
+    /// Internally, this uses [`fundsp::wave::Wave32`].
+    // #[cfg_attr(feature = "oddio", allow(dead_code))]
+    pub(crate) fn to_bytes(&self) -> Vec<u8> {
+        let duration = match self.source_type {
+            SourceType::Static { duration } => duration,
+            SourceType::Dynamic => panic!("Only static DSP sources can be converted into bytes."),
+        };
+
+        let mut node = self.dsp_graph.generate_graph();
+
+        let wave = Wave32::render(
+            f64::from(self.sample_rate),
+            f64::from(duration),
+            node.as_mut(),
+        );
+
+        let mut buffer = Vec::new();
+
+        wave.write_wav16(&mut buffer)
+            .unwrap_or_else(|err| panic!("Cannot write wave to buffer. Error: {err:?}"));
+
+        buffer
+    }
 }
 
 impl IntoIterator for DspSource {

@@ -525,9 +525,12 @@ dependencies = [
 name = "bevy_fundsp_13"
 version = "0.0.1"
 dependencies = [
+ "bevy",
  "cpal",
  "fundsp",
  "once_cell",
+ "rodio",
+ "uuid",
 ]
 
 [[package]]
@@ -2112,6 +2115,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 
 [[package]]
+name = "hound"
+version = "3.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "62adaabb884c94955b19907d60019f4e145d091c75345379e70d1ee696f7854f"
+
+[[package]]
 name = "icrate"
 version = "0.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2368,6 +2377,7 @@ name = "main"
 version = "0.0.1"
 dependencies = [
  "bevy",
+ "bevy_fundsp_13",
 ]
 
 [[package]]
@@ -3052,6 +3062,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3b1bb7b48ee48471f55da122c0044fcc7600cfcc85db88240b89cb832935e611"
 dependencies = [
  "cpal",
+ "hound",
  "lewton",
 ]
 
@@ -3169,6 +3180,12 @@ dependencies = [
  "ryu",
  "serde",
 ]
+
+[[package]]
+name = "sha1_smol"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ae1a47186c03a32177042e55dbc5fd5aee900b8e0069a8d70fba96a9375cd012"
 
 [[package]]
 name = "sharded-slab"
@@ -3725,6 +3742,7 @@ checksum = "a183cf7feeba97b4dd1c0d46788634f6221d87fa961b305bed08c851829efcc0"
 dependencies = [
  "getrandom",
  "serde",
+ "sha1_smol",
 ]
 
 [[package]]
