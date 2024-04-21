@@ -40,6 +40,9 @@ pub struct DeathToEntityDespawn;
 pub struct DespawnTargetIsReference;
 
 #[derive(Component)]
+pub struct AdditionalDespawnTargets(pub Vec<Entity>);
+
+#[derive(Component)]
 pub struct ToDespawnTarget(Entity);
 waymark!(ToDespawnTarget);
 
@@ -48,19 +51,26 @@ waymark!(ToDespawnTarget);
 // That way, stuff can respond to the imminent despawn.
 // They can still do that here though anyways, just pay attention to the death bang.
 pub fn referenced_entity_destruction_on_death_sys(
-    q: Query<(&ToDespawnTarget, &DeathBang), (Changed<DeathBang>, With<DeathToEntityDespawn>, With<DespawnTargetIsReference>)>,
+    q: Query<(&ToDespawnTarget, &DeathBang, Option<&AdditionalDespawnTargets>), (Changed<DeathBang>, With<DeathToEntityDespawn>, With<DespawnTargetIsReference>)>,
     mut commands: Commands
 ) {
-    for (target, bang) in q.iter() {
+    for (target, bang, additionals) in q.iter() {
         if !bang.0 {
             continue;
         }
 
         let target = target.go();
-        let Some(commands) = commands.get_entity(target) else {
+        let Some(trgt_commands) = commands.get_entity(target) else {
             continue; // Invalid destruction target
         };
     
-        commands.despawn_recursive();
+        trgt_commands.despawn_recursive();
+
+        let Some(additionals) = additionals else { continue; };
+        let additionals = &additionals.0;
+
+        for additional in additionals.iter() {
+            commands.entity(*additional).despawn();
+        }
     }
 }

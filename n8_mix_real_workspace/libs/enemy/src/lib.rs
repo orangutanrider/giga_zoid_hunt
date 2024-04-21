@@ -211,7 +211,7 @@ pub fn spawn_enemy(
         },
         SpriteBundle {
             texture: texture.clone_weak(),
-            transform: Transform { translation: HUB_OFFSET.extend(0.0), ..Default::default()},
+            transform: Transform { translation: HUB_OFFSET, ..Default::default()},
             sprite: Sprite { custom_size: Some(HUB_SIZE), color: HUB_COLOUR, ..Default::default() },
             ..Default::default()
         },
@@ -228,7 +228,7 @@ pub fn spawn_enemy(
         },
         SpriteBundle{
             texture: texture.clone_weak(),
-            transform: Transform { translation: CHASE_OFFSET.extend(0.0), ..Default::default()},
+            transform: Transform { translation: CHASE_OFFSET, ..Default::default()},
             sprite: Sprite { custom_size: Some(CHASE_SIZE), color: CHASE_COLOUR, ..Default::default() },
             ..Default::default()
         }
@@ -245,7 +245,7 @@ pub fn spawn_enemy(
         },
         SpriteBundle{
             texture: texture.clone_weak(),
-            transform: Transform { translation: DEFEND_OFFSET.extend(0.0), ..Default::default()},
+            transform: Transform { translation: DEFEND_OFFSET, ..Default::default()},
             sprite: Sprite { custom_size: Some(DEFEND_SIZE), color: DEFEND_COLOUR, ..Default::default() },
             ..Default::default()
         }
@@ -256,8 +256,24 @@ pub fn spawn_enemy(
         ToChase::new(chase),
     ));
 
+    let motif = commands.spawn((
+        Motif,
+        SpriteBundle{
+            texture: texture.clone_weak(),
+            transform: Transform { translation: MOTIF_OFFSET, ..Default::default()},
+            sprite: Sprite { 
+                custom_size: Some(MOTIF_SIZE), 
+                color: MOTIF_COLOUR, 
+                anchor: bevy::sprite::Anchor::Custom(MOTIF_PIVOT),
+                ..Default::default() 
+            },
+            ..Default::default()
+        }
+    )).id();
+
     let wildcard = commands.spawn((
         BundWildcard{
+            to_motif: ToMotif::new(motif),
             to_mover: ToMover::new(root),
             to_hub: ToHub(hub),
             speed: MoveSpeed::new(WILDCARD_MOVE_SPEED),
@@ -267,7 +283,7 @@ pub fn spawn_enemy(
         },
         SpriteBundle{
             texture: texture,
-            transform: Transform { translation: WILDCARD_OFFSET.extend(0.0), ..Default::default()},
+            transform: Transform { translation: WILDCARD_OFFSET, ..Default::default()},
             sprite: Sprite { custom_size: Some(WILDCARD_SIZE), color: WILDCARD_COLOUR, ..Default::default() },
             ..Default::default()
         }
@@ -275,46 +291,50 @@ pub fn spawn_enemy(
 
     let texture: Handle<Image> = asset_server.load("sprite\\primitive\\1px_square.png");
 
-    commands.spawn((
+    let chase_neck = commands.spawn((
         ChaseNeck{
             hub,
             chase,
         },
         SpriteBundle{
             texture: texture.clone_weak(),
-            transform: Transform { translation: CHASE_OFFSET.extend(0.0), ..Default::default()},
+            transform: Transform { translation: CHASE_NECK_OFFSET, ..Default::default()},
             sprite: Sprite { color: CHASE_COLOUR, ..Default::default() },
             ..Default::default()
         }
-    ));
+    )).id();
 
-    commands.spawn((
+    let defend_neck = commands.spawn((
         DefendNeck{
             hub,
             defend,
         },
         SpriteBundle{
             texture: texture.clone_weak(),
-            transform: Transform { translation: DEFEND_OFFSET.extend(0.0), ..Default::default()},
+            transform: Transform { translation: DEFEND_NECK_OFFSET, ..Default::default()},
             sprite: Sprite { color: DEFEND_COLOUR, ..Default::default() },
             ..Default::default()
         }
-    ));
+    )).id();
 
-    commands.spawn((
+    let wildcard_neck = commands.spawn((
         WildcardNeck{
             hub,
             wildcard,
         },
         SpriteBundle{
             texture: texture,
-            transform: Transform { translation: WILDCARD_OFFSET.extend(0.0), ..Default::default()},
+            transform: Transform { translation: WILDCARD_NECK_OFFSET, ..Default::default()},
             sprite: Sprite { color: WILDCARD_COLOUR, ..Default::default() },
             ..Default::default()
         }
-    ));
+    )).id();
+
+    commands.entity(hub).insert(AdditionalDespawnTargets(vec![chase_neck, defend_neck, wildcard_neck]));
 
     commands.entity(root).add_child(tree_root);
     commands.entity(tree_root).add_child(hub);
     commands.entity(hub).push_children(&[chase, defend, wildcard]);
+    
+    commands.entity(wildcard).add_child(motif);
 }
