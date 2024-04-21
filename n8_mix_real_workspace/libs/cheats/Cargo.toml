@@ -7,5 +7,9 @@ edition.workspace = true
 
 [dependencies]
 bevy.workspace = true
+
 enemy.workspace = true
 player_unit.workspace = true
+mouse_pos.workspace = true
+rts_unit_death.workspace = true
+rts_unit_team.workspace = true

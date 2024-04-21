@@ -70,6 +70,7 @@ impl Plugin for MainPlugin {
             death_flare::DeathFlarePlugin,
             selection_visuals::SelectionMotifPlugin,
             sprite_sorting::SpriteSorterPlugin,
+            cheats::CheatsPlugin,
         ));
     }
 }

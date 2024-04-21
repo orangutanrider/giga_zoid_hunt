@@ -31,6 +31,7 @@ rts_unit_health.workspace = true
 level.workspace = true
 selection_visuals.workspace = true
 sprite_sorting.workspace = true
+cheats.workspace = true
 
 [features]
 dev = ["bevy/dynamic_linking",]

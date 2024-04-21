@@ -2,11 +2,34 @@ use bevy::prelude::*;
 use bevy::input::keyboard::*;
 use bevy::input::*;
 
+use mouse_pos::*;
+use player_unit::public::*;
+use enemy::spawn_enemy;
+use rts_unit_team::*;
+use rts_unit_death::*;
+
 // Key combo to activate cheats
 
 // Cheat button that has to be held to use cheats (like ctrl or something)
 
 // Number input for batch spawning
+
+pub struct CheatsPlugin;
+
+impl Plugin for CheatsPlugin {
+    fn build(&self, app: &mut App) {
+        app.init_resource::<CheatActivate>();
+        app.init_resource::<CheatNum>();
+        app.add_systems(Update, (
+            cheat_activate_sys,
+            cheat_num_sys,
+            spawn_units_cheat_sys,
+            spawn_enemies_cheat_sys,
+            kill_enemies_sys,
+            kill_player_units_sys,
+        ));
+    }
+}
 
 #[derive(Resource)]
 pub struct CheatActivate{
@@ -70,16 +93,27 @@ pub const CHEAT_BUTTON: KeyCode = KeyCode::Semicolon;
 #[derive(Resource)]
 pub struct CheatNum{
     cheat_num: u32,
-    input_power: u32,
+    first: bool,
+}
+impl Default for CheatNum {
+    fn default() -> Self {
+        Self { cheat_num: 1, first: true }
+    }
 }
 
+// Each input pushes the magnitude of the total.
+// So a set of inputs like this: [3, 0, 5 , 1]
+// Would create this number: 3051
 pub fn cheat_num_sys(
+    activate: Res<CheatActivate>,
     mut res: ResMut<CheatNum>,
     input: Res<ButtonInput<KeyCode>>,
     mut keys: EventReader<KeyboardInput>,
 ) {
+    if !activate.active { return; }
+
     if !input.pressed(CHEAT_BUTTON) {
-        res.cheat_num = 1;
+        reset_cheat_num(&mut res);
         return;
     }
 
@@ -88,7 +122,17 @@ pub fn cheat_num_sys(
             continue;
         }
 
-        let num = key_code_to_number(press.key_code);
+        let Some(num) = key_code_to_number(press.key_code) else {
+            continue;
+        };
+        
+        if res.first {
+            res.cheat_num = num;
+            res.first = false;
+            continue;
+        }
+
+        res.cheat_num = (res.cheat_num * 10) + num;
     }
 }
 
@@ -105,5 +149,114 @@ fn key_code_to_number(key: KeyCode) -> Option<u32> {
         KeyCode::Digit8 => Some(8),
         KeyCode::Digit9 => Some(9),
         _ => None,
+    }
+}
+
+fn reset_cheat_num(
+    res: &mut ResMut<CheatNum>,
+) {
+    res.cheat_num = 1;
+    res.first = true;
+}
+
+const SPAWN_UNITS_KEY: KeyCode = KeyCode::KeyP;
+pub fn spawn_units_cheat_sys(
+    activate: Res<CheatActivate>,
+    mut res: ResMut<CheatNum>,
+    input: Res<ButtonInput<KeyCode>>,
+    mouse_pos: Res<CursorWorldPos>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    if !activate.active { return; }
+
+    if !input.pressed(CHEAT_BUTTON) {
+        return;
+    }
+
+    if !input.just_pressed(SPAWN_UNITS_KEY) {
+        return;
+    }
+
+    let location = mouse_pos.pos();
+
+    let mut i = 0;
+    while i < res.cheat_num {
+        spawn_player_unit(location, &mut commands, &asset_server);
+        i = i + 1;
+    }
+
+    reset_cheat_num(&mut res);
+}
+
+const SPAWN_ENEMIES_KEY: KeyCode = KeyCode::KeyO;
+pub fn spawn_enemies_cheat_sys(
+    activate: Res<CheatActivate>,
+    mut res: ResMut<CheatNum>,
+    input: Res<ButtonInput<KeyCode>>,
+    mouse_pos: Res<CursorWorldPos>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    if !activate.active { return; }
+
+    if !input.pressed(CHEAT_BUTTON) {
+        return;
+    }
+
+    if !input.just_pressed(SPAWN_ENEMIES_KEY) {
+        return;
+    }
+
+    let location = mouse_pos.pos();
+
+    let mut i = 0;
+    while i < res.cheat_num {
+        spawn_enemy(location, &mut commands, &asset_server);
+        i = i + 1;
+    }
+
+    reset_cheat_num(&mut res);
+}
+
+const KILL_ALL_PLAYER_UNITS_KEY: KeyCode = KeyCode::KeyL;
+pub fn kill_player_units_sys(
+    activate: Res<CheatActivate>,
+    input: Res<ButtonInput<KeyCode>>,
+    mut q: Query<&mut DeathBang, With<PlayerTeam>>,
+) {
+    if !activate.active { return; }
+
+    if !input.pressed(CHEAT_BUTTON) {
+        return;
+    }
+
+    if !input.just_pressed(KILL_ALL_PLAYER_UNITS_KEY) {
+        return;
+    }
+
+    for mut death in q.iter_mut() {
+        death.bang();
+    }
+}
+
+const KILL_ALL_ENEMIES_KEY: KeyCode = KeyCode::KeyK;
+pub fn kill_enemies_sys(
+    activate: Res<CheatActivate>,
+    input: Res<ButtonInput<KeyCode>>,
+    mut q: Query<&mut DeathBang, With<EnemyTeam>>,
+) {
+    if !activate.active { return; }
+
+    if !input.pressed(CHEAT_BUTTON) {
+        return;
+    }
+
+    if !input.just_pressed(KILL_ALL_ENEMIES_KEY) {
+        return;
+    }
+
+    for mut death in q.iter_mut() {
+        death.bang();
     }
 }
