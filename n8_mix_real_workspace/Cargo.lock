@@ -1354,7 +1354,10 @@ version = "0.0.1"
 dependencies = [
  "bevy",
  "enemy",
+ "mouse_pos",
  "player_unit",
+ "rts_unit_death",
+ "rts_unit_team",
 ]
 
 [[package]]
@@ -2554,6 +2557,7 @@ dependencies = [
  "bevy",
  "bevy_rand",
  "bevy_rapier2d",
+ "cheats",
  "death_flare",
  "detection_colour",
  "enemy",
