@@ -6,13 +6,12 @@ use {
     bevy::{prelude::App, utils::default},
 };
 
-#[cfg(feature = "bevy_audio")]
 pub mod bevy_audio;
 
 /// The default backend.
 #[allow(clippy::module_name_repetitions)]
-#[cfg(feature = "bevy_audio")]
 pub type DefaultBackend = bevy_audio::BevyAudioBackend;
+
 
 /// The backend trait used to convert [`DspSource`] into its concrete type.
 pub trait Backend: Send + Sync + 'static {

@@ -11,10 +11,12 @@ edition = "2021"
 
 [workspace.dependencies]
 # external
-bevy = { version = "0.13.0" }  
+bevy = { version = "0.13.0"}  
 fundsp = { version = "0.17.0"}
 cpal = { version = "0.15" }
 once_cell = { version = "1.13" }
+uuid = { version = "1.8.0", features = ["v5"] }
+rodio = { version = "0.17.3", default-features = false, features = ["wav"] }
 
 # bins
 main = { path = "bins/main"}
