@@ -1,0 +1,3 @@
+"rust-analyzer.cargo.extraEnv": {
+    "RUSTFLAGS": "-Clinker=rust-lld.exe"
+}
