@@ -44,8 +44,8 @@ pub fn wc_persona_defend_target_selection_sys(
             WildcardPersonas::Defend => (),
         }
 
-        target.update_cooldown = target.update_cooldown + time.delta_seconds();
-        if target.update_cooldown < DEFEND_TARGET_UPDATE_RATE { continue; }
+        //target.update_cooldown = target.update_cooldown + time.delta_seconds();
+        //if target.update_cooldown < DEFEND_TARGET_UPDATE_RATE { continue; }
 
         // Get
         let Ok(body) = hub_q.get(to_hub.go()) else { continue; }; 
@@ -54,7 +54,7 @@ pub fn wc_persona_defend_target_selection_sys(
         let mut prev_closest = Entity::PLACEHOLDER;
         let mut closest = Entity::PLACEHOLDER;
         let mut closest_val = f32::MAX;
-        for (enemy, enemy_position) in enemy_q.iter() {
+        for (enemy, enemy_position) in enemy_q.iter() { // This loop doesn't have to be nested in this other loop.
             let enemy_position = enemy_position.translation().truncate();
             
             let distance = body.distance(enemy_position);
