@@ -94,6 +94,7 @@ fn spawn_main_camera_startup(
                 ..Default::default()
             },
             projection: OrthographicProjection { 
+                scaling_mode: bevy::render::camera::ScalingMode::AutoMin { min_width: (1800.0), min_height: (900.0) },
                 scale: 1.45, 
                 far: 10000.,
                 near: -10000.,
@@ -111,7 +112,7 @@ fn spawn_selection_box_startup(
     spawn_selection_box(&mut commands, &asset_server);
 }
 
-const N: u32 = 15;
+const N: u32 = 16;
 fn spawn_player_units_startup(
     commands: Commands,
     asset_server: Res<AssetServer>, 
