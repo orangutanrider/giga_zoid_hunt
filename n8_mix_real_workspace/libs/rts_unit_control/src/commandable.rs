@@ -63,13 +63,15 @@ pub fn order_processed_agar_reset_sys(
     }
 }
 
+use std::collections::VecDeque;
+use std::collections::vec_deque::Iter as DequeIter;
 #[derive(Component)]
 /// Stores the stack of local order terminals (as types), that have orders.
 /// The currently active terminal, and following terminals, can be inferred through this.
-pub struct TActiveOrderType(Vec<TypeId>);
+pub struct TActiveOrderType(VecDeque<TypeId>);
 impl Default for TActiveOrderType {
     fn default() -> Self {
-        return Self(Vec::new());
+        return Self(VecDeque::new());
     }
 }
 impl TActiveOrderType {
@@ -78,17 +80,17 @@ impl TActiveOrderType {
     // Despite that, I didn't decide to use the trait here.
 
     pub fn new() -> Self {
-        return Self(Vec::new());
+        return Self(VecDeque::new());
     }
 
     pub fn clear(&mut self) {
         self.0.clear();
     }
     pub fn clear_current(&mut self) {
-        self.0.pop();
+        self.0.pop_back();
     }
     pub fn command(&mut self, terminal: TypeId) {
-        self.0.push(terminal);
+        self.0.push_front(terminal);
     }
 
     pub fn current(&self) -> Option<TypeId> {
@@ -98,7 +100,7 @@ impl TActiveOrderType {
     pub fn count(&self) -> usize {
         return self.0.len()
     }
-    pub fn iter(&self) -> core::slice::Iter<'_, TypeId> {
+    pub fn iter(&self) -> DequeIter<'_, TypeId> {
         return self.0.iter()
     }
 }

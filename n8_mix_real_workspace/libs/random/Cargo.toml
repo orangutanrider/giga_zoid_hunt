@@ -1,0 +1,11 @@
+[package]
+name = "random"
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+bevy_rand.workspace = true
+rand_core.workspace = true

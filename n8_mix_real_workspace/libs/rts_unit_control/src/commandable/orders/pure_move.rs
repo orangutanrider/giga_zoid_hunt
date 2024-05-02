@@ -1,6 +1,6 @@
 pub mod processing;
 
-use crate::unit_order_terminal;
+use crate::{commander::WaypointOrder, unit_order_terminal};
 use super::*;
 
 #[derive(Clone, Copy, Debug)]
@@ -14,6 +14,15 @@ impl Default for PureMoveOrder {
         }
     }
 }
+impl WaypointOrder for PureMoveOrder {
+    fn waypoint(&self) -> Vec2 {
+        return self.waypoint
+    }
+
+    fn from_waypoint(waypoint: Vec2) -> Self {
+        return Self::new(waypoint)
+    }
+}
 impl PureMoveOrder {
     pub fn new(waypoint: Vec2) -> Self {
         return Self { waypoint }
@@ -22,5 +31,5 @@ impl PureMoveOrder {
 
 #[derive(Component)]
 /// Pure movement order terminal
-pub struct TPureMoveOrders(Vec<PureMoveOrder>);
+pub struct TPureMoveOrders(VecDeque<PureMoveOrder>);
 unit_order_terminal!(TPureMoveOrders, PureMoveOrder);

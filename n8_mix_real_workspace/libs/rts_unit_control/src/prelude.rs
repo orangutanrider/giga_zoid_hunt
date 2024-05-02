@@ -12,6 +12,7 @@ pub use crate::commandable::{
     Commandable,
     TActiveOrderType,
     ClearOrdersBang,
+    OrderProcessedAgar,
     orders::{
         TUnitOrder,
         t_unit_order_clear_sys,
@@ -38,7 +39,7 @@ pub use crate::commandable::{
     }
 };
 
-pub use crate::commander::SelectionCommands;
+pub use crate::commander::SpiralCommander;
 
 pub use crate::selectable::{
     Selected,

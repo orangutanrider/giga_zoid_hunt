@@ -1,0 +1,13 @@
+[package]
+name = "bevy_fundsp_13"
+authors = ["Gio Genre De Asis"]
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+bevy.workspace = true
+fundsp.workspace = true
+cpal.workspace = true
+once_cell.workspace = true
+uuid.workspace = true
+rodio.workspace = true

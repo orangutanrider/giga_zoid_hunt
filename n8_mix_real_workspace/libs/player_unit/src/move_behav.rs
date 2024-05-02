@@ -1,16 +1,12 @@
+use bang_colour::BangColour;
 use bevy::prelude::*;
 use rts_unit_movers::ToMover;
+use rts_unit_team::PlayerTeam;
 
 use crate::{ATTACK_TARGET, PURE_MOVE};
 
 use super::{
-    TUnitIMCAMapper,
-    state_to_root::{
-        ATTACK_MOVE,
-        IN_AGGRO,
-        MOVE
-    },
-    common::*,
+    *,
 };
 
 pub(crate) use behaviour_tree::{prelude::*, state::State as TreeState};
@@ -50,6 +46,10 @@ pub(crate) struct BMoveB {
     pub to_control: ToControl,
     pub to_nav: ToNav,
     pub to_mover: ToMover,
+
+    pub bang_colour: BangColour,
+
+    pub team_affiliation: PlayerTeam,
 }
 
 // Behaviour

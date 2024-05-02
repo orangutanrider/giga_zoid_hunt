@@ -1,31 +1,68 @@
-use behaviour_tree::bang::Bang;
-use behaviour_tree::state::terminal::TState;
 use bevy::prelude::*;
-use player_unit::test_enemy::spawn_test_enemy;
-use player_unit::Root;
+use bevy_rand::prelude::*;
+use rand_core::*;
+
 use rts_unit_control::prelude::*;
+use behaviour_tree::prelude::*;
 
 pub struct DebugPlugin;
 
 impl Plugin for DebugPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_test_enemy_dbg_sys);
+        //app.add_systems(Startup, (
+            //spawn_test_enemy_dbg_sys,
+            //avg_n_random_sys,
+        //));
 
-        app.add_systems(Update, (
+        //app.add_systems(Update, (
+            //print_random_sys,
             //prnt_units_sys,
             //prnt_if_targeted_by_exists,
-            prnt_targeted_by,
-            prnt_attack_target_data_sys,
-            prnt_state_sys,
-            prnt_order_type_sys,
-            prnt_hub_sys,
-            prnt_movers_sys,
-            prnt_nav_sys,
-            prnt_order_data_sys::<TPureMoveOrders, PureMoveOrder, PureMove>,
-            prnt_order_data_sys::<TAttackMoveOrders, AttackMoveOrder, AMove>,
-            prnt_order_data_sys::<TAttackTargetOrders, AttackTargetOrder, Targeted>,
-        ));
+            //prnt_targeted_by,
+            //prnt_attack_target_data_sys,
+            //prnt_state_sys,
+            //prnt_order_type_sys,
+            //prnt_hub_sys,
+            //prnt_movers_sys,
+            //prnt_nav_sys,
+            //prnt_enemy_chase_head_position,
+            //prnt_order_data_sys::<TPureMoveOrders, PureMoveOrder, PureMove>,
+            //prnt_order_data_sys::<TAttackMoveOrders, AttackMoveOrder, AMove>,
+            //prnt_order_data_sys::<TAttackTargetOrders, AttackTargetOrder, Targeted>,
+        //));
     }
+}
+
+/* 
+pub fn print_random_sys (
+    mut rng: ResMut<GlobalEntropy<WyRand>>,
+) {
+    let raw_random = rng.next_u32();
+    let random = raw_random as f32;
+    let random = random / (u32::MAX as f32);
+
+    println!("{}, {}", random, raw_random);
+}
+
+const N: usize = 100;
+pub fn avg_n_random_sys (
+    mut rng: ResMut<GlobalEntropy<WyRand>>,
+) {
+    let mut total_random = 0.0;
+
+    let mut index: usize = 0;
+    while index < N {
+        let raw_random = rng.next_u32();
+        let random = raw_random as f32;
+        let random = random / (u32::MAX as f32);
+
+        total_random = total_random + random;
+
+        index = index + 1;
+    }
+
+    let average = total_random / (N as f32);
+    println!("{}", average);
 }
 
 fn spawn_test_enemy_dbg_sys(
@@ -127,7 +164,7 @@ fn prnt_state_mapping(
     print!(" | ATTACK_MOVE: {}", state.contains(ATTACK_MOVE));
     print!(" | ATTACK_TARGET: {}", state.contains(ATTACK_TARGET));
     print!(" | IN_AGGRO: {}", state.contains(IN_AGGRO));
-    print!(" | IN_ATTACK: {}", state.contains(IN_ATTACK));
+    print!(" | IN_ATTACK: {}", state.contains(IN_ATTACK_RANGE));
     println!("");
 }
 
@@ -250,6 +287,22 @@ fn prnt_detection_data(
 
     for targeted_by in q.iter() {
         println!("TargetedBy: {}", targeted_by.read().len());
+    }
+}
+*/
+
+fn prnt_enemy_chase_head_position(
+    input: Res<ButtonInput<KeyCode>>,
+    q: Query<&GlobalTransform, With<Chase>>,
+) {
+    if !input.just_pressed(KeyCode::KeyT) {
+        return;
+    }
+    println!("");
+
+    for transform in q.iter() {
+        let transform = transform.translation();
+        println!("Chase: {}", transform);
     }
 }
 */

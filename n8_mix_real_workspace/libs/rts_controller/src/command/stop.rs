@@ -9,7 +9,7 @@ pub struct StopInput<'w> {
 impl<'w> StopInput<'w> {
     const KEYS: [KeyCode; 1] = [KeyCode::KeyS];
 
-    fn just_pressed(&self) -> bool {
+    pub fn just_pressed(&self) -> bool {
         return self.keys.any_just_pressed(Self::KEYS);
     }
 }

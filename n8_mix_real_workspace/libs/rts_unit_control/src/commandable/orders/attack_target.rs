@@ -36,16 +36,16 @@ impl AttackTargetOrder {
 
 #[derive(Component)]
 /// Attack target order terminal
-pub struct TAttackTargetOrders(Vec<AttackTargetOrder>);
+pub struct TAttackTargetOrders(VecDeque<AttackTargetOrder>);
 impl TAttackTargetOrders {
     pub fn move_current(&mut self) -> Option<AttackTargetOrder> {
-        return self.0.pop()        
+        return self.0.pop_back()        
     }
 }
 
 #[derive(Component)]
 /// When attack orders become current, they're moved into here and validated (to check if their targets are still valid, i.e. not dead).
-/// (You have to do this, cause entities are just IDs, they aren't concurrently checked values like object references are in C#).
+/// (You have to do this, cause entities are just IDs, they aren't concurrently known values like object references are in C#).
 pub struct TCurrentTarget(Option<Entity>);
 impl Default for TCurrentTarget {
     fn default() -> Self {

@@ -15,7 +15,7 @@ pub struct AttackInput<'w> {
 impl<'w> AttackInput<'w> {
     const KEYS: [KeyCode; 1] = [KeyCode::KeyA];
 
-    fn just_pressed(&self) -> bool {
+    pub fn just_pressed(&self) -> bool {
         return self.keys.any_just_pressed(Self::KEYS);
     }
 
@@ -32,7 +32,7 @@ pub fn command_attack_sys(
     input: AttackInput, 
     rapier: PhysicsQueries,
     mut selection_commands: ParamSet<(
-        SelectionCommands<TAttackMoveOrders, AttackMoveOrder>, // attack move
+        SpiralCommander<TAttackMoveOrders, AttackMoveOrder>, // attack move
         SelectionAttackTargetCommands // attack target
     )>,
 ) {
@@ -58,7 +58,7 @@ fn command_attack_target(
 fn command_attack_move(
     location: Vec2,
     add_mode: bool,
-    mut selection_commands: SelectionCommands<TAttackMoveOrders, AttackMoveOrder>,
+    mut selection_commands: SpiralCommander<TAttackMoveOrders, AttackMoveOrder>,
 ) {
     let order = AttackMoveOrder::new(location);
     selection_commands.command(add_mode, &order);

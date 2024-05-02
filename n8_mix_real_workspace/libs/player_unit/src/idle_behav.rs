@@ -1,3 +1,5 @@
+use bang_colour::BangColour;
+
 use super::*;
 
 // Definition
@@ -18,6 +20,10 @@ pub(crate) struct BIdle {
     pub to_mover: ToMover,
 
     pub no_move: RefdMoverIsZeroWhenBang,
+    
+    pub bang_colour: BangColour,
+
+    pub team_affiliation: PlayerTeam,
 }
 
 // Behaviour
@@ -51,7 +57,7 @@ fn idle_logic(
     else if state.contains(ATTACK_TARGET) {
         unit_mca.0 = 2; // Move to chase state
     }
-    else if state.contains(IN_ATTACK) { // Hold position is default
+    else if state.contains(IN_ATTACK_RANGE) { // Hold position is default
         unit_mca.0 = 3; // Move to attacking state
         return;
     }

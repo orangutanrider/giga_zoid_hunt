@@ -8,6 +8,8 @@ edition.workspace = true
 [dependencies]
 bevy.workspace = true
 bevy_rapier2d.workspace = true
+bevy_rand.workspace = true
+rand_core.workspace = true
 
 behaviour_tree.workspace = true
 health_to_death.workspace = true
@@ -20,6 +22,16 @@ rts_unit_death.workspace = true
 rts_unit_detectors.workspace = true
 rts_unit_movers.workspace = true
 rts_unit_nav.workspace = true
+death_flare.workspace = true
+bang_colour.workspace = true
+attack_laser.workspace = true
+detection_colour.workspace = true
+enemy.workspace = true
+rts_unit_health.workspace = true
+level.workspace = true
+selection_visuals.workspace = true
+sprite_sorting.workspace = true
+cheats.workspace = true
 
 [features]
 dev = ["bevy/dynamic_linking",]

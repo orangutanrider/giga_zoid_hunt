@@ -26,6 +26,12 @@ rts_unit_team.workspace = true
 rts_unit_soul.workspace = true
 rts_unit_death.workspace = true
 rts_unit_movers.workspace = true
+death_flare.workspace = true
+bang_colour.workspace = true
+attack_laser.workspace = true
+detection_colour.workspace = true
+selection_visuals.workspace = true
+sprite_sorting.workspace = true
 
 nav_to_mover.workspace = true
 control_to_detector.workspace = true

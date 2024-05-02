@@ -281,10 +281,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
+name = "attack_laser"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_caravan",
+ "ref_marks",
+ "ref_paths",
+ "rts_direct_attack",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
+
+[[package]]
+name = "bang_colour"
+version = "0.0.1"
+dependencies = [
+ "behaviour_tree",
+ "bevy",
+ "ref_caravan",
+ "ref_marks",
+ "ref_paths",
+]
 
 [[package]]
 name = "base64"
@@ -760,10 +782,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_prng"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "363f01df619fde5ee1d20573c9df9522d9194efdd4d5f792919f9738cb686765"
+dependencies = [
+ "bevy",
+ "rand_chacha",
+ "rand_core",
+ "rand_pcg",
+ "rand_xoshiro",
+ "serde",
+ "serde_derive",
+ "wyrand",
+]
+
+[[package]]
 name = "bevy_ptr"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "86afa4a88ee06b10fe1e6f28a796ba2eedd16804717cbbb911df0cbb0cd6677b"
+
+[[package]]
+name = "bevy_rand"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5e9cb3711c9ca8a2572c4544befda9a14893884842668bcecc82b84a7b51b730"
+dependencies = [
+ "bevy",
+ "bevy_prng",
+ "getrandom",
+ "rand_chacha",
+ "rand_core",
+ "serde",
+ "serde_derive",
+]
 
 [[package]]
 name = "bevy_rapier2d"
@@ -1296,6 +1349,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd16c4719339c4530435d38e511904438d07cce7950afa3718a84ac36c10e89e"
 
 [[package]]
+name = "cheats"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "enemy",
+ "mouse_pos",
+ "player_unit",
+ "rts_unit_death",
+ "rts_unit_health",
+ "rts_unit_team",
+]
+
+[[package]]
 name = "clang-sys"
 version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1619,6 +1685,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7e962a19be5cfc3f3bf6dd8f61eb50107f356ad6270fbb3ed41476571db78be5"
 
 [[package]]
+name = "death_flare"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_caravan",
+ "ref_paths",
+ "rts_unit_death",
+]
+
+[[package]]
 name = "derive_more"
 version = "0.99.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1627,6 +1703,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "detection_colour"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_caravan",
+ "ref_marks",
+ "ref_paths",
+ "rts_unit_detectors",
 ]
 
 [[package]]
@@ -1686,6 +1773,39 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.51",
+]
+
+[[package]]
+name = "enemy"
+version = "0.0.1"
+dependencies = [
+ "attack_laser",
+ "bang_colour",
+ "behaviour_tree",
+ "bevy",
+ "bevy_rand",
+ "bevy_rapier2d",
+ "control_to_detector",
+ "control_to_nav",
+ "death_flare",
+ "detection_colour",
+ "health_to_death",
+ "nav_to_mover",
+ "rand_core",
+ "random",
+ "rapier_config",
+ "ref_caravan",
+ "ref_marks",
+ "ref_paths",
+ "rts_direct_attack",
+ "rts_unit_control",
+ "rts_unit_death",
+ "rts_unit_detectors",
+ "rts_unit_health",
+ "rts_unit_movers",
+ "rts_unit_nav",
+ "rts_unit_soul",
+ "rts_unit_team",
 ]
 
 [[package]]
@@ -2302,6 +2422,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "laser_sound"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_caravan",
+ "ref_marks",
+ "ref_paths",
+ "rts_direct_attack",
+]
+
+[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2312,6 +2443,15 @@ name = "lazycell"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
+
+[[package]]
+name = "level"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "bevy_rapier2d",
+ "rapier_config",
+]
 
 [[package]]
 name = "lewton"
@@ -2412,19 +2552,31 @@ dependencies = [
 name = "main"
 version = "0.0.1"
 dependencies = [
+ "attack_laser",
+ "bang_colour",
  "behaviour_tree",
  "bevy",
+ "bevy_rand",
  "bevy_rapier2d",
+ "cheats",
+ "death_flare",
+ "detection_colour",
+ "enemy",
  "health_to_death",
+ "level",
  "mouse_pos",
  "player_unit",
+ "rand_core",
  "rts_controller",
  "rts_direct_attack",
  "rts_unit_control",
  "rts_unit_death",
  "rts_unit_detectors",
+ "rts_unit_health",
  "rts_unit_movers",
  "rts_unit_nav",
+ "selection_visuals",
+ "sprite_sorting",
 ]
 
 [[package]]
@@ -3024,11 +3176,15 @@ checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 name = "player_unit"
 version = "0.0.1"
 dependencies = [
+ "attack_laser",
+ "bang_colour",
  "behaviour_tree",
  "bevy",
  "bevy_rapier2d",
  "control_to_detector",
  "control_to_nav",
+ "death_flare",
+ "detection_colour",
  "health_to_death",
  "nav_to_mover",
  "rapier_config",
@@ -3044,6 +3200,8 @@ dependencies = [
  "rts_unit_nav",
  "rts_unit_soul",
  "rts_unit_team",
+ "selection_visuals",
+ "sprite_sorting",
 ]
 
 [[package]]
@@ -3081,6 +3239,12 @@ checksum = "bb458bb7f6e250e6eb79d5026badc10a3ebb8f9a15d1fff0f13d17c71f4d6dee"
 dependencies = [
  "unicode-xid",
 ]
+
+[[package]]
+name = "ppv-lite86"
+version = "0.2.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 
 [[package]]
 name = "presser"
@@ -3143,6 +3307,56 @@ name = "radsort"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "17fd96390ed3feda12e1dfe2645ed587e0bea749e319333f104a33ff62f77a0b"
+
+[[package]]
+name = "rand_chacha"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6c10a63a0fa32252be49d21e7709d4d4baf8d231c2dbce1eaa8141b9b127d88"
+dependencies = [
+ "ppv-lite86",
+ "rand_core",
+ "serde",
+]
+
+[[package]]
+name = "rand_core"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
+dependencies = [
+ "getrandom",
+ "serde",
+]
+
+[[package]]
+name = "rand_pcg"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59cad018caf63deb318e5a4586d99a24424a364f40f1e5778c29aca23f4fc73e"
+dependencies = [
+ "rand_core",
+ "serde",
+]
+
+[[package]]
+name = "rand_xoshiro"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6f97cdb2a36ed4183de61b2f824cc45c9f1037f28afe0a322e9fff4c108b5aaa"
+dependencies = [
+ "rand_core",
+ "serde",
+]
+
+[[package]]
+name = "random"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "bevy_rand",
+ "rand_core",
+]
 
 [[package]]
 name = "range-alloc"
@@ -3376,6 +3590,7 @@ name = "rts_unit_health"
 version = "0.0.1"
 dependencies = [
  "bevy",
+ "ref_paths",
 ]
 
 [[package]]
@@ -3475,6 +3690,15 @@ name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
+
+[[package]]
+name = "selection_visuals"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "ref_paths",
+ "rts_unit_control",
+]
 
 [[package]]
 name = "serde"
@@ -3596,6 +3820,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eda41003dc44290527a59b13432d4a0379379fa074b70174882adfbdfd917844"
 dependencies = [
  "bitflags 2.4.2",
+]
+
+[[package]]
+name = "sprite_sorting"
+version = "0.0.1"
+dependencies = [
+ "bevy",
 ]
 
 [[package]]
@@ -4458,6 +4689,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f593a95398737aeed53e489c785df13f3618e41dbcd6718c6addbf1395aa6876"
 dependencies = [
  "memchr",
+]
+
+[[package]]
+name = "wyrand"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1f3ee2fb243e75b43652f8b5ef347547bc82f10513dd7dacde806eb59d5ac5e7"
+dependencies = [
+ "rand_core",
+ "serde",
 ]
 
 [[package]]

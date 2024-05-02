@@ -1,10 +1,5 @@
 use super::*;
 
-pub const MOVE: TreeState = TreeState::N1;
-pub const CHASE: TreeState = TreeState::N2;
-pub const ATTACK: TreeState = TreeState::N3;
-pub const IDLE: TreeState = TreeState::N7; // Unimplemented
-
 #[derive(Component)]
 /// (0-3)
 /// Idle, Move, Chase, Attack;
@@ -116,10 +111,6 @@ fn attack_target_to_tree_root(
     terminal.0 = closest.read_detection();
 }
 
-pub const PURE_MOVE: TreeState = TreeState::N4;
-pub const ATTACK_MOVE: TreeState = TreeState::N5;
-pub const ATTACK_TARGET: TreeState = TreeState::N6;
-
 pub trait GenericStateBox {
     const STATE: TreeState;
 }
@@ -170,9 +161,6 @@ impl Plugin for ControlOrdersToStatePlugin {
     }
 }
 
-pub const IN_AGGRO: TreeState = TreeState::N8;
-pub const IN_ATTACK: TreeState = TreeState::N9.union(IN_AGGRO);
-
 #[derive(Component, Default)]
 pub struct DetectionToState;
 
@@ -189,7 +177,7 @@ pub fn detection_to_state_sys(
             continue;
         }
         else if attack_close.0.is_some() {
-            state.insert(Key::LocalComponent(type_id), IN_ATTACK);
+            state.insert(Key::LocalComponent(type_id), IN_ATTACK_RANGE);
             continue;
         }
         else if aggro_close.0.is_some() {
@@ -212,5 +200,5 @@ fn attack_target_detection_to_state(
         return;
     }
 
-    state.insert(Key::LocalComponent(type_id), IN_ATTACK);
+    state.insert(Key::LocalComponent(type_id), IN_ATTACK_RANGE);
 }

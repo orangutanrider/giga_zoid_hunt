@@ -1,0 +1,13 @@
+[package]
+name = "selection_visuals"
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy.workspace = true
+
+ref_paths.workspace = true
+
+rts_unit_control.workspace = true

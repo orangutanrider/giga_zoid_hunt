@@ -112,7 +112,7 @@ where
 */
 
 /// Prefab function for distillation systems.
-pub fn distill<'w, Column: DistillationColumn>( // Mostly redundant, due to how little it automates.
+pub fn distill<'w, Column: DistillationColumn>(
     mut column: Mut<'w, Column>,
     aggregate: &TIntersectionsAggregate,
     mut distillation_logic: impl FnMut(Entity) -> Option<Entity>
